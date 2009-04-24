@@ -9,7 +9,7 @@ from am_merge import MergeRun
 
 runsToMerge = []
 mrgDir = ''
-obcDir = '//alpha1/DISK51/CB09/OBC'
+obcDir = '//alpha1/DISK51/CB08/OBC'
 
 
 class StartPage(wx.wizard.WizardPageSimple):
@@ -31,7 +31,7 @@ class StartPage(wx.wizard.WizardPageSimple):
             
 class SelectFilesPage(wx.wizard.WizardPageSimple):
     def __init__(self, parent):
-        self.dataDir = '//alpha1/DISK51/CB09/OBC'
+        self.dataDir = '//alpha1/DISK51/CB08/OBC'
         
         wx.wizard.WizardPageSimple.__init__(self, parent)
         self.sizer = wx.BoxSizer(wx.VERTICAL)

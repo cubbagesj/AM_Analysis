@@ -296,10 +296,10 @@ class Kistler3:
         combFx = relForces[0] + relForces[3] + relForces[6]
         combFy = relForces[1] + relForces[4] + relForces[7]
         combFz = relForces[2] + relForces[5] + relForces[8]
-        combMx = self.ydist*(-relForces[2] - relForces[5] + relForces[8])
-        combMy = self.xdist*(-relForces[2] + relForces[5] )
-        combMz = (self.ydist*(relForces[0] + relForces[3] - relForces[6]) +
-                  self.xdist*(relForces[1] - relForces[4]))
+        combMx = self.ydist*(relForces[2] + relForces[5] - relForces[8])
+        combMy = self.xdist*(relForces[2] - relForces[5] )
+        combMz = (self.ydist*(-relForces[0] - relForces[3] + relForces[6]) +
+                  self.xdist*(-relForces[1] + relForces[4]))
         
         rawForces = array([combFx,
                            combFy,
