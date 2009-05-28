@@ -601,11 +601,16 @@ def MergeRun(runnumber, std_dir):
                 elif mrg_chans[i] == 823:           # Big U from ADCP
                     EUdata[i] = sqrt(EUdata[0]**2 + EUdata[1]**2 + EUdata[2]**2)
                 
-                elif mrg_chans[i] == 824:           # Big U from ADCP
+                elif mrg_chans[i] == 824:           # Big U from ADCP in knots
                     EUdata[i] = sqrt(EUdata[0]**2 + EUdata[1]**2 + EUdata[2]**2)
-		    EUdata[i] /= 1.6878
+                    EUdata[i] /= 1.6878
+
+		elif mrg_chans[i] == 825:	    # RPM flip from obs_rpm and rpm cmd
+		    EUdata[i] = EUdata[27]
+		    if rawdata[217] < 0:
+	 	        EUdata[i] *= -1
                 
-	        elif mrg_chans[i] == 830 and 'SOF1' in sp_gauges:         # Computed SOF1 Fx
+                elif mrg_chans[i] == 830 and 'SOF1' in sp_gauges:         # Computed SOF1 Fx
                     EUdata[i] = sp_gauges['SOF1'].CFx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284

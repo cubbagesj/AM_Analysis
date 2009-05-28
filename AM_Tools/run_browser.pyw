@@ -162,7 +162,7 @@ class BrowserFrame(wx.Frame):
 
 
         # Add nodes from our data set
-        rootDir = r'\\skipjack\share1\Autonomous_Model\test_data'
+        rootDir = r'\\skipjack\FRMG\Autonomous_Model\test_data'
         self.TreeBuilder(rootDir, obcroot)
 
         # Add a root node for STD File
