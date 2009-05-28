@@ -102,20 +102,40 @@ class MrgDirPage(wx.wizard.WizardPageSimple):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
         
-        titleText = wx.StaticText(self, -1, 'Enter Merge Directory')
+        titleText = wx.StaticText(self, -1, 'Enter Merge Information')
         titleText.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
         
+        dirLabel = wx.StaticText(self, -1, 'Merge Directory')
         self.dirBox = wx.TextCtrl(self, -1, "")
         
+        inpLabel = wx.StaticText(self, -1, 'Merge Configuration File')
+        self.inpBox = wx.TextCtrl(self, -1, "")
+        inpBtn = wx.Button(self, -1, 'Pick File')
+        
+        self.Bind(wx.EVT_BUTTON, self.OnInpBtn, inpBtn)
+        
         self.Bind(wx.EVT_TEXT, self.OnText, self.dirBox)
+        self.Bind(wx.EVT_TEXT, self.OnText, self.inpBox)
 
         self.sizer.Add(titleText, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
         self.sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND | wx.ALL, 5)
+        self.sizer.Add(dirLabel, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
         self.sizer.Add(self.dirBox, 0, wx.EXPAND|wx.ALL, 5)
+        self.sizer.Add(inpLabel, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
+        self.sizer.Add(self.inpBox, 0, wx.EXPAND|wx.ALL, 5)
+        self.sizer.Add(inpBtn, 0, wx.EXPAND|wx.ALL, 5)
         
     def OnText(self, evt):
-        global mrgDir
+        global mrgDir, inpDir
         mrgDir = self.dirBox.GetValue()
+        inpDir = self.inpBox.GetValue()
+    
+    def OnInpBtn(self, evt):
+        dlg = wx.FileDialog(self, "Open Merge Input File...", obcDir,
+                            style=wx.OPEN, wildcard='*.INP')
+        if dlg.ShowModal() == wx.ID_OK:
+            inpDir = dlg.GetFilename()
+        self.inpBox.SetValue(inpDir)
 
 class RunMrgPage(wx.wizard.WizardPageSimple):
     def __init__(self, parent):
@@ -151,7 +171,7 @@ class RunMrgPage(wx.wizard.WizardPageSimple):
         for run in runsToMerge:
             if keepGoing:
                 runnum = run[4:]
-                MergeRun(int(runnum), mrgDir)
+                MergeRun(int(runnum), mrgDir, inpDir)
             count += 1
         os.chdir(currdir)
         

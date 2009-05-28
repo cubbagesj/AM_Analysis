@@ -45,7 +45,7 @@ from tools.calfile_new import CalFile
 from tools.dynos_new import *
 import wx
 
-def MergeRun(runnumber, std_dir):  
+def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):  
 
     # LOG File - Open up a file to write diagnostic info to
     #
@@ -60,10 +60,10 @@ def MergeRun(runnumber, std_dir):
     #----------------------------------
     logfile.write("Configuring the merge program......\n",)
     try:
-        logfile.write("Opening the merge.inp file\n")
-        f = open('merge.inp', 'r')
+        logfile.write("Opening the merge input file\n")
+        f = open(merge_file, 'r')
         merge_lines = f.read().splitlines()
-        logfile.write("MERGE.INP opened and %d lines read \n" % len(merge_lines))
+        logfile.write("%s opened and %d lines read \n" % (merge_file,len(merge_lines)))
     except:
         logfile.write('Could not open the merge.inp file!')
         f.close()
