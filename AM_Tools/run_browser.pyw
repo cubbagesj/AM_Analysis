@@ -162,30 +162,41 @@ class BrowserFrame(wx.Frame):
 
 
         # Add nodes from our data set
+        # The primary one is for the obc data files from the model
+        # Try first for skipjack server, then default to local
         rootDir = r'\\skipjack\FRMG\Autonomous_Model\test_data'
-        self.TreeBuilder(rootDir, obcroot)
+        if os.path.exists(rootDir):
+            self.TreeBuilder(rootDir, obcroot)
+        else:
+            rootDir = r'c:/AM_data'
+            self.TreeBuilder(rootDir, obcroot)
 
         # Add a root node for STD File
         stdroot = self.tree.AppendItem(root, "STD Files")
         self.tree.SetItemImage(stdroot, self.fldridx, wx.TreeItemIcon_Normal)
         self.tree.SetItemImage(stdroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
 
-        # Add nodes from our data set
+        # Add nodes for the STD files
+        # First try alpha1 disks then default to local
         rootDir = r'\\alpha1\DISK31'
         if os.path.exists(rootDir):
             self.TreeBuilder(rootDir, stdroot)
+        else:
+            rootDir = r'c:/AM_Merge_Data'
+            self.TreeBuilder(rootDir, stdroot)
+        #Add older S23 runs
         rootDir = r'\\alpha1\DISK72\RCMMRG-S23'
         if os.path.exists(rootDir):
             self.TreeBuilder(rootDir, stdroot)
 
-        # Add a root node for FST Files
-        fstroot = self.tree.AppendItem(root, "FST Files")
-        self.tree.SetItemImage(fstroot, self.fldridx, wx.TreeItemIcon_Normal)
-        self.tree.SetItemImage(fstroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
 
         # Add nodes from our data set
         rootDir = r'\\alpha1\FSTDATA'
         if os.path.exists(rootDir):
+        # Add a root node for FST Files
+            fstroot = self.tree.AppendItem(root, "FST Files")
+            self.tree.SetItemImage(fstroot, self.fldridx, wx.TreeItemIcon_Normal)
+            self.tree.SetItemImage(fstroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
             self.TreeBuilder(rootDir, fstroot)
 
         # Bind some interesting events
@@ -220,6 +231,7 @@ class BrowserFrame(wx.Frame):
                 
     def menuData(self):
         return (("&File",
+                 ("&Update Paths", "Update Paths",self.OnPathUpdate),
                  ("&Quit", "Quit", self.OnCloseWindow)),
                 ("&Merge",
                  ("Merge Wizard...", "Merge Files", self.OnMerge)),
@@ -353,10 +365,43 @@ class BrowserFrame(wx.Frame):
                
     def OnData(self, event): pass
     
+    def OnPathUpdate(self,event): 
+        
+        frame = PathFrame()
+        frame.Show()
+
+    
     def OnAbout(self, event):
         dlg = ToolsAbout(self)
         dlg.ShowModal()
         dlg.Destroy()
+        
+class PathFrame(wx.Frame):
+    def __init__(self):
+        wx.Frame.__init__(self, None,
+                          title="Update Search Paths",
+                          size=(600, 500))
+        self.pathCtrl = wx.TextCtrl(self, -1, "",style=wx.TE_MULTILINE )  
+        
+        self.pathlist = open("./lib/std_default.pth").read()
+        self.pathCtrl.ChangeValue(self.pathlist)
+        updateBtn = wx.Button(self, -1, "Update Paths")
+        
+        self.Bind(wx.EVT_BUTTON, self.OnPathWrite, updateBtn)
+        
+        mainSizer = wx.BoxSizer(wx.VERTICAL)
+        mainSizer.Add(self.pathCtrl, 4, wx.EXPAND, 0)
+        mainSizer.Add(updateBtn, 0, wx.TOP|wx.ALIGN_CENTER_HORIZONTAL, 10)
+        self.SetSizer(mainSizer)
+        self.Layout()
+        
+    def OnPathWrite(self,event):
+        self.pathlist = self.pathCtrl.GetValue()
+        outfile = open("./lib/std_default.pth", "w")
+        outfile.write(self.pathlist)
+        outfile.close()
+        self.Destroy()
+
         
 class DataFrame(wx.Frame):
     def __init__(self, runData):

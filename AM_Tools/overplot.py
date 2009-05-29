@@ -24,7 +24,7 @@ import os
 
 from tools.plottools import *
 from multicanvas import MultiCanvasFrame
-from printplot import PrintPlot
+#from printplot import PrintPlot
 
 class OverPlotFrame(wx.Frame):
     
