@@ -660,6 +660,81 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
                     
+                elif mrg_chans[i] == 900 and 'SOF3' in sp_gauges:         # Computed SOF3 Fx
+                    EUdata[i] = sp_gauges['SOF3'].CFx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 901 and 'SOF3' in sp_gauges:         # Computed SOF3 Fy
+                    EUdata[i] = sp_gauges['SOF3'].CFy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 902 and 'SOF3' in sp_gauges:         # Computed SOF3 Fz
+                    EUdata[i] = sp_gauges['SOF3'].CFz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 903 and 'SOF3' in sp_gauges:         # Computed SOF3 Mx
+                    EUdata[i] = sp_gauges['SOF3'].CMx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 904 and 'SOF3' in sp_gauges:         # Computed SOF3 My
+                    EUdata[i] = sp_gauges['SOF3'].CMy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 905 and 'SOF3' in sp_gauges:         # Computed SOF3 Mz
+                    EUdata[i] = sp_gauges['SOF3'].CMz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                    
+                elif mrg_chans[i] == 910 and 'SOF4' in sp_gauges:         # Computed SOF4 Fx
+                    EUdata[i] = sp_gauges['SOF4'].CFx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 911 and 'SOF4' in sp_gauges:         # Computed SOF4 Fy
+                    EUdata[i] = sp_gauges['SOF4'].CFy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 912 and 'SOF4' in sp_gauges:         # Computed SOF4 Fz
+                    EUdata[i] = sp_gauges['SOF4'].CFz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 913 and 'SOF4' in sp_gauges:         # Computed SOF4 Mx
+                    EUdata[i] = sp_gauges['SOF4'].CMx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 914 and 'SOF4' in sp_gauges:         # Computed SOF4 My
+                    EUdata[i] = sp_gauges['SOF4'].CMy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 915 and 'SOF4' in sp_gauges:         # Computed SOF4 Mz
+                    EUdata[i] = sp_gauges['SOF4'].CMz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                    
+                elif mrg_chans[i] == 920 and 'SOF5' in sp_gauges:         # Computed SOF5 Fx
+                    EUdata[i] = sp_gauges['SOF5'].CFx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 921 and 'SOF5' in sp_gauges:         # Computed SOF5 Fy
+                    EUdata[i] = sp_gauges['SOF5'].CFy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 922 and 'SOF5' in sp_gauges:         # Computed SOF5 Fz
+                    EUdata[i] = sp_gauges['SOF5'].CFz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 923 and 'SOF5' in sp_gauges:         # Computed SOF5 Mx
+                    EUdata[i] = sp_gauges['SOF5'].CMx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 924 and 'SOF5' in sp_gauges:         # Computed SOF5 My
+                    EUdata[i] = sp_gauges['SOF5'].CMy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 925 and 'SOF5' in sp_gauges:         # Computed SOF5 Mz
+                    EUdata[i] = sp_gauges['SOF5'].CMz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                    
                 elif mrg_chans[i] == 850 and 'Kistler' in sp_gauges:         # Computed Kistler Fx
                     EUdata[i] = sp_gauges['Kistler'].CFx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
