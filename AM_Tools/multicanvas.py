@@ -103,10 +103,11 @@ class MultiCanvasFrame(wx.Frame):
                        "EPS (*.eps)|*.eps|" \
                        "BMP (*.bmp)|*.bmp"                        
                        
-        thisdir  = os.getcwd()
+        #thisdir  = os.getcwd()
+	thisdir = 'c:/plots'
 
         dlg = wx.FileDialog(self, message='Save Plot Figure as...',
-                            defaultDir = thisdir, defaultFile='plot.png',
+			defaultDir = thisdir, defaultFile=self.plotData.run_list[0].filename[:-4]+'-'+str(self.plotData.pgpntr),
                             wildcard=file_choices, style=wx.SAVE)
 
         if dlg.ShowModal() == wx.ID_OK:
@@ -140,11 +141,17 @@ class MultiCanvasFrame(wx.Frame):
                 if scale or offset or xform:
                     if xform == 3:
                         offset = runobj.init_values[ychan] - self.plotData.run_list[0].init_values[ychan]
-                        ofst = float(offset)
-                        ydata = xfrm(ydata, runobj.dt, scale, offset, xform)                        
-                    else:
-                        ydata = xfrm(ydata, runobj.dt, scale, offset, xform)
-                line = self.ax.plot(xdata, ydata)
+                        offset = float(offset)
+			ydata = xfrm(ydata, runobj.dt, scale, offset, xform)
+		    elif xform == 33:
+		        offset = runobj.appr_values[ychan] - self.plotData.run_list[0].appr_values[ychan]
+			offset = float(offset)
+			ydata = xfrm(ydata, runobj.dt, scale, offset, 11)
+		    else:
+		        ydata = xfrm(ydata, runobj.dt, scale, offset, xform)
+		    
+                
+		line = self.ax.plot(xdata, ydata)
                 lines.append(line)
                 self.ax.grid(True)
                 if i == self.plotData.perpage - 1:
