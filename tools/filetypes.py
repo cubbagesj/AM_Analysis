@@ -102,7 +102,7 @@ class STDFile:
                 self.chan_names = line1.split("'  '")
                 f.close()
                 # Now use the matplotlib load method to get the data
-                self.data = load(fullname, skiprows=5)
+                self.data = mlab.load(fullname, skiprows=5)
                 # Time is found in column 26
                 self.time = self.data[:,26]
             else:
