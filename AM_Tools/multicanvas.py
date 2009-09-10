@@ -144,7 +144,13 @@ class MultiCanvasFrame(wx.Frame):
                         offset = float(offset)
 			ydata = xfrm(ydata, runobj.dt, scale, offset, xform)
 		    elif xform == 33:
-		        offset = runobj.appr_values[ychan] - self.plotData.run_list[0].appr_values[ychan]
+			if ychan < len(runobj.appr_values):
+			    try:
+			        offset = runobj.appr_values[ychan] - self.plotData.run_list[0].appr_values[ychan]
+ 			    except:
+			    	offset = runobj.appr_values[ychan] - 0.0
+			else:
+			    offset = 0
 			offset = float(offset)
 			ydata = xfrm(ydata, runobj.dt, scale, offset, 11)
 		    else:
