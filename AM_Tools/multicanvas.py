@@ -136,6 +136,7 @@ class MultiCanvasFrame(wx.Frame):
             xform = self.plotData.yxforms[self.plotData.pgpntr + i]
             offset = self.plotData.yoffsets[self.plotData.pgpntr + i]
             lines = []
+	    lcnt = 0
             for runobj in self.plotData.run_list:
                 xdata, ydata = get_xy(runobj, ychan, -1)
                 if scale or offset or xform:
@@ -154,10 +155,7 @@ class MultiCanvasFrame(wx.Frame):
 			offset = float(offset)
 			ydata = xfrm(ydata, runobj.dt, scale, offset, 11)
 		    else:
-		        ydata = xfrm(ydata, runobj.dt, scale, offset, xform)
-		    
-                
-		line = self.ax.plot(xdata, ydata)
+			line = self.ax.plot(xdata, ydata)
                 lines.append(line)
                 self.ax.grid(True)
                 if i == self.plotData.perpage - 1:

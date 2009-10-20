@@ -370,6 +370,7 @@ class OBCFile:
             
 	    self.filename = filename
             self.dirname = dirname
+	    self.basename = 'run-'+run_number
             self.filetype = 'AM-obc'
             self.title = ''
             self.timestamp = time.ctime(os.path.getmtime(fullname))
@@ -512,21 +513,38 @@ class OBCFile:
         # For obc, we don't want to do the initial values for all 364
         # channels, so just set these to zeros
         self.init_values = zeros((self.nchans), dtype=float)
+
+    def EU_file(self):
+        """ Create a csv data file with the EU data
+            Created in same dir as obc file with .eu extension
+        """
+
+	# First open the output file using the filename
+	eufile = open(os.path.join(self.dirname, self.basename+'.eu'), 'w')
+	
+	# First ouput the titles in one line
+	for name in self.chan_names:
+	    eufile.write(name+',  ')
+	eufile.write('\n')
         
+	# Now output the EU data line by line
+	for row in range(len(self.data)):
+	    for column in range(self.nchans):
+		value = (float(self.data[row][column])-self.zeros[column]) * self.gains[column]
+		eufile.write(str(value)+', ')
+	    eufile.write('\n')
+
+	eufile.close()
+
 
 if __name__ == "__main__":
 
-    test = STDFile('7-17862')
+    test = OBCFile('1409')
     #test = STDFile('774-8385')
     test.info()
-    test.compStats()
+    test.run_stats()
     #dummy = test.getEUData(12)
-    print test.maxValues[7], test.maxTimes[7]
-    print test.minValues[7], test.minTimes[7]
-    print "Nose Depth"
-    print test.maxZnose, test.maxZnosetime
-    print test.minZnose, test.minZnosetime
-    print "Sail Depth"
-    print test.maxZsail, test.maxZsailtime
-    print test.minZsail, test.minZsailtime
-
+    print test.stdbytime
+    print test.exectime
+    test.EU_file()
+    
