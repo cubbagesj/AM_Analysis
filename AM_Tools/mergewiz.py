@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import wx
+import wx.lib.filebrowsebutton as filebrowse
 import os
 import wx.wizard
 import glob
@@ -9,7 +10,7 @@ from am_merge import MergeRun
 
 runsToMerge = []
 mrgDir = ''
-obcDir = '//alpha1/DISK51/CB08/OBC'
+obcDir = 's:/Autonomous_Model/Test_Data'
 
 
 class StartPage(wx.wizard.WizardPageSimple):
@@ -26,12 +27,12 @@ class StartPage(wx.wizard.WizardPageSimple):
             This wizard guides you through the steps to convert the AM
             OBC data into standard format STD files.  The merge converts
             the data to full-scale units, places it in the correct columns
-            and handles all of the computed channels like the prop dyno."""))
+            and handles all of the computed channels such as the prop dyno."""))
         
             
 class SelectFilesPage(wx.wizard.WizardPageSimple):
     def __init__(self, parent):
-        self.dataDir = '//alpha1/DISK51/CB08/OBC'
+        self.dataDir = 's:/Autonomous_Model/Test_Data'
         
         wx.wizard.WizardPageSimple.__init__(self, parent)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
@@ -39,18 +40,18 @@ class SelectFilesPage(wx.wizard.WizardPageSimple):
         titleText = wx.StaticText(self, -1, 'Select OBC Files')
         titleText.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
         
-        self.radio1 = wx.RadioBox(self, -1, "Centerbody", choices=['CB 8', 'CB 9', 'CB A'],
-                    majorDimension=1, style=wx.RA_SPECIFY_COLS)
-        
-        self.radio1.SetSelection(1) 
-        self.fileList = wx.CheckListBox(self, -1, style=wx.LB_MULTIPLE)
+        self.dirpick = wx.DirPickerCtrl(self, -1, path=self.dataDir, message="Choose Directory")
+        self.dirpick.SetTextCtrlGrowable(grow=True)
+        self.dirpick.SetTextCtrlProportion(1)
+        self.dirpick.SetPickerCtrlProportion(0)
+        self.fileList = wx.CheckListBox(self, -1, size=(200,200), style=wx.LB_MULTIPLE)
 
-        self.Bind(wx.EVT_RADIOBOX, self.OnRadio)
+        self.Bind(wx.EVT_DIRPICKER_CHANGED,  self.OnDirPick, self.dirpick)
         self.Bind(wx.EVT_CHECKLISTBOX, self.OnCheck, self.fileList)
         
-        fileSizer = wx.FlexGridSizer(cols=2, hgap=5, vgap=5)
-        fileSizer.AddGrowableCol(1)
-        fileSizer.Add(self.radio1, 0, wx.ALIGN_CENTER_VERTICAL)
+        fileSizer = wx.FlexGridSizer(cols=1, hgap=5, vgap=5)
+        fileSizer.AddGrowableCol(0)
+        fileSizer.Add(self.dirpick, 0, wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
         fileSizer.Add(self.fileList, 0, wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
         
        
@@ -71,14 +72,9 @@ class SelectFilesPage(wx.wizard.WizardPageSimple):
         return obcfiles
         
         
-    def OnRadio(self, evt):
+    def OnDirPick(self, evt):
         global obcDir
-        if self.radio1.GetSelection() == 0:
-            self.dataDir = '//alpha1/DISK51/CB08/OBC'
-        elif self.radio1.GetSelection() == 1:
-            self.dataDir = '//alpha1/DISK51/CB09/OBC'
-        elif self.radio1.GetSelection() == 2:
-            self.dataDir = '//alpha1/DISK51/CB0A/OBC'
+        self.dataDir = self.dirpick.GetPath()
         obcDir = self.dataDir
         runsToMerge = []
         self.fileList.Set(self.getFiles())
@@ -96,40 +92,53 @@ class SelectFilesPage(wx.wizard.WizardPageSimple):
 
 class MrgDirPage(wx.wizard.WizardPageSimple):
     def __init__(self, parent):
+
+        self.mrgDir = '//alpha1/disk31/'
+        self.mrgInpDir = '//skipjack/frmg/Autonomous_Model/Test_Data/Merge_Files/'
         wx.wizard.WizardPageSimple.__init__(self, parent)
-        
         
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
         
         titleText = wx.StaticText(self, -1, 'Enter Merge Information')
         titleText.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
+
+        self.mrgdirpick = wx.DirPickerCtrl(self, -1, path=self.mrgDir, message="Choose Directory",
+                        style=wx.DIRP_USE_TEXTCTRL)
+        self.mrgdirpick.SetTextCtrlGrowable(grow=True)
+        self.mrgdirpick.SetTextCtrlProportion(1)
+        self.mrgdirpick.SetPickerCtrlProportion(0)
         
         dirLabel = wx.StaticText(self, -1, 'Merge Directory')
-        self.dirBox = wx.TextCtrl(self, -1, "")
         
+        self.mrginpdirpick = wx.FilePickerCtrl(self, -1, path=self.mrgInpDir, message="Choose Merge File",
+                        style=wx.DIRP_USE_TEXTCTRL)
+        self.mrginpdirpick.SetTextCtrlGrowable(grow=True)
+        self.mrginpdirpick.SetTextCtrlProportion(1)
+        self.mrginpdirpick.SetPickerCtrlProportion(0)
+
         inpLabel = wx.StaticText(self, -1, 'Merge Configuration File')
-        self.inpBox = wx.TextCtrl(self, -1, "")
-        inpBtn = wx.Button(self, -1, 'Pick File')
         
-        self.Bind(wx.EVT_BUTTON, self.OnInpBtn, inpBtn)
+        self.Bind(wx.EVT_DIRPICKER_CHANGED, self.OnMrgDirPick, self.mrgdirpick)
+        self.Bind(wx.EVT_FILEPICKER_CHANGED, self.OnMrgInpDirPick, self.mrginpdirpick)
         
-        self.Bind(wx.EVT_TEXT, self.OnText, self.dirBox)
-        self.Bind(wx.EVT_TEXT, self.OnText, self.inpBox)
 
         self.sizer.Add(titleText, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
         self.sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND | wx.ALL, 5)
         self.sizer.Add(dirLabel, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
-        self.sizer.Add(self.dirBox, 0, wx.EXPAND|wx.ALL, 5)
+        self.sizer.Add(self.mrgdirpick, 0, wx.EXPAND|wx.ALL, 5)
         self.sizer.Add(inpLabel, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
-        self.sizer.Add(self.inpBox, 0, wx.EXPAND|wx.ALL, 5)
-        self.sizer.Add(inpBtn, 0, wx.EXPAND|wx.ALL, 5)
+        self.sizer.Add(self.mrginpdirpick, 0, wx.EXPAND|wx.ALL, 5)
         
-    def OnText(self, evt):
-        global mrgDir, inpDir
-        mrgDir = self.dirBox.GetValue()
-        inpDir = self.inpBox.GetValue()
+
+    def OnMrgDirPick(self, evt):
+        global mrgDir
+        mrgDir = self.mrgdirpick.GetPath()
     
+    def OnMrgInpDirPick(self, evt):
+        global inpDir
+        inpDir = self.mrginpdirpick.GetPath()
+
     def OnInpBtn(self, evt):
         dlg = wx.FileDialog(self, "Open Merge Input File...", obcDir,
                             style=wx.OPEN, wildcard='*.INP')

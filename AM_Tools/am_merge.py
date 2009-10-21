@@ -853,7 +853,8 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
     
     # Move the std file to the new directory
     try:
-        alpha_name = '\\\\alpha1\\disk31\\'+std_dir+'\\'+stdfilename
+##        alpha_name = '\\\\alpha1\\disk31\\'+std_dir+'\\'+stdfilename
+        alpha_name = std_dir+'\\'+stdfilename
         prgbar.Update(maxcnt-1000, newmsg='Moving STD file to %s' % alpha_name)
         logfile.write('\nMoving STD file to %s\n' % alpha_name)
         os.rename(stdfilename, alpha_name)
