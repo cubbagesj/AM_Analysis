@@ -155,7 +155,8 @@ class MultiCanvasFrame(wx.Frame):
 			offset = float(offset)
 			ydata = xfrm(ydata, runobj.dt, scale, offset, 11)
 		    else:
-			line = self.ax.plot(xdata, ydata)
+			ydata = xfrm(ydata, runobj.dt, scale, offset, xform)
+		line = self.ax.plot(xdata, ydata)
                 lines.append(line)
                 self.ax.grid(True)
                 if i == self.plotData.perpage - 1:

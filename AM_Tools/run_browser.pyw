@@ -178,7 +178,7 @@ class BrowserFrame(wx.Frame):
 
         # Add nodes for the STD files
         # First try alpha1 disks then default to local
-        rootDir = r'\\alpha1\DISK31'
+        rootDir = r'\\sim1\samc\rcmdata'
         if os.path.exists(rootDir):
             self.TreeBuilder(rootDir, stdroot)
         else:
