@@ -71,9 +71,9 @@ class OverPlotFrame(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.OnPlotClick, plotBtn)
 
         # Print Plot Button
-        prnplotBtn = wx.Button(self, -1, "Create Print Plot")
-        prnplotBtn.SetFont(wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD))
-        self.Bind(wx.EVT_BUTTON, self.OnPrnPlotClick, prnplotBtn)
+        #prnplotBtn = wx.Button(self, -1, "Create Print Plot")
+        #prnplotBtn.SetFont(wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD))
+        #self.Bind(wx.EVT_BUTTON, self.OnPrnPlotClick, prnplotBtn)
 
         # Set up the layout with sizers
         mainSizer = wx.BoxSizer(wx.VERTICAL)
@@ -127,14 +127,14 @@ class OverPlotFrame(wx.Frame):
         mainSizer.Add(runSizer, 0, wx.EXPAND|wx.ALL, 5)
         mainSizer.Add((20,20), 0)
         mainSizer.Add(plotBtn, 0, wx.EXPAND|wx.ALL, 5)
-        mainSizer.Add(prnplotBtn, 0, wx.EXPAND|wx.ALL, 5)
+        #mainSizer.Add(prnplotBtn, 0, wx.EXPAND|wx.ALL, 5)
         
         self.SetSizer(mainSizer)
         self.Fit()
 
     def OnFileClick(self, evt):
         dlg = wx.FileDialog(self, "Open plot config file...",
-                                defaultDir="./lib", wildcard="*.ini",
+                                defaultDir="lib", wildcard="*.ini",
                                 style=wx.OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             self.PlotCfg = dlg.GetPath()

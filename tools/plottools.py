@@ -43,24 +43,27 @@ def get_runs( run_list, obc_path='', std_path=''):
     """
     
     # First setup the paths if none specifed
-    if not obc_path:
-        obc_path = ""
-        try:
-            for line in open("./lib/obc_default.pth"):
-                obc_path = obc_path + line.strip() + ";"
-        except:
-            obc_path = "."
-    if not std_path:
-        std_path = ""
-        try:
-            for line in open("./lib/std_default.pth"):
-                std_path = std_path + line.strip() + ";"
-        except:
-            std_path = "."
+#    if not obc_path:
+#        obc_path = ""
+#        try:
+#            for line in open("./lib/obc_default.pth"):
+#                obc_path = obc_path + line.strip() + ";"
+#        except:
+#            obc_path = "."
+#    if not std_path:
+#        std_path = ""
+#        try:
+#            for line in open("./lib/std_default.pth"):
+#                std_path = std_path + line.strip() + ";"
+#        except:
+#            std_path = "."
     
     # Now parse the run_list
     runs = []
     
+    std_path = '/disk2/home/'+os.environ['USER']
+    obc_path = '/disk2/home/'+os.environ['USER']+'/obcdata'
+
     # search pattern for std filenames - Assumes that a file with a '-' in the
     # name is an STD file.  All others are considered OBC files
     

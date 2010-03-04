@@ -19,7 +19,7 @@ class CanvasFrame(wx.Frame):
     
     def __init__(self, runData, chans):
         wx.Frame.__init__(self,None,-1,
-                         'Plot  '+runData.filename)
+                         'Plot  '+runData.filename,size=(900,900))
 
         self.SetBackgroundColour(wx.NamedColor("WHITE"))
 

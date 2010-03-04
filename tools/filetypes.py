@@ -45,7 +45,7 @@ class STDFile:
         other formats."""
 
         # Attempt to find the run on the path, return empty structure if not found
-        fullname = search_file(run_number+'.std', search_path)
+        fullname = find_file(run_number+'.std', search_path)
         
         if not fullname:
             self.filename = ''
@@ -349,7 +349,7 @@ class OBCFile:
         """
 
         # Attempt to find the run on the path, return NONE if not found
-        fullname = search_file_walk('run-'+run_number+'.obc', search_path)
+        fullname = find_file('run-'+run_number+'.obc', search_path)
         
         
         if not fullname:

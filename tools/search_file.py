@@ -12,6 +12,14 @@
 
 import os
 
+def find_file(filename, search_path):
+    """ Use the linux find command to locate the file
+        Much simpler than the other way
+    """
+    findtext = os.popen('find -L %s -name %s -print'%(search_path, filename)).read().split('\n')
+    
+    return findtext[0]
+
 def search_file(filename, search_path, pathsep=os.pathsep):
     """ Given a search path, find a file with requested name
         Returns the complete path and filename found, or None if not found

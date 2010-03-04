@@ -23,7 +23,7 @@ import analysis
 
 class BrowserFrame(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, None, title="Run File Browser", size=(800,550))
+        wx.Frame.__init__(self, None, title="Run File Browser", size=(900,650))
         
         # Set up the status bar
         self.statusbar = self.CreateStatusBar()
@@ -164,12 +164,16 @@ class BrowserFrame(wx.Frame):
         # Add nodes from our data set
         # The primary one is for the obc data files from the model
         # Try first for skipjack server, then default to local
-        rootDir = r'\\skipjack\FRMG\Autonomous_Model\test_data'
-        if os.path.exists(rootDir):
-            self.TreeBuilder(rootDir, obcroot)
+        rootDir = os.path.join('/disk2/home', os.environ['USER'])
+	obcDir = os.path.join(rootDir,'obcdata')
+        if os.path.exists(obcDir):
+            self.TreeBuilder(obcDir, obcroot)
         else:
-            rootDir = r'c:/AM_data'
-            self.TreeBuilder(rootDir, obcroot)
+            #rootDir = os.path.join('/disk2/home',os.environ['USER'])
+	    #obcDir = os.path.join(rootDir, 'AM_data')
+            #self.TreeBuilder(obcDir, obcroot)
+	    pass
+	    
 
         # Add a root node for STD File
         stdroot = self.tree.AppendItem(root, "STD Files")
@@ -178,26 +182,23 @@ class BrowserFrame(wx.Frame):
 
         # Add nodes for the STD files
         # First try alpha1 disks then default to local
-        rootDir = r'\\sim1\samc\rcmdata'
-        if os.path.exists(rootDir):
-            self.TreeBuilder(rootDir, stdroot)
+	stdDir = os.path.join(rootDir, 'rcmdata')
+        if os.path.exists(stdDir):
+            self.TreeBuilder(stdDir, stdroot)
         else:
-            rootDir = r'c:/AM_Merge_Data'
-            self.TreeBuilder(rootDir, stdroot)
-        #Add older S23 runs
-        rootDir = r'\\alpha1\DISK72\RCMMRG-S23'
-        if os.path.exists(rootDir):
-            self.TreeBuilder(rootDir, stdroot)
+            #rootDir = r'~/AM_Merge_Data'
+            #self.TreeBuilder(rootDir, stdroot)
+	    pass
 
 
         # Add nodes from our data set
-        rootDir = r'\\alpha1\FSTDATA'
-        if os.path.exists(rootDir):
+        fstDir = os.path.join(rootDir, 'fstdata')
+	if os.path.exists(fstDir):
         # Add a root node for FST Files
             fstroot = self.tree.AppendItem(root, "FST Files")
             self.tree.SetItemImage(fstroot, self.fldridx, wx.TreeItemIcon_Normal)
             self.tree.SetItemImage(fstroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
-            self.TreeBuilder(rootDir, fstroot)
+            self.TreeBuilder(fstDir, fstroot)
 
         # Bind some interesting events
         self.Bind(wx.EVT_TREE_ITEM_EXPANDED, self.OnItemExpanded, self.tree)
@@ -421,7 +422,7 @@ class CalFrame(wx.Frame):
                           size=(600, 500))
                 
         columns = ['Ch. #', 'Name', 'Alt Name', 'Gain', 'Zero', 'Eng. Units']
-        self.list = wx.ListCtrl(self, -1, style=wx.LC_REPORT|wx.LC_HRULES)
+        self.list = wx.ListCtrl(self, -1, style=wx.LC_REPORT)
         for col, text in enumerate(columns):
             self.list.InsertColumn(col, text)
         

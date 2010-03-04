@@ -51,7 +51,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
     #
     logfile = open('merge.log','w')
     logfile.write("AM_merge:  Merging run %d \n" % runnumber)
-    logfile.write('STD Directory: %s' % std_dir)
+    logfile.write('STD Directory: %s\n' % std_dir)
     logfile.write("AM_Merge.py -- Autonomous model merge program\n")
     logfile.write(time.strftime("%a %b %d %H:%M:%S %Y")+" \n")
 
@@ -164,7 +164,11 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
     
     sp_gauges = {}
     # Rotor 
-    if cal.hasRotor== "TRUE":
+
+    logfile.write('\n cal.hasRotor =%s\n' % cal.hasRotor)
+
+    logfile.write('\n Value of find: %d\n' % cal.hasRotor.find("TRUE"))
+    if cal.hasRotor == "TRUE":
         sp_gauges['Rotor'] = Rot_Dyno6(cal.rotor)
     
     # Stator
@@ -190,7 +194,10 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
     if cal.has6DOF == "TRUE":
         for i in range(1,cal.num_6DOF+1):
             sp_gauges['6DOF%d' %i] = Dyno6(cal.sixDOF[i-1])
-    
+   
+    logfile.write('\nSpecial Gages:')
+    for gage in sp_gauges.keys():
+	logfile.write('\n%s' % gage)
     logfile.write('\nDone reading calibrations\n')
     
     
@@ -327,7 +334,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
     apprU = (rawdata[336]/100) * c_sqrtlambda
     runkind = rawdata[343]
     
-    stdfilename = str(cb_id)+'-'+str(runnumber)+'.std'
+    stdfilename = std_dir+'/'+str(cb_id)+'-'+str(runnumber)+'.std'
     stdfile = open(stdfilename, 'w')
     
     stdfile.write("'DELIMTXT' \n")
@@ -852,15 +859,14 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
     stdfile.close()
     
     # Move the std file to the new directory
-    try:
-##        alpha_name = '\\\\alpha1\\disk31\\'+std_dir+'\\'+stdfilename
-        alpha_name = std_dir+'\\'+stdfilename
-        prgbar.Update(maxcnt-1000, newmsg='Moving STD file to %s' % alpha_name)
-        logfile.write('\nMoving STD file to %s\n' % alpha_name)
-        os.rename(stdfilename, alpha_name)
-    except:
-        prgbar.Update(maxcnt-1000,
-                      newmsg='Error moving STD file!! - File Left in Current Directory')
+#    try:
+#      alpha_name = '\\\\alpha1\\disk31\\'+std_dir+'\\'+stdfilename
+#      alpha_name = std_dir+'/'+stdfilename
+#      prgbar.Update(maxcnt-1000, newmsg='Moving STD file to %s' % alpha_name)
+#      logfile.write('\nMoving STD file to %s\n' % alpha_name)
+#    except:
+#        prgbar.Update(maxcnt-1000,
+#                      newmsg='Error moving STD file!! - File Left in Current Directory')
       
     prgbar.Update(maxcnt) 
     logfile.close()

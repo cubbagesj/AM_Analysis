@@ -61,21 +61,21 @@ class CalFile:
         self.calfile_version = self.c.add_option('cal_file_version', type='int').get()
 
         # Check for the special gauges and set the flags
-        self.hasRotor = self.c.add_option('rotor').get().upper()
-        self.hasStator = self.c.add_option('stator').get().upper()
-        self.hasSOF1 = self.c.add_option('SOF1').get().upper()
-        self.hasSOF2 = self.c.add_option('SOF2').get().upper()
+        self.hasRotor = self.c.add_option('rotor').get().strip().upper()
+        self.hasStator = self.c.add_option('stator').get().strip().upper()
+        self.hasSOF1 = self.c.add_option('SOF1').get().strip().upper()
+        self.hasSOF2 = self.c.add_option('SOF2').get().strip().upper()
 
         # hasKistler refers to the standard 4-guage kistler
-        self.hasKistler = self.c.add_option('kistler').get().upper()
+        self.hasKistler = self.c.add_option('kistler').get().strip().upper()
         self.hasKistler3 = 'FALSE'
         try:
-            self.hasKistler3 = self.c.add_option('kistler3').get().upper()
+            self.hasKistler3 = self.c.add_option('kistler3').get().strip().upper()
         except:
             # If key not found then set to false
             self.hasKistler3 = 'FALSE'
             
-        self.num_6DOF = self.c.add_option('num_6DOF_dynos', type='int').get()           
+        self.num_6DOF = self.c.add_option('num_6DOF_dynos', type='int').get().strip()           
         if self.num_6DOF > 0:
             self.has6DOF = 'TRUE'
         else:
