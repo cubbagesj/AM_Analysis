@@ -24,6 +24,7 @@ class MultiCanvasFrame(wx.Frame):
         self.SetBackgroundColour(wx.NamedColor("WHITE"))
 
         self.figure = Figure(figsize=(8.7,10))
+	self.figure.subplots_adjust(bottom=.15)
         self.plotData = plotData
         self.Build_Menus()
         self.titles = titles

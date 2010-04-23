@@ -23,7 +23,7 @@ import analysis
 
 class BrowserFrame(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, None, title="Run File Browser", size=(900,650))
+        wx.Frame.__init__(self, None, title="Run File Browser", size=(1000,650))
         
         # Set up the status bar
         self.statusbar = self.CreateStatusBar()
@@ -69,7 +69,7 @@ class BrowserFrame(wx.Frame):
         self.exectime = wx.TextCtrl(panel, -1, "", style=wx.TE_READONLY)
                 
         chanList = wx.StaticText(panel, -1, "Channel List:")
-        self.chanList = wx.ListBox(panel, -1, size=(150,180),
+        self.chanList = wx.ListBox(panel, -1, size=(200,200),
                                    style=wx.LB_EXTENDED, name="Channel List")
         
         # The buttons

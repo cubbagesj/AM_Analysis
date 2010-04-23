@@ -75,7 +75,7 @@ class CalFile:
             # If key not found then set to false
             self.hasKistler3 = 'FALSE'
             
-        self.num_6DOF = self.c.add_option('num_6DOF_dynos', type='int').get().strip()           
+        self.num_6DOF = self.c.add_option('num_6DOF_dynos', type='int').get()
         if self.num_6DOF > 0:
             self.has6DOF = 'TRUE'
         else:

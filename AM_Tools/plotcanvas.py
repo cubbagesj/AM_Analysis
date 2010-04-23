@@ -25,6 +25,7 @@ class CanvasFrame(wx.Frame):
 
         self.figure = Figure(figsize=(12,6))
         self.axes = self.figure.add_subplot(111)
+	self.figure.subplots_adjust(bottom=.2)
         lines = []
         names = []
         for chan in chans:
