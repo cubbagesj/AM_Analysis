@@ -74,8 +74,15 @@ class CalFile:
         except:
             # If key not found then set to false
             self.hasKistler3 = 'FALSE'
+
+        # hasDeck refers to the dual Kistler deck setup 
+        try:
+            self.hasDeck = self.c.add_option('deck').get().strip().upper()
+        except:
+            # If key not found then set to false
+            self.hasDeck = 'FALSE'
             
-        self.num_6DOF = self.c.add_option('num_6DOF_dynos', type='int').get()
+        self.num_6DOF = self.c.add_option('num_6DOF_dynos', type='int').get()           
         if self.num_6DOF > 0:
             self.has6DOF = 'TRUE'
         else:
@@ -188,6 +195,59 @@ class CalFile:
                                     ('orient_row4', 'string'),
                                     ('orient_row5', 'string'),
                                     ('orient_row6', 'string'))
+        self.itemlist['deck'] =     (('Fx1f', 'int'),
+                                    ('Fy1f', 'int'),
+                                    ('Fz1f', 'int'),
+                                    ('Fx2f', 'int'),
+                                    ('Fy2f', 'int'),
+                                    ('Fz2f', 'int'),
+                                    ('Fx3f', 'int'),
+                                    ('Fy3f', 'int'),
+                                    ('Fz3f', 'int'),
+                                    ('Fx1a', 'int'),
+                                    ('Fy1a', 'int'),
+                                    ('Fz1a', 'int'),
+                                    ('Fx2a', 'int'),
+                                    ('Fy2a', 'int'),
+                                    ('Fz2a', 'int'),
+                                    ('Fx3a', 'int'),
+                                    ('Fy3a', 'int'),
+                                    ('Fz3a', 'int'),
+                                    ('xdista', 'float'),
+                                    ('ydista', 'float'),
+                                    ('xdistf', 'float'),
+                                    ('ydistf', 'float'),
+                                    ('gagex', 'float'),
+                                    ('gagey', 'float'),
+                                    ('gagez', 'float'),
+                                    ('armx', 'float'),
+                                    ('army', 'float'),
+                                    ('armz', 'float'),
+                                    ('weight', 'float'),  
+                                    ('int_row1f', 'string'),
+                                    ('int_row2f', 'string'),
+                                    ('int_row3f', 'string'),
+                                    ('int_row4f', 'string'),
+                                    ('int_row5f', 'string'),
+                                    ('int_row6f', 'string'),
+                                    ('orient_row1f', 'string'),
+                                    ('orient_row2f', 'string'),
+                                    ('orient_row3f', 'string'),
+                                    ('orient_row4f', 'string'),
+                                    ('orient_row5f', 'string'),
+                                    ('orient_row6f', 'string'),
+                                    ('int_row1a', 'string'),
+                                    ('int_row2a', 'string'),
+                                    ('int_row3a', 'string'),
+                                    ('int_row4a', 'string'),
+                                    ('int_row5a', 'string'),
+                                    ('int_row6a', 'string'),
+                                    ('orient_row1a', 'string'),
+                                    ('orient_row2a', 'string'),
+                                    ('orient_row3a', 'string'),
+                                    ('orient_row4a', 'string'),
+                                    ('orient_row5a', 'string'),
+                                    ('orient_row6a', 'string'))
 
     def ParseAll(self):
         """ This routine parses all of the info out of the cal file.  It calls
@@ -212,6 +272,8 @@ class CalFile:
             self.SOF1 = self.ParseGauge('SOF1', type='6dof')
         if self.hasSOF2 == "TRUE":
             self.SOF2 = self.ParseGauge('SOF2', type='6dof')
+        if self.hasDeck == "TRUE":
+            self.deck = self.ParseGauge('DECK', type='deck')
         if self.has6DOF == "TRUE":
             self.sixDOF = []
             for i in range(self.num_6DOF):
@@ -256,26 +318,69 @@ class CalFile:
       
         # Build the interaction/orient matrices
         rows = []
-        for i in range(1,7):
-            row = []
-            rowstr = gauge['int_row%d' % i]
-            cols = rowstr.strip().split()
-            for col in cols:
-                row.append(float(col))
-            rows.append(row)
+        if type == 'deck':
+            for i in range(1,7):
+                row=[]
+                rowstr = gauge['int_row%df' % i]
+                cols = rowstr.strip().split()
+                for col in cols:
+                    row.append(float(col))
+                rows.append(row)
+            gauge['Int_Matf'] = array(rows, dtype=float)
+            
+            rows = []        
+            for i in range(1,7):
+                row = []
+                rowstr = gauge['orient_row%df' % i]
+                cols = rowstr.strip().split()
+                for col in cols:
+                    row.append(float(col))
+                rows.append(row)
     
-        gauge['Int_Mat'] = array(rows, dtype=float)
+            gauge['Orient_Matf'] = array(rows, dtype=float)
+            
+	    rows= []
+            for i in range(1,7):
+                row=[]
+                rowstr = gauge['int_row%da' % i]
+                cols = rowstr.strip().split()
+                for col in cols:
+                    row.append(float(col))
+                rows.append(row)
+            gauge['Int_Mata'] = array(rows, dtype=float)
+            
+            rows = []        
+            for i in range(1,7):
+                row = []
+                rowstr = gauge['orient_row%da' % i]
+                cols = rowstr.strip().split()
+                for col in cols:
+                    row.append(float(col))
+                rows.append(row)
+    
+            gauge['Orient_Mata'] = array(rows, dtype=float)
+
+        else:
+            for i in range(1,7):
+                row = []
+                rowstr = gauge['int_row%d' % i]
+                cols = rowstr.strip().split()
+                for col in cols:
+                    row.append(float(col))
+                rows.append(row)
+    
+            gauge['Int_Mat'] = array(rows, dtype=float)
         
-        rows = []
-        for i in range(1,7):
-            row = []
-            rowstr = gauge['orient_row%d' % i]
-            cols = rowstr.strip().split()
-            for col in cols:
-                row.append(float(col))
-            rows.append(row)
-    
-        gauge['Orient_Mat'] = array(rows, dtype=float)
+            rows = []
+            for i in range(1,7):
+                row = []
+                rowstr = gauge['orient_row%d' % i]
+                cols = rowstr.strip().split()
+                for col in cols:
+                    row.append(float(col))
+                rows.append(row)
+        
+            gauge['Orient_Mat'] = array(rows, dtype=float)
         
         return gauge    
         
@@ -285,3 +390,8 @@ if __name__ == '__main__':
     print "Channels:", cfile.channels
     print "Gains:", cfile.gains
     print "Rotor Fx:", cfile.rotor['Fx']
+    print "Deck:", cfile.deck['Orient_Mata']
+    print "Deck:", cfile.deck['Int_Mata']
+    print "Deck:", cfile.deck['Orient_Matf']
+    print "Deck:", cfile.deck['Int_Matf']
+

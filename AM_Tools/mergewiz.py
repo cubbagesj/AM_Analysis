@@ -10,7 +10,7 @@ from am_merge import MergeRun
 
 runsToMerge = []
 mrgDir = ''
-obcDir = 's:/Autonomous_Model/Test_Data'
+obcDir = '/frmg/Autonomous_Model/Test_Data'
 
 
 class StartPage(wx.wizard.WizardPageSimple):
@@ -32,7 +32,7 @@ class StartPage(wx.wizard.WizardPageSimple):
             
 class SelectFilesPage(wx.wizard.WizardPageSimple):
     def __init__(self, parent):
-        self.dataDir = '/disk2/home/'+os.environ['USER']+'/obcdata'
+        self.dataDir = '/frmg/Autonomous_Model/Test_Data/'
         
         wx.wizard.WizardPageSimple.__init__(self, parent)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
@@ -95,6 +95,7 @@ class MrgDirPage(wx.wizard.WizardPageSimple):
 
         self.mrgDir = '/disk2/home/'+os.environ['USER']+'/rcmdata'
         self.mrgInpDir = '/disk2/home/'+os.environ['USER']+'/obcdata/Merge_Files/'
+        self.mrgInpDir = '/frmg/Autonomous_Model/Test_Data/Merge_Files/'
         wx.wizard.WizardPageSimple.__init__(self, parent)
         
         self.sizer = wx.BoxSizer(wx.VERTICAL)
@@ -171,6 +172,9 @@ class RunMrgPage(wx.wizard.WizardPageSimple):
     def OnMerge(self, evt):
         # Here is where we run the actual merge.
         # The obc directory is in the global obcdir.  Run the merge from here
+        
+        password = ''
+
         currdir = os.getcwd()
         os.chdir(obcDir)
         
@@ -180,7 +184,7 @@ class RunMrgPage(wx.wizard.WizardPageSimple):
         for run in runsToMerge:
             if keepGoing:
                 runnum = run[4:]
-                MergeRun(int(runnum), mrgDir, inpDir)
+                MergeRun(int(runnum), mrgDir, inpDir, password)
             count += 1
         os.chdir(currdir)
         

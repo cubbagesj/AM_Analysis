@@ -7,19 +7,22 @@
 #
 # a wxPython program to browse the run files and display info about each run
 
-# 3/23/2007
+# 3/23/2007s
+# Updated 8/13/2010 by C.Michael Pietras
 
 import wx
 import wx.grid, wx.html
 import os
 import fnmatch
 from plotcanvas import CanvasFrame
-from multicanvas import MultiCanvasFrame
+#from multicanvas import MultiCanvasFrame
 import tools.plottools as plottools
 import images
 import mergewiz
 import overplot
 import analysis
+import extrema
+from BoS_run_comparison import CorrelateFrame
 
 class BrowserFrame(wx.Frame):
     def __init__(self):
@@ -67,10 +70,16 @@ class BrowserFrame(wx.Frame):
         
         execLbl = wx.StaticText(panel, -1, "Execute At:")
         self.exectime = wx.TextCtrl(panel, -1, "", style=wx.TE_READONLY)
-                
+        
+        #Listbox for y axis channels
         chanList = wx.StaticText(panel, -1, "Channel List:")
         self.chanList = wx.ListBox(panel, -1, size=(200,200),
                                    style=wx.LB_EXTENDED, name="Channel List")
+        
+        #Listbox for x axis channels
+        xchanList = wx.StaticText(panel, -1, "X Axis Channel List:")
+        self.xchanList = wx.ListBox(panel, -1, size=(150,180),
+                                   style=wx.LB_SINGLE, name="X Axis Channel List")
         
         # The buttons
         self.calBtn = wx.Button(panel, -1, "View CAL File")
@@ -114,7 +123,12 @@ class BrowserFrame(wx.Frame):
         infoSizer.Add(timeSizer, 0)
                 
         infoSizer.Add(chanList, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
-        infoSizer.Add(self.chanList, 0, wx.LEFT|wx.RIGHT)
+        
+        chanSizer = wx.BoxSizer(wx.HORIZONTAL)
+        chanSizer.Add(self.chanList, 0, wx.LEFT|wx.RIGHT)
+        chanSizer.Add(xchanList, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
+        chanSizer.Add(self.xchanList, 0, wx.LEFT|wx.RIGHT)
+        infoSizer.Add(chanSizer)
               
         btnSizer = wx.BoxSizer(wx.HORIZONTAL)
         btnSizer.Add((20,20), 1)
@@ -156,58 +170,66 @@ class BrowserFrame(wx.Frame):
         
 
         # Add a root node for OBC File
-        obcroot = self.tree.AppendItem(root, "OBC Files")
-        self.tree.SetItemImage(obcroot, self.fldridx, wx.TreeItemIcon_Normal)
-        self.tree.SetItemImage(obcroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
-
-
-        # Add nodes from our data set
-        # The primary one is for the obc data files from the model
-        # Try first for skipjack server, then default to local
-        rootDir = os.path.join('/disk2/home', os.environ['USER'])
-	obcDir = os.path.join(rootDir,'obcdata')
-        if os.path.exists(obcDir):
-            self.TreeBuilder(obcDir, obcroot)
-        else:
-            #rootDir = os.path.join('/disk2/home',os.environ['USER'])
-	    #obcDir = os.path.join(rootDir, 'AM_data')
-            #self.TreeBuilder(obcDir, obcroot)
-	    pass
-	    
+        self.obcroot = self.tree.AppendItem(root, "OBC Files")
+        self.tree.SetItemImage(self.obcroot, self.fldridx, wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(self.obcroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
 
         # Add a root node for STD File
-        stdroot = self.tree.AppendItem(root, "STD Files")
-        self.tree.SetItemImage(stdroot, self.fldridx, wx.TreeItemIcon_Normal)
-        self.tree.SetItemImage(stdroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
-
-        # Add nodes for the STD files
-        # First try alpha1 disks then default to local
-	stdDir = os.path.join(rootDir, 'rcmdata')
-        if os.path.exists(stdDir):
-            self.TreeBuilder(stdDir, stdroot)
-        else:
-            #rootDir = r'~/AM_Merge_Data'
-            #self.TreeBuilder(rootDir, stdroot)
-	    pass
-
-
-        # Add nodes from our data set
-        fstDir = os.path.join(rootDir, 'fstdata')
-	if os.path.exists(fstDir):
+        self.stdroot = self.tree.AppendItem(root, "STD Files")
+        self.tree.SetItemImage(self.stdroot, self.fldridx, wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(self.stdroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
+                
         # Add a root node for FST Files
-            fstroot = self.tree.AppendItem(root, "FST Files")
-            self.tree.SetItemImage(fstroot, self.fldridx, wx.TreeItemIcon_Normal)
-            self.tree.SetItemImage(fstroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
-            self.TreeBuilder(fstDir, fstroot)
-
+        # Do only if the sim1 disk exists
+        rootDir = os.path.join('/disk2/home', os.environ['USER'])
+        self.fstroot = False
+        if os.path.exists(rootDir):
+            self.fstroot = self.tree.AppendItem(root, "FST Files")
+            self.tree.SetItemImage(self.fstroot, self.fldridx, wx.TreeItemIcon_Normal)
+            self.tree.SetItemImage(self.fstroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
+        
         # Bind some interesting events
         self.Bind(wx.EVT_TREE_ITEM_EXPANDED, self.OnItemExpanded, self.tree)
         self.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.OnItemCollapsed, self.tree)
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged, self.tree)
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnActivated, self.tree)
-
-        # Expand the first level
+        
+        #Expand the first level        
         self.tree.Expand(root)
+        
+        self.buildFileTree()
+    
+    def buildFileTree(self):
+        """
+            Creates the nodes for STD, OBC, and FST files.  Also used to rebuild
+            the file tree after it's been cleared
+        """
+        #Add nodes for the OBC files
+        # First try sim1 disks then default to local
+        rootDir = '/frmg/Autonomous_Model/test_data'
+        if os.path.exists(rootDir):
+            self.TreeBuilder(rootDir, self.obcroot)
+        else:
+            rootDir = '~'
+            self.TreeBuilder(rootDir, self.obcroot)        
+        
+        # Add nodes for the STD files
+        # First try sim1 disks then default to local
+        rootDir = os.path.join('/disk2/home', os.environ['USER'])
+	stdDir = os.path.join(rootDir, 'rcmdata')
+        if os.path.exists(stdDir):
+            self.TreeBuilder(stdDir, self.stdroot)
+        else:
+            stdDir = '/disk2/home/samc'
+            self.TreeBuilder(stdDir, self.stdroot)
+
+        # Add nodes for FS data
+        # Only try sim1 disks.  
+        # Will work only if the FST node was created the first time around
+        fstDir = os.path.join(rootDir,'fstdata')
+        if (os.path.exists(fstDir)):
+            if self.fstroot:
+                self.TreeBuilder(fstDir, self.fstroot)
         
     def TreeBuilder(self, currdir, branch):
         for file in os.listdir(currdir):
@@ -218,7 +240,7 @@ class BrowserFrame(wx.Frame):
                     fileItem = self.tree.AppendItem(branch, tail)
                     self.tree.SetItemImage(fileItem, self.fileidx, wx.TreeItemIcon_Normal)
                     self.tree.SetItemPyData(fileItem, path)
-                self.tree.Expand(branch)
+                #self.tree.Expand(branch)
                 self.tree.SortChildren(branch)
             else:
                 head, tail = os.path.split(path)
@@ -228,18 +250,22 @@ class BrowserFrame(wx.Frame):
                 
                 self.tree.SetItemPyData(newbranch, path)
                 self.tree.SortChildren(branch)
-                self.tree.Expand(branch)
+                #self.tree.Expand(branch)
                 
     def menuData(self):
         return (("&File",
-                 ("&Update Paths", "Update Paths",self.OnPathUpdate),
+                 ("&Update Tree", "Update Tree",self.OnTreeUpdate),
+                 ("Update Paths", "Update Paths",self.OnPathUpdate),
                  ("&Quit", "Quit", self.OnCloseWindow)),
                 ("&Merge",
                  ("Merge Wizard...", "Merge Files", self.OnMerge)),
                 ("&Plot",
-                 ("Overplot Tool...", "Overplot Files", self.OnPlot)),
+                 ("Overplot Tool...", "Overplot Files", self.OnPlot),
+                 ("Overplot Tool (More plots)", "Overplot Files", self.OnPlotMore)),
                 ("&Analysis",
-                 ("Analyze Run...", "Analyze Run", self.OnAnalyze)),
+                 ("Analyze Run...", "Analyze Run", self.OnAnalyze),
+                 ("Beginning of Shift Runs", "Compare Beginning of Shift Runs", self.OnCompareBoS),
+                 ("Extrema", "Extrema", self.OnExtrema)),
                 ("&Data",
                  ("Extract Data...", "Extract Data", self.OnData)),
                 ("&Help",
@@ -312,6 +338,11 @@ class BrowserFrame(wx.Frame):
             self.chanList.InsertItems(runObj.chan_names, 0)
             self.chanList.SetSelection(0)
             
+            self.xchanList.Set([])
+            self.xchanList.InsertItems(runObj.chan_names,0)
+            self.xchanList.InsertItems(['nTime'],0)
+            self.xchanList.SetSelection(0)
+            
             # Turn on the buttons as appropriate
             if runObj.filetype == 'AM-obc':
                 self.calBtn.Enable(True)
@@ -326,6 +357,19 @@ class BrowserFrame(wx.Frame):
         if self.runObj.nchans != 0:
             frame = CalFrame(self.runObj)
             frame.Show()
+            
+    def OnTreeUpdate(self, evt):
+        """
+            Rebuilds the file tree so it can take into account any changes to 
+            the file structure that have occured
+        """
+        self.statusbar.SetStatusText('Working...')
+        self.tree.DeleteChildren(self.obcroot)
+        self.tree.DeleteChildren(self.stdroot)
+        if self.fstroot:
+            self.tree.DeleteChildren(self.fstroot)
+        self.buildFileTree()
+        self.statusbar.SetStatusText('Tree rebuilt')
 
     def OnDataClick(self, evt):
         frame = DataFrame(self.runObj)
@@ -333,7 +377,8 @@ class BrowserFrame(wx.Frame):
 
     def OnGraphClick(self, evt):
         chans = self.chanList.GetSelections()
-        frame = CanvasFrame(self.runObj, chans)
+        xchan = self.xchanList.GetSelection() - 1
+        frame = CanvasFrame(self.runObj, chans, xchan)
         frame.Show()
     
     def OnCloseWindow(self, event):
@@ -360,22 +405,34 @@ class BrowserFrame(wx.Frame):
         frame = overplot.OverPlotFrame()
         frame.Show()
         
+    def OnPlotMore(self, event):
+        frame = overplot.OverPlotFrame(20)
+        frame.Show()
+        
+        
     def OnAnalyze(self, event):
         frame = analysis.AnalysisFrame()
         frame.Show()
                
-    def OnData(self, event): pass
-    
-    def OnPathUpdate(self,event): 
+    def OnData(self, event): 
+        pass 
         
+    def OnPathUpdate(self,event):         
         frame = PathFrame()
         frame.Show()
-
+        
+    def OnCompareBoS(self, event):
+        frame = CorrelateFrame()
+        frame.Show()
     
     def OnAbout(self, event):
         dlg = ToolsAbout(self)
         dlg.ShowModal()
         dlg.Destroy()
+        
+    def OnExtrema(self, event):
+        frame = extrema.ExtremaFrame()
+        frame.Show()
         
 class PathFrame(wx.Frame):
     def __init__(self):
@@ -417,15 +474,18 @@ class DataFrame(wx.Frame):
         
 class CalFrame(wx.Frame):
     def __init__(self, runData):
+        #file = open(r'.\lib\obc_channel_table.txt','w')
+        
         wx.Frame.__init__(self, None,
                           title="Cal File Viewer   "+runData.filename,
                           size=(600, 500))
                 
         columns = ['Ch. #', 'Name', 'Alt Name', 'Gain', 'Zero', 'Eng. Units']
-        self.list = wx.ListCtrl(self, -1, style=wx.LC_REPORT)
+        self.list = wx.ListCtrl(self, -1, style=wx.LC_REPORT|wx.LC_HRULES)
         for col, text in enumerate(columns):
             self.list.InsertColumn(col, text)
         
+        #lines = []
         for item in range(runData.nchans):
             index = self.list.InsertStringItem(item, str(item))
             self.list.SetStringItem(index, 1, runData.chan_names[index])
@@ -433,6 +493,8 @@ class CalFrame(wx.Frame):
             self.list.SetStringItem(index, 3, str(runData.gains[index]))
             self.list.SetStringItem(index, 4, str(runData.zeros[index]))
             self.list.SetStringItem(index, 5, str(runData.eng_units[index]))
+            #lines.append(str(index)+' - '+runData.chan_names[index]+'\n')
+        #file.writelines(lines)
             
         self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE_USEHEADER)
         self.list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
@@ -514,6 +576,7 @@ class App(wx.App):
 
         # Start the main app window
         frame = BrowserFrame()
+        frame.Center()
         frame.Show()
         return True
     

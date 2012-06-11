@@ -5,6 +5,7 @@
 # 
 #  This program is part of the Autonomous Model Software Tools Package
 # 
+# Updated 8/13/2010 by C.Michael Pietras
 """
 This class defines an Overplot frame that allows user to create
 overplots of model data.  The frame can be standalone or is normally
@@ -15,7 +16,7 @@ along with the x-range and an optional title.
 """
 
 import wx
-import wx.grid
+import wx.grid, wx.html
 import os
 
 
@@ -24,11 +25,13 @@ import os
 
 from tools.plottools import *
 from multicanvas import MultiCanvasFrame
-#from printplot import PrintPlot
+from printplot import PrintPlot
 
 class OverPlotFrame(wx.Frame):
     
-    def __init__(self):
+    def __init__(self, numruns = 4):
+        '''Initializes the frame and all the widgets.  There are a number of run
+        fields in the window equal to the numruns variable.'''
         wx.Frame.__init__(self, None, -1, 'Overplot', style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
         self.SetBackgroundColour(wx.NamedColor("LIGHTGREY"))
         
@@ -53,17 +56,15 @@ class OverPlotFrame(wx.Frame):
         self.xMax = wx.TextCtrl(self, -1, value="0", size=(40, -1))
         self.perPage = wx.TextCtrl(self, -1, value="3", size=(40, -1))
 
-        # Run number and title section
+        # Run number and title section.  The number of run numbers that can be plotted
+        # by overplot is controlled by the runnums variable
         runLabel = wx.StaticText(self, -1, "Run Numbers To Plot:")
         runLabel.SetFont(wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD))
-        self.runNo1 = wx.TextCtrl(self, -1, size=(150, -1))
-        self.titleNo1 = wx.TextCtrl(self, -1, size=(250, -1))
-        self.runNo2 = wx.TextCtrl(self, -1, size=(150, -1))
-        self.titleNo2 = wx.TextCtrl(self, -1, size=(250, -1))
-        self.runNo3 = wx.TextCtrl(self, -1, size=(150, -1))
-        self.titleNo3 = wx.TextCtrl(self, -1, size=(250, -1))
-        self.runNo4 = wx.TextCtrl(self, -1, size=(150, -1))
-        self.titleNo4 = wx.TextCtrl(self, -1, size=(250, -1))
+        self.runNo = []
+        self.titleNo = []
+        for i in range(numruns):
+            self.runNo.append(wx.TextCtrl(self, -1, size=(150, -1)))
+            self.titleNo.append(wx.TextCtrl(self, -1, size=(250, -1)))
         
         # Screen Plot Button
         plotBtn = wx.Button(self, -1, "Create Screen Plot")
@@ -71,9 +72,9 @@ class OverPlotFrame(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.OnPlotClick, plotBtn)
 
         # Print Plot Button
-        #prnplotBtn = wx.Button(self, -1, "Create Print Plot")
-        #prnplotBtn.SetFont(wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD))
-        #self.Bind(wx.EVT_BUTTON, self.OnPrnPlotClick, prnplotBtn)
+        prnplotBtn = wx.Button(self, -1, "Create Pdf Plot")
+        prnplotBtn.SetFont(wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD))
+        self.Bind(wx.EVT_BUTTON, self.OnPrnPlotClick, prnplotBtn)
 
         # Set up the layout with sizers
         mainSizer = wx.BoxSizer(wx.VERTICAL)
@@ -107,34 +108,26 @@ class OverPlotFrame(wx.Frame):
         
         runSizer = wx.FlexGridSizer(cols=4, hgap=5, vgap=5)
         runSizer.AddGrowableCol(3)
-        runSizer.Add(wx.StaticText(self, -1, "Run 1"), 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
-        runSizer.Add(self.runNo1, 0, wx.EXPAND)
-        runSizer.Add(wx.StaticText(self, -1, "Title"), 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
-        runSizer.Add(self.titleNo1, 0, wx.EXPAND)
-        runSizer.Add(wx.StaticText(self, -1, "Run 2"), 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
-        runSizer.Add(self.runNo2, 0, wx.EXPAND)
-        runSizer.Add(wx.StaticText(self, -1, "Title"), 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
-        runSizer.Add(self.titleNo2, 0, wx.EXPAND)
-        runSizer.Add(wx.StaticText(self, -1, "Run 3"), 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
-        runSizer.Add(self.runNo3, 0, wx.EXPAND)
-        runSizer.Add(wx.StaticText(self, -1, "Title"), 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
-        runSizer.Add(self.titleNo3, 0, wx.EXPAND)
-        runSizer.Add(wx.StaticText(self, -1, "Run 4"), 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
-        runSizer.Add(self.runNo4, 0, wx.EXPAND)
-        runSizer.Add(wx.StaticText(self, -1, "Title"), 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
-        runSizer.Add(self.titleNo4, 0, wx.EXPAND)
+        for i in range(numruns):
+            runSizer.Add(wx.StaticText(self, -1, "Run "+str(i+1)), 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
+            runSizer.Add(self.runNo[i], 0, wx.EXPAND)
+            runSizer.Add(wx.StaticText(self, -1, "Title"), 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
+            runSizer.Add(self.titleNo[i], 0, wx.EXPAND)
        
         mainSizer.Add(runSizer, 0, wx.EXPAND|wx.ALL, 5)
         mainSizer.Add((20,20), 0)
+        mainSizer.Add(wx.StaticLine(self), 0, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         mainSizer.Add(plotBtn, 0, wx.EXPAND|wx.ALL, 5)
-        #mainSizer.Add(prnplotBtn, 0, wx.EXPAND|wx.ALL, 5)
+        mainSizer.Add(prnplotBtn, 0, wx.EXPAND|wx.ALL, 5)
         
         self.SetSizer(mainSizer)
         self.Fit()
+        
+        self.numruns = numruns
 
     def OnFileClick(self, evt):
         dlg = wx.FileDialog(self, "Open plot config file...",
-                                defaultDir="lib", wildcard="*.ini",
+                                defaultDir="/disk2/home/samc/AM_Analysis/AM_Tools/lib", wildcard="*.ini",
                                 style=wx.OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             self.PlotCfg = dlg.GetPath()
@@ -155,78 +148,55 @@ class OverPlotFrame(wx.Frame):
             Get the values from the dialog box and create the plot
             with a call to mplt in the plottools module
         """
-        cfgfile = self.PlotCfg
-        
-        runlist = []
-        runlist.append(self.runNo1.GetValue())
-        runlist.append(self.runNo2.GetValue())
-        runlist.append(self.runNo3.GetValue())
-        runlist.append(self.runNo4.GetValue())
-        
-        titlelist = []
-        titlelist.append(self.titleNo1.GetValue())
-        titlelist.append(self.titleNo2.GetValue())
-        titlelist.append(self.titleNo3.GetValue())
-        titlelist.append(self.titleNo4.GetValue())
-        
-        newlist = []
-        titles = []
-        for i in range(4):
-            if runlist[i].strip() != "":
-                newlist.append(runlist[i])
-                if titlelist[i].strip() != "":
-                    titles.append(runlist[i]+" - "+titlelist[i])
-                else:
-                    titles.append(runlist[i])
-                    
-               
-        params = (float(self.xMin.GetValue()), float(self.xMax.GetValue()), 
-                   int(self.perPage.GetValue()))
-                
-            
-        runobjs = get_runs(newlist)
-        plotData = PlotPage(runobjs, params, cfgfile)
-        frame = MultiCanvasFrame(plotData, titles, 0)
-        frame.Show()
+        plotData, titles = self.GetPlotData()
+        if plotData:
+            frame = MultiCanvasFrame(plotData, titles, 0)
+            frame.Show()
 
     def OnPrnPlotClick(self, evt):
         """
-            Get the values from the dialog box and create the plot
-            with a call to mplt in the plottools module
+            Get the values from the dialog box and save a pdf plot in the output
+            folder using the PrintPlot function from the printplot module
         """
+        plotData, titles = self.GetPlotData()
+        if plotData:
+            PrintPlot(plotData, titles, 0)
+            
+    def GetPlotData(self):
         cfgfile = self.PlotCfg
         
-        runlist = []
-        runlist.append(self.runNo1.GetValue())
-        runlist.append(self.runNo2.GetValue())
-        runlist.append(self.runNo3.GetValue())
-        runlist.append(self.runNo4.GetValue())
-        
-        titlelist = []
-        titlelist.append(self.titleNo1.GetValue())
-        titlelist.append(self.titleNo2.GetValue())
-        titlelist.append(self.titleNo3.GetValue())
-        titlelist.append(self.titleNo4.GetValue())
-        
-        newlist = []
-        titles = []
-        for i in range(4):
-            if runlist[i].strip() != "":
-                newlist.append(runlist[i])
-                if titlelist[i].strip() != "":
-                    titles.append(runlist[i]+" - "+titlelist[i])
-                else:
-                    titles.append(runlist[i])
+        if cfgfile:
+            runlist = []
+            titles = []
+            for i in range(self.numruns):
+                run = self.runNo[i].GetValue()
+                title = self.titleNo[i].GetValue()
+                if run.strip() != "":
+                    runlist.append(run)
+                    if title.strip() != "":
+                        titles.append(run+" - "+title)
+                    else:
+                        titles.append(run)
+                   
+            params = (float(self.xMin.GetValue()), float(self.xMax.GetValue()), 
+                       int(self.perPage.GetValue()))
                     
-               
-        params = (float(self.xMin.GetValue()), float(self.xMax.GetValue()), 
-                   int(self.perPage.GetValue()))
-                
+            runobjs,new_titles = get_runs_overplot(runlist,titles)
             
-        # Load in the runs
-        runobjs = get_runs(newlist)
-        plotData = PlotPage(runobjs, params, cfgfile)
-        #disable for now ---> PrintPlot(plotData, titles, 0)
+            i = 0
+            for title in titles:
+                if not title in new_titles:
+                    dlg = wx.MessageDialog(None,'File '+titles[i]+' not found','Error',wx.OK)
+                    result = dlg.ShowModal()
+                    dlg.Destroy()
+                i+=1
+            titles = new_titles
+            if runobjs:
+                plotData = PlotPage(runobjs, params, cfgfile)
+                return plotData, titles
+            return False, False
+        return False, False
+        
 
 class EditFrame(wx.Frame):
     def __init__(self, cfgFile):
@@ -238,8 +208,13 @@ class EditFrame(wx.Frame):
         cfgData = []
         for line in plot_file:
             line = line.rstrip()
-            ychan, ymin, ymax, yscale, yoffset, yxform = line.split()
-            rowdata = [ychan, ymin, ymax, yscale, yoffset, yxform]
+            try:
+                ychan, ymin, ymax, yscale, yoffset, yxform, yfunc = line.split()
+            except ValueError:
+                ychan, ymin, ymax, yscale, yoffset, yxform = line.split()
+                channels = ychan.split(',')
+                yfunc = '=$'+channels[0]
+            rowdata = [ychan, ymin, ymax, yscale, yoffset, yxform, yfunc]
             cfgData.append(rowdata)
 
         self._grid = editGrid(self, cfgData)
@@ -255,17 +230,52 @@ class EditFrame(wx.Frame):
         menuBar = wx.MenuBar()
         
         f0 = wx.Menu()
-        f0.Append(MENU_SAVE,   "&Save",   "Save Plot Config")
+        f0.Append(MENU_SAVE,   "&Save",   "SaPyve Plot Config")
         f0.Append(MENU_SAVEAS,   "&Save As",   "Save Plot Config")
         f0.AppendSeparator()
         f0.Append(MENU_EXIT,   "E&xit", "Exit")
-        menuBar.Append(f0,     "&File");
+        f1 = wx.Menu()
+        stdchannel_menu = f1.Append(-1, 'STD Channel List', 'View the list of STD file channels')
+        obcchannel_menu = f1.Append(-1, 'OBC Channel List', 'View the list of OBC file channels')
+        xform_menu = f1.Append(-1, 'Transform List', 'View the list of available transforms')  
+        f2 = wx.Menu()
+        func_help = f2.Append(-1, 'Function Help', 'View information about plotting functions')
+        menuBar.Append(f0,     "&File")
+        menuBar.Append(f1, "&View")
+        menuBar.Append(f2, "&Help")
 
         self.SetMenuBar(menuBar)
 
         self.Bind(wx.EVT_MENU, self.onSave,       id=MENU_SAVE)
         self.Bind(wx.EVT_MENU, self.onSaveAs,       id=MENU_SAVEAS)
         self.Bind(wx.EVT_MENU, self.onExit ,        id=MENU_EXIT)
+        self.Bind(wx.EVT_MENU, self.onSTDView , stdchannel_menu)
+        self.Bind(wx.EVT_MENU, self.onOBCView , obcchannel_menu)
+        self.Bind(wx.EVT_MENU, self.onXFormView , xform_menu)
+        self.Bind(wx.EVT_MENU, self.onFuncHelp , func_help)
+    
+    def onSTDView(self, evt):        
+        """
+            View a list the STD file channels and channel names
+        """
+        frame = ViewFrame('STD Channels', './lib/std_channel_table.txt')
+        frame.Show()
+    
+    def onOBCView(self, evt):           
+        """
+            View a list the OBC file channels and channel names
+        """  
+        frame = ViewFrame('OBC Channels', './lib/obc_channel_table.txt')
+        frame.Show()
+    
+    def onXFormView(self, evt):
+             
+        """
+            View a list the available transforms by number what the transform 
+            does.
+        """
+        frame = ViewFrame('Available Transforms', './lib/xform_table.txt')
+        frame.Show()
         
     def onExit(self, evt):
         self.Destroy()
@@ -292,6 +302,45 @@ class EditFrame(wx.Frame):
             for item in line:
                 plot_file.write("%s " % item)
             plot_file.write("\n")
+            
+    def onFuncHelp(self,evt):
+        """
+            View an html help window that explains a little about how the 
+            function functionality works
+        """
+        text = '''
+        <html>
+        <body bgcolor="ACAA60">
+        <center><table bgcolor="#455481" width="100%" cellspacing="0"
+        cellpadding="0" border="1">
+        <tr>
+            <td align="center"><h1>Function Plotting</h1></td>
+        </tr>
+        </table>
+        </center>
+        <p>The function plottiing functionality allows you to plot functions of one or multiple
+        channels.</p>
+        
+        <p>To plot a function, put a comma deliminated list of the channels you wish to plot 
+        in the channel columns, then enter the function (with an = sign before it) in the 
+        function column.</p>
+        
+        <p>Functions can use any of the array operations available in the numpy module, as well as
+        mult(x,y) and div(x,y), which implement multiply or divide each element of x by the corresponding
+        element of y.</p>
+        
+        <p>Integration and differentiation of one channel by another are covered by diff(x,y), 
+        which differentiates x by y, and integrate(x,y), which integrates x by y.  The time channel,
+        which is what will usually be used for y, is $26</p>
+        
+        <p>To specify channel in a function, place a $ sign before the channel number.  An example of a function: "
+        "=abs($47)+abs($50)" 
+        </body>
+        </html>
+        '''
+        dlg = helpDialog(self, 'Plotting Functions', text)
+        dlg.ShowModal()
+        dlg.Destroy()
   
 class editGrid(wx.grid.Grid):
     def __init__(self, parent, data):
@@ -350,7 +399,7 @@ class DataTable(wx.grid.PyGridTableBase):
     def __init__(self, cfgData):
         wx.grid.PyGridTableBase.__init__(self)
         self.data = cfgData
-        self.colLabels = ["Channel", "Ymin", "Ymax", "Scale", "Offset", "Xform"]
+        self.colLabels = ["Channel", "Ymin", "Ymax", "Scale", "Offset", "Xform", "Function"]
         self._rows = self.GetNumberRows()
         self._cols = self.GetNumberCols()
         
@@ -369,6 +418,11 @@ class DataTable(wx.grid.PyGridTableBase):
     
     def SetValue(self, row, col, value):
         self.data[row][col] = value
+        if col == 0:
+            try:
+                test = int(value)
+                self.data[row][6] = "=$"+str(test)
+            except: pass
     
     def GetColLabelValue(self, col):
         return self.colLabels[col]
@@ -380,7 +434,7 @@ class DataTable(wx.grid.PyGridTableBase):
         return (self.GetNumberRows() + numRows) <= 100
     
     def AppendRow(self, row):
-        self.data.insert(row, [0,0,0,1,0,0])
+        self.data.insert(row, [0,0,0,1,0,0,'=$0'])
 
     def DeleteRows(self, rows):
         """
@@ -433,6 +487,45 @@ class DataTable(wx.grid.PyGridTableBase):
         grid.AdjustScrollbars()
         grid.ForceRefresh()
           
+class ViewFrame(wx.Frame):
+    """
+        Text view frame
+    """
+    def __init__(self, window_title, filename, window_size=(400,700)):
+        wx.Frame.__init__(self, None, title=window_title, size=window_size)
+        panel=wx.Panel(self)    
+        file = open(filename)
+        lines = file.readlines()
+        
+        text = ''
+        
+        for line in lines:
+            text += line
+        
+        mainSizer = wx.FlexGridSizer(cols = 1, hgap = 5, vgap = 5)
+        mainSizer.AddGrowableCol(0); mainSizer.AddGrowableRow(0);
+        textbox = wx.TextCtrl(panel, -1, text, style = wx.TE_READONLY|wx.TE_MULTILINE|wx.HSCROLL)
+        mainSizer.Add(textbox, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
+        panel.SetSizer(mainSizer)
+
+class helpDialog(wx.Dialog):
+    """
+        HTML view frame
+    """
+    def __init__(self, parent, title, text):
+        wx.Dialog.__init__(self, parent, -1, title, size=(440, 400) )
+        
+        html = wx.html.HtmlWindow(self)
+        html.SetPage(text)
+        button = wx.Button(self, wx.ID_OK, "Okay")
+        
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(html, 1, wx.EXPAND|wx.ALL, 5)
+        sizer.Add(button, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        
+        self.SetSizer(sizer)
+        self.Layout()
+
 if __name__ == "__main__":
     app = wx.PySimpleApp(redirect=False)
     frame = OverPlotFrame()

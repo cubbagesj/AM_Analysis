@@ -66,8 +66,8 @@ class AnalysisFrame(wx.Frame):
         self.boatBtn = wx.RadioBox(self, -1, "Boat Type", choices=boats,
                                    majorDimension=2, style = wx.RA_SPECIFY_COLS)
         self.Bind(wx.EVT_RADIOBOX, self.EvtRadioBox, self.boatBtn)
-        self.startTime = wx.TextCtrl(self, -1, value="", size=(100, -1))
-        self.endTime = wx.TextCtrl(self, -1, value="", size=(100,-1))
+        self.startTime = wx.TextCtrl(self, -1, value="", size=(100, -1),style=wx.TE_PROCESS_ENTER)
+        self.endTime = wx.TextCtrl(self, -1, value="", size=(100,-1), style=wx.TE_PROCESS_ENTER)
         self.Bind(wx.EVT_TEXT_ENTER, self.EvtTimeChg, self.startTime)
         self.Bind(wx.EVT_TEXT_ENTER, self.EvtTimeChg, self.endTime)
                 
@@ -88,8 +88,8 @@ class AnalysisFrame(wx.Frame):
         extraLabel = wx.StaticText(self, -1, "Maneuver Analysis")
         extraLabel.SetFont(wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD))
                 
-        self.extrastartTime = wx.TextCtrl(self, -1, value="", size=(100, -1))
-        self.extraendTime = wx.TextCtrl(self, -1, value="", size=(100,-1))
+        self.extrastartTime = wx.TextCtrl(self, -1, value="", size=(100, -1),style=wx.TE_PROCESS_ENTER)
+        self.extraendTime = wx.TextCtrl(self, -1, value="", size=(100,-1),style=wx.TE_PROCESS_ENTER)
         self.Bind(wx.EVT_TEXT_ENTER, self.EvtExtraTimeChg, self.extrastartTime)
         self.Bind(wx.EVT_TEXT_ENTER, self.EvtExtraTimeChg, self.extraendTime)
         self.parameter = wx.TextCtrl(self, -1, value="", size=(100,-1))

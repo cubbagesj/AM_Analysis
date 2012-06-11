@@ -24,7 +24,7 @@
     been made to make the program code as modular as possible in order to handle
     any future changes in instrumentation.
 
- 
+
     REV. HISTORY:
         04/07/06 - Initial development
         04/20/06 - Modified to read constants from merge.inp file
@@ -45,15 +45,16 @@ from tools.calfile_new import CalFile
 from tools.dynos_new import *
 import wx
 
-def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):  
+def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):  
 
     # LOG File - Open up a file to write diagnostic info to
     #
     logfile = open('merge.log','w')
     logfile.write("AM_merge:  Merging run %d \n" % runnumber)
-    logfile.write('STD Directory: %s\n' % std_dir)
+    logfile.write('STD Directory: %s' % std_dir)
     logfile.write("AM_Merge.py -- Autonomous model merge program\n")
     logfile.write(time.strftime("%a %b %d %H:%M:%S %Y")+" \n")
+
 
     #----------------------------------
     #  Read and process the merge.inp file
@@ -89,12 +90,12 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
         elif line.find('[END_CHANS]') <> -1:
             logfile.write('END_CHANS found\n')
             chan_flag = 0
-    
+
         if chan_flag == 1:
             chan_sec.append(line)
         elif input_flag == 1:
             input_sec.append(line)
-        
+
         if line.find('[BEGIN_INPUTS]') <> -1:
             logfile.write('BEGIN_INPUTS found\n')
             input_flag = 1
@@ -104,7 +105,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
         elif line.find('[END_CHANS]') <> -1:
             logfile.write('END_CHANS found\n')
             chan_flag = 0   
-    
+
     # Convert the inputs section into a dictionary for later use
     mrg_input = {}
     for line in input_sec:
@@ -130,13 +131,13 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
         mrg_chans.append(int(values[1]))
         mrg_scale.append(float(values[2]))
         mrg_zero.append(int(values[3]))
-    
+
     logfile.write('\nMerge Channels Processed - MERGE CHANNELS\n')
     logfile.write('Chan \t Name \t OBC Chan \t Scale \t Zero\n')
     for x in range(len(mrg_names)):
         logfile.write('%d\t%s\t%d\t\t%f\t%d\n' % (x, mrg_names[x], mrg_chans[x], mrg_scale[x], mrg_zero[x]))
     logfile.write('Merge Configuration Completed\n')
- 
+
     # Main Program Loop - Do this for each run in the input list
     #----------------------------------------
     # Parse the cal file for the run to set up
@@ -144,9 +145,9 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
     #----------------------------------------
     logfile.write('\nProcessing run: run-'+str(runnumber))
     logfile.write('\n------------------------------------------\n')
-    
+
     calfilename = 'run-'+str(runnumber)+'.cal'
-    
+
     logfile.write('\nReading the calibration file.........\n')
     # set up a calfile object and intialize it - this reads in all of the cals
     cal = CalFile(calfilename)
@@ -155,93 +156,90 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
     # First we read in the cals for the normal channels.
     # We get all of the cal info even though only the gains and zeros
     # are used right now
-    
+
     # Then read the ini file for the channel cals
     logfile.write('\nOBC Channel Gains - From run*.cal file\n')
     logfile.write('Channel\t\tGain\t\t\tZero\n')
     for channel in range(cal.channels): 
         logfile.write('%d\t\t%f\t\t%f\n' % (channel, cal.gains[channel], cal.zeros[channel]))
-    
+
     sp_gauges = {}
     # Rotor 
-
-    logfile.write('\n cal.hasRotor =%s\n' % cal.hasRotor)
-
-    logfile.write('\n Value of find: %d\n' % cal.hasRotor.find("TRUE"))
-    if cal.hasRotor == "TRUE":
+    if cal.hasRotor == 'TRUE':
         sp_gauges['Rotor'] = Rot_Dyno6(cal.rotor)
-    
+
     # Stator
     if cal.hasStator == 'TRUE':
         sp_gauges['Stator'] = Dyno6(cal.stator)
-    
+
     # SOF1
     if cal.hasSOF1 == 'TRUE':
         sp_gauges['SOF1'] = Dyno6(cal.SOF1)
-    
+
     # SOF2
     if cal.hasSOF2 == 'TRUE':
         sp_gauges['SOF2'] = Dyno6(cal.SOF2)
-    
+
     # Kistler - Can only have 1 Kistler gauge at a time
     if cal.hasKistler == 'TRUE':
         sp_gauges['Kistler'] = Kistler6(cal.kistler)
-    
+
     if cal.hasKistler3 == "TRUE":
         sp_gauges['Kistler'] = Kistler3(cal.kistler3)
-    
+
+    if cal.hasDeck == "TRUE":
+        sp_gauges['Deck'] = Deck(cal.deck)
+
     # And finally the 6DOF appendage gauges
     if cal.has6DOF == "TRUE":
         for i in range(1,cal.num_6DOF+1):
             sp_gauges['6DOF%d' %i] = Dyno6(cal.sixDOF[i-1])
-   
+
     logfile.write('\nSpecial Gages:')
     for gage in sp_gauges.keys():
-	logfile.write('\n%s' % gage)
+        logfile.write('\n%s' % gage)
     logfile.write('\nDone reading calibrations\n')
-    
-    
+
+
     #----------------------------------
     #  Build the runtype from the maneuver settings in the .run file
     #  MOPT 30 defines the type of maneuver and the other settings are for
-	# plane angles etc.
+        # plane angles etc.
     #------------------------------------
     mantypes = ['Set Planes',
-				'Controlled Turn',
-				'Plane Jam',
-				'FST Correlation',
-				'System Ident',
-				'Diagnostic Turn',
-				'Contt test',
-				'Horizontal Overshoot',
-				'Vertical Overshoot',
-				'Special',
-				'Surface Turn with fixed sterns',
-				'Toms rudder on/off',
-				'Turn with fixed sternplanes',
-				'Acceleration run',
-				'Deceleration Run',
-				'Horizontal stability run',
-				'Ordered R at execute',
-				'Flowvis',
-				'ZIGZAG',
-				'Shore Test',
-				'Speed Cal Jam',
-				'Uncontrolled Turn',
-				'Manual Mode',
-				'Shore Test',
-				'Todds Astern 3 turn']
-	
-				
+                'Controlled Turn',
+                'Plane Jam',
+                'FST Correlation',
+                'System Ident',
+                'Diagnostic Turn',
+                'Contt test',
+                'Horizontal Overshoot',
+                'Vertical Overshoot',
+                'Special',
+                'Surface Turn with fixed sterns',
+                'Toms rudder on/off',
+                'Turn with fixed sternplanes',
+                'Acceleration run',
+                'Deceleration Run',
+                'Horizontal stability run',
+                'Ordered R at execute',
+                'Flowvis',
+                'ZIGZAG',
+                'Shore Test',
+                'Speed Cal Jam',
+                'Uncontrolled Turn',
+                'Manual Mode',
+                'Shore Test',
+                'Todds Astern 3 turn']
     try:
         lines = open('run-'+str(runnumber)+'.run').read().splitlines()
     except:
         logfile.write(' Could not open run-'+str(runnumber)+'.run file!')
         sys.exit(1)
-    
+
     logfile.write('Reading the .run file ........')
-    
-	# Start with a dummy title - This is how I used to do it for old AM runs
+
+    # Start with a dummy title - This is how I used to do it for old AM runs
     for line in lines:
         if line.find('#RUNTYPE:') <> -1:
             runtype = line[line.find('#RUNTYPE:')+9:]
@@ -262,23 +260,23 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
         except ValueError:
             pass
     runtype = mantypes[mopts[9]]
-       
+
     logfile.write('Done')
-        
+
     #--------------------------------------
     # Now we start to process the OBC file
     #
     # This is where the bulk of the work in the
     # program is done
     #--------------------------------------
-    
+
     obcname = 'run-'+str(runnumber)+'.obc'
-    
+
     logfile.write('\nProcessing the OBC file............')
     logfile.write('Created: ' + time.ctime(os.path.getmtime(obcname)))
     logfile.write('File size: %d bytes' % os.path.getsize(obcname))
     logfile.write('Approx Run Length: %4.1f seconds' % (os.path.getsize(obcname)/155366.0))
-    
+
     maxcnt = os.path.getsize(obcname)
     prgbar = wx.ProgressDialog("Merge Progress",
                                obcname, maxcnt,
@@ -309,117 +307,117 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
         port_rpm_chan = 30
         stbd_rpm_com = 217
         port_rpm_com = 232
-        port_rpm_chan = 30
-       
-    
+
+
     # Depth sensor location and channel
     zsensor = (mrg_input['Z_X_LOC'],
                mrg_input['Z_Y_LOC'],
                mrg_input['Z_Z_LOC'],
                int(mrg_input['Z_CHAN']))
-    
+
     # ADCP Location
     ADCPLoc = (mrg_input['ADCP_X'],
                mrg_input['ADCP_Y'],
                mrg_input['ADCP_Z'])
-    
+
     # Open the STD file to write the header information
     # To get some of the header info we need to read one line out of
     # the obc file.
-    
+
     line = open('run-'+str(runnumber)+'.obc', 'r').readline()
     rawdata = []
     for channel in line.split():
         rawdata.append(float(channel))
     apprU = (rawdata[336]/100) * c_sqrtlambda
     runkind = rawdata[343]
-    
+
     stdfilename = std_dir+'/'+str(cb_id)+'-'+str(runnumber)+'.std'
     stdfile = open(stdfilename, 'w')
-    
-    stdfile.write("'DELIMTXT' \n")
-    stdfile.write("'AM:run-%d:%3.1f:%d:  %s '\n" % (runnumber, apprU, runkind, runtype))
-    stdfile.write("'"+time.ctime(os.path.getmtime(obcname))+"' \n")
-    stdfile.write("%d, %10.6f, %8.4f \n" %(len(mrg_names), c_FSdt*c_skip, c_length))
-    
+
+    stdfile.write(" 'DELIMTXT' \n")
+    stdfile.write(" 'AM:run-%d:%3.1f:%d:  %s '\n" % (runnumber, apprU, runkind, runtype))
+    stdfile.write(" '"+time.ctime(os.path.getmtime(obcname))+"' \n")
+    stdfile.write(" %d, %10.6f, %8.4f \n" %(len(mrg_names), c_FSdt*c_skip, c_length))
+
     for name in mrg_names:
         stdfile.write("'%s' " % name)
-    
+
     stdfile.write("\n")
-    
+
     # Open the obc file
     obcfile = open(obcname, 'r')
-    
+
     rawzero = []
     EUzero = []
     EUdata = []
     zerosdone = 0
     zerocnt = 0
     step = 0
-    
+
     # Initialize the data and zeros to 0
     for i in range(len(mrg_names)):
         rawzero.append(0.0)
         EUzero.append(0.0)
         EUdata.append(0.0)
-    
+
     Uprev = Vprev = Wprev = 0.0
     uoffset = voffset =  woffset = 0.0
     invjump = inujump = inwjump = 0
     update = 0
     bytecount = 0
-        
-    
+
+
     # loop for each line in the obc file
     for line in obcfile:
         line = line.rstrip()
         rawdata = []
-        
+
         for channel in line.split():
-	    try:
+            try:
                 rawdata.append(float(channel))
-	    except ValueError:
-		rawdata.append(0)
-        
+            except ValueError:
+                rawdata.append(0)
+
         # Progress bar
         if (update % 200):
             if bytecount > maxcnt:
                 bytecount = maxcnt - 10
             prgbar.Update(bytecount)
-        
+
         # Now we have the raw data split out, check for taking zeros
         if rawdata[mode_chan] == 0x0F13:
             for i in range(len(mrg_names)):     # zeros on normal channels
                 if mrg_chans[i] < 800:
                     rawzero[i] += rawdata[mrg_chans[i]]
-            
+
             # zeros on special gauges
             for gauge in sp_gauges.keys():
                 sp_gauges[gauge].addZero(rawdata)
-                
+
             zerosdone = 1
             zerocnt += 1
-            
+
         # Watch for zeros done and compute zeros
         elif rawdata[mode_chan] == 0x0013 and zerosdone == 1:
             for i in range(len(mrg_names)):
                 if mrg_chans[i] < 800:
                     rawzero[i] /= zerocnt
                     EUzero[i] = (rawzero[i]-cal.zeros[mrg_chans[i]])*cal.gains[mrg_chans[i]]
-    
+
             # zeros on special gauges
             for gauge in sp_gauges.keys():
                 sp_gauges[gauge].compZero(zerocnt)
-                
+
             zerosdone = 0
-        
+
         # Now look for actual run
         # 11/30/07 - Change to only put the data between standby and execute in merge file
         elif rawdata[mode_chan] >= 0x0F23 and rawdata[mode_chan] <= 0x0F43:
-            
+        # if rawdata[mode_chan] >= 0x0013 :
+
             # This is the actual run data - First we handle the normal channels
             # and then get to the computed ones
-            
+
             for i in range(len(mrg_names)):
                 if mrg_chans[i] < 800:       # Normal Channel
                     EUdata[i] = (rawdata[mrg_chans[i]]-cal.zeros[mrg_chans[i]])*cal.gains[mrg_chans[i]]
@@ -429,21 +427,33 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
                         EUdata[i] *= 1.0284
                     if mrg_scale[i] == 4:       # in-lb to ft-lb conversion
                         EUdata[i] *= 0.083333
-        
+
             # At this point we have gone through all of the straight channels
             # Now we set up some variables for values that will be used to do
             # the calculated channels
-            
+
+            # Pitch
             sinTH = sin(radians(EUdata[8]))
             cosTH = cos(radians(EUdata[8]))
+
+            #Pitch Zero
+            sinTHZ = sin(radians(EUzero[8]))
+            cosTHZ = cos(radians(EUzero[8]))
+
+            #Roll
             sinPH = sin(radians(EUdata[7]))
             cosPH = cos(radians(EUdata[7]))
-            bodyAngles = [sinTH, cosTH, sinPH, cosPH]
             
+            # Roll zero 
+            sinPHZ = sin(radians(EUzero[7]))
+            cosPHZ = cos(radians(EUzero[7]))
+            
+            bodyAngles = [sinTH, cosTH, sinPH, cosPH, sinTHZ, cosTHZ, sinPHZ, cosPHZ]
+
             # And now to process the 6DOF dynos
             for gauge in sp_gauges.keys():
                 sp_gauges[gauge].compute(rawdata, cal.gains, bodyAngles)
-            
+
             # Now loop for the special channels
             for i in range(len(mrg_names)):
                 if mrg_chans[i] == 800:            # Empty channel
@@ -461,87 +471,92 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
                     else:
                         EUdata[i] = 0
                 elif mrg_chans[i] == 804:           #Filtered and Corr. ADCP u
-		        
-		    # first filter the dropouts where there is no velocity
+
+                # first filter the dropouts where there is no velocity
                     if abs(EUdata[u_chan]) > 70:
                         EUdata[i] = Uprev
-		        EUdata[u_chan] = 0.0
+                        EUdata[u_chan] = 0.0
+#                    elif (abs(Uprev) - abs(EUdata[u_chan])) > 3.0:
+#                        EUdata[i] = Uprev
+                        # EUdata[u_chan] = 0.0
                     else:
                         EUdata[i] = EUdata[u_chan]
-		    # The following filters out the data shifts when crossing the trench
-		    if rawdata[mode_chan] == 0x0F33 or rawdata[mode_chan] == 0x0F43:
-			if abs(EUdata[i]-Uprev) >= 3:	#was 3
-			    if inujump:
-			        newoffset = EUdata[i] - Uprev
-			        if newoffset * uoffset < 0:
-			            if abs(newoffset) - abs(uoffset) <= 2.0:
-			                inujump = 0
-				    else:
-					inujump -= 1
-					uoffset += newoffset
-				    if inujump < 0:
-				        inujump = 0
-	    	                elif newoffset * uoffset > 0:
-				    uoffset += newoffset
-				    inujump += 1
-			    else:
-			        uoffset = EUdata[i] - Uprev
-			        inujump += 1
+                    # The following filters out the data shifts when crossing the trench
+#                    if rawdata[mode_chan] == 0x0F33 or rawdata[mode_chan] == 0x0F43
+#                        if abs(EUdata[i]-Uprev) >= 3:	#was 3
+#                            if inujump:
+#                                newoffset = EUdata[i] - Uprev
+#                                if newoffset * uoffset < 0:
+#                                    if abs(newoffset) - abs(uoffset) <= 2.0:
+#                                        inujump = 0
+#                                    else:
+#                                        inujump -= 1
+#                                        uoffset += newoffset
+#                                    if inujump < 0:
+#                                        inujump = 0
+#                                elif newoffset * uoffset > 0:
+#                                    uoffset += newoffset
+#                                    inujump += 1
+#                            else:
+#                                uoffset = EUdata[i] - Uprev
+#                                inujump += 1
                     Uprev = EUdata[i]
-		    if inujump:
-		        EUdata[i] -= uoffset
+#                    if inujump:
+#                        EUdata[i] -= uoffset
                     EUdata[i] -= ((EUdata[4]/57.296)*ADCPLoc[2])
                 elif mrg_chans[i] == 805:           #Filtered and Corr ADCP v
                     if abs(EUdata[v_chan]) > 15:
                         EUdata[i] = Vprev
-			EUdata[v_chan] = 0.0
+                        EUdata[v_chan] = 0.0
+#                    elif abs((abs(Vprev) - abs(EUdata[v_chan]))) >2.0:
+#                        EUdata[i] = Vprev
                     else:
                         EUdata[i] = EUdata[v_chan]
-		    # The following filters out the data shifts when crossing the trench
-		    if abs(EUdata[i]-Vprev) >= 3.5: 	#was 3.5			            		    
-			if invjump:
-			    newoffset = EUdata[i] - Vprev
-			    if newoffset * voffset < 0:
-			        invjump -= 1
-				voffset += newoffset
-				if invjump < 0:
-				    invjump = 0
-		            elif newoffset * voffset > 0:
-				voffset += newoffset
-				invjump += 1
-			else:
-			    voffset = EUdata[i] - Vprev
-			    invjump += 1
+                    # The following filters out the data shifts when crossing the trench
+#                    if abs(EUdata[i]-Vprev) >= 3.5:    #was 3.5
+#                        if invjump:
+#                            newoffset = EUdata[i] - Vprev
+#                            if newoffset * voffset < 0:
+#                                invjump -= 1
+#                                voffset += newoffset
+#                                if invjump < 0:
+#                                    invjump = 0
+#                            elif newoffset * voffset > 0:
+#                                voffset += newoffset
+#                                invjump += 1
+#                        else:
+#                            voffset = EUdata[i] - Vprev
+#                            invjump += 1
                     Vprev = EUdata[i]
-		    if invjump:
-		        EUdata[i] -= voffset
+#                    if invjump:
+#                        EUdata[i] -= voffset
                     EUdata[i] += (((EUdata[3]/57.296)*ADCPLoc[2])-((EUdata[5]/57.296)*ADCPLoc[0]))
                 elif mrg_chans[i] == 806:           #Filtered and Corr ADCP w
                     if abs(EUdata[w_chan]) > 15:
                         EUdata[i] = Wprev
-			EUdata[w_chan] = 0.0
+                        EUdata[w_chan] = 0.0
                     else:
                         EUdata[i] = EUdata[w_chan]
-		    # The following filters out the data shifts when crossing the trench
-		    if abs(EUdata[i]-Wprev) >= 3.5:	#was 3.5		            		    
-			if inwjump:
-			    newoffset = EUdata[i] - Wprev
-			    if newoffset * woffset < 0:
-			        inwjump -= 1
-				woffset += newoffset
-				if inwjump < 0:
-				    inwjump = 0
-		            elif newoffset * woffset > 0:
-				woffset += newoffset
-				inwjump += 1
-			else:
-			    woffset = EUdata[i] - Wprev
-			    inwjump += 1
+                    # The following filters out the data shifts when crossing the trench
+                    if abs(EUdata[i]-Wprev) >= 3.5:    #was 3.5
+                        if inwjump:
+                            newoffset = EUdata[i] - Wprev
+                            if newoffset * woffset < 0:
+                                inwjump -= 1
+                                woffset += newoffset
+                                if inwjump < 0:
+                                    inwjump = 0
+                            elif newoffset * woffset > 0:
+                                woffset += newoffset
+                                inwjump += 1
+                        else:
+                            woffset = EUdata[i] - Wprev
+                            inwjump += 1
                     Wprev = EUdata[i]
-		    if inwjump:
-		        EUdata[i] -= woffset
+                    if inwjump:
+                        EUdata[i] -= woffset
                     EUdata[i] += (((EUdata[4]/57.296)*ADCPLoc[0])-((EUdata[3]/57.296)*ADCPLoc[1]))
-                                                
+
                 elif mrg_chans[i] == 807 and 'Rotor' in sp_gauges:         # Computed Rotor Fx
                     EUdata[i] = sp_gauges['Rotor'].CFx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
@@ -569,7 +584,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
                     EUdata[i] *= .083333
-                    
+
                 elif mrg_chans[i] == 813 and 'Stator' in sp_gauges:         # Computed Stator Fx
                     EUdata[i] = sp_gauges['Stator'].CFx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
@@ -597,7 +612,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
                     EUdata[i] *= .083333
-                    
+
                 elif mrg_chans[i] == 821:           # Alpha
                     EUdata[i] = degrees(atan2(EUdata[2],EUdata[0]))
                 elif mrg_chans[i] == 822:           # Beta
@@ -607,16 +622,17 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
                         EUdata[i] = 0
                 elif mrg_chans[i] == 823:           # Big U from ADCP
                     EUdata[i] = sqrt(EUdata[0]**2 + EUdata[1]**2 + EUdata[2]**2)
-                
+
                 elif mrg_chans[i] == 824:           # Big U from ADCP in knots
                     EUdata[i] = sqrt(EUdata[0]**2 + EUdata[1]**2 + EUdata[2]**2)
                     EUdata[i] /= 1.6878
 
-		elif mrg_chans[i] == 825:	    # RPM flip from obs_rpm and rpm cmd
-		    EUdata[i] = EUdata[27]
-		    if rawdata[217] < 0:
-	 	        EUdata[i] *= -1
-                
+                elif mrg_chans[i] == 825:    # RPM flip from obs_rpm and rpm cmd
+                    EUdata[i] = EUdata[27]
+                    if rawdata[183] < 0:
+                        if rawdata[217] < 0:
+                            EUdata[i] *= -1
+
                 elif mrg_chans[i] == 830 and 'SOF1' in sp_gauges:         # Computed SOF1 Fx
                     EUdata[i] = sp_gauges['SOF1'].CFx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
@@ -641,7 +657,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
                     EUdata[i] = sp_gauges['SOF1'].CMz
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                    
+
                 elif mrg_chans[i] == 840 and 'SOF2' in sp_gauges:         # Computed SOF2 Fx
                     EUdata[i] = sp_gauges['SOF2'].CFx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
@@ -666,7 +682,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
                     EUdata[i] = sp_gauges['SOF2'].CMz
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                    
+
                 elif mrg_chans[i] == 900 and 'SOF3' in sp_gauges:         # Computed SOF3 Fx
                     EUdata[i] = sp_gauges['SOF3'].CFx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
@@ -691,7 +707,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
                     EUdata[i] = sp_gauges['SOF3'].CMz
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                    
+
                 elif mrg_chans[i] == 910 and 'SOF4' in sp_gauges:         # Computed SOF4 Fx
                     EUdata[i] = sp_gauges['SOF4'].CFx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
@@ -716,7 +732,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
                     EUdata[i] = sp_gauges['SOF4'].CMz
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                    
+
                 elif mrg_chans[i] == 920 and 'SOF5' in sp_gauges:         # Computed SOF5 Fx
                     EUdata[i] = sp_gauges['SOF5'].CFx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
@@ -741,7 +757,33 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
                     EUdata[i] = sp_gauges['SOF5'].CMz
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                    
+
+                elif mrg_chans[i] == 930 and 'Deck' in sp_gauges:         # Computed SOF5 Fx
+                    EUdata[i] = sp_gauges['Deck'].CFx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 931 and 'Deck' in sp_gauges:         # Computed SOF5 Fy
+                    EUdata[i] = sp_gauges['Deck'].CFy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 932 and 'Deck' in sp_gauges:         # Computed SOF5 Fz
+                    EUdata[i] = sp_gauges['Deck'].CFz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 933 and 'Deck' in sp_gauges:         # Computed SOF5 Mx
+                    EUdata[i] = sp_gauges['Deck'].CMx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 934 and 'Deck' in sp_gauges:         # Computed SOF5 My
+                    EUdata[i] = sp_gauges['Deck'].CMy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 935 and 'Deck' in sp_gauges:         # Computed SOF5 Mz
+                    EUdata[i] = sp_gauges['Deck'].CMz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+
+
                 elif mrg_chans[i] == 850 and 'Kistler' in sp_gauges:         # Computed Kistler Fx
                     EUdata[i] = sp_gauges['Kistler'].CFx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
@@ -769,7 +811,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
                     EUdata[i] *= .083333
-               
+
                 elif mrg_chans[i] == 860 and '6DOF1' in sp_gauges:         # Computed 6DOF1 Fx
                     EUdata[i] = sp_gauges['6DOF1'].CFx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
@@ -797,7 +839,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
                     EUdata[i] *= .083333
-                
+
                 elif mrg_chans[i] == 870 and '6DOF2' in sp_gauges:         # Computed 6DOF2 Fx
                     EUdata[i] = sp_gauges['6DOF2'].CFx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
@@ -825,9 +867,9 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
                     EUdata[i] *= .083333
-                elif mrg_chans[i] == 880:									#Equiv Stern
+                elif mrg_chans[i] == 880:                                   #Equiv Stern
                     EUdata[i] = (EUdata[32]+EUdata[33]+EUdata[34]+EUdata[35])/4.0
-                elif mrg_chans[i] == 881:									#Equiv Rudder
+                elif mrg_chans[i] == 881:                                   #Equiv Rudder
                     EUdata[i] = (-EUdata[32]+EUdata[33]-EUdata[34]+EUdata[35])/4.0
                 elif mrg_chans[i] == 890:                                   #Stbd RPM Flip
                     EUdata[i] = (rawdata[stbd_rpm_chan]-cal.zeros[stbd_rpm_chan])*cal.gains[stbd_rpm_chan]
@@ -839,25 +881,25 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
                     if rawdata[port_rpm_com] < -50:
                         EUdata[i] *= -1
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                 
-                    
-                    
+
+
+
 
             if (step % c_skip) == 0:         # Output only the records we want
                 for data in EUdata:
-                    stdfile.write("%12.5e " % data)
+                    stdfile.write(" %12.5e " % data)
                 stdfile.write('\n')
-            
+
             # Increment the step counter
             step += 1
         bytecount += 1554
         if bytecount > maxcnt:
             bytecount = maxcnt-1000
         update += 1
-        
+
     obcfile.close()    
     stdfile.close()
-    
+
     # Move the std file to the new directory
 #    try:
 #      alpha_name = '\\\\alpha1\\disk31\\'+std_dir+'\\'+stdfilename
@@ -867,7 +909,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP'):
 #    except:
 #        prgbar.Update(maxcnt-1000,
 #                      newmsg='Error moving STD file!! - File Left in Current Directory')
-      
+
     prgbar.Update(maxcnt) 
     logfile.close()
     prgbar.Destroy()
@@ -880,4 +922,3 @@ if __name__ == "__main__":
     app=wx.PySimpleApp()
     MergeRun(1126, 'foobar')
     #MergeRun(2520, 'foobar')
-    

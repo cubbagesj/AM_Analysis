@@ -10,11 +10,14 @@
 
 # 10/02/2006 - sjc
 
+# Updated 8/13/2010 by C.Michael Pietras
+
 from tools.search_file import *
 import math as m
 from pylab import *
 import cfgparse
 import os.path, time
+import numpy as np
 
 class STDFile:
     """ Run file class for manipulation of standard merge data:
@@ -44,8 +47,19 @@ class STDFile:
         conform to the DELIMTXT format for now.  In the future maybe handle
         other formats."""
 
-        # Attempt to find the run on the path, return empty structure if not found
-        fullname = find_file(run_number+'.std', search_path)
+        # Check if we know the path already
+        if search_path == 'known':
+            fullname = run_number
+        else:
+            # Attempt to find the run on the path, return empty structure if not found
+            fullname = find_file(run_number+'.std', search_path)
+            
+        if not fullname:
+            if not search_path == 'c:\AM_merge_data':
+                if not os.path.exists(search_path):
+                    #if the file does not exist and the search path does not exist
+                    #check the default local directory
+                    fullname = search_file_walk(run_number+'.std', 'c:\AM_merge_data')
         
         if not fullname:
             self.filename = ''
@@ -78,8 +92,11 @@ class STDFile:
                 line1 = line1.replace(',', ' ')
                 self.nchans = int(line1.split()[0])
                 self.dt = float(line1.split()[1])
-                self.length = float(line1.split()[2])
-                
+                try:
+                    self.length = float(line1.split()[2])
+                except:
+                    self.length = 377.33
+                    
                 # get the geometry info from the table based on boat length
                 if abs(self.length - 362) < 0.8 :
                     self.boat = '688/751'
@@ -102,7 +119,7 @@ class STDFile:
                 self.chan_names = line1.split("'  '")
                 f.close()
                 # Now use the matplotlib load method to get the data
-                self.data = mlab.load(fullname, skiprows=5)
+                self.data = np.loadtxt(fullname, skiprows=5)
                 # Time is found in column 26
                 self.time = self.data[:,26]
             else:
@@ -349,8 +366,16 @@ class OBCFile:
         """
 
         # Attempt to find the run on the path, return NONE if not found
-        fullname = find_file('run-'+run_number+'.obc', search_path)
+        fullname = search_file_walk(str('run-'+run_number+'.obc'), search_path)
+        fname = (str('run-'+run_number+'.obc'), search_path)
+        print fname
         
+        if not fullname:
+            if not search_path == 'c:\AM_data':
+                if not os.path.exists(search_path):
+                    #if the file does not exist and the search path does not exist
+                    #check the default local directory
+                    fullname = search_file_walk('run-'+run_number+'.obc', 'c:\AM_data')
         
         if not fullname:
             self.filename = ''
@@ -368,9 +393,9 @@ class OBCFile:
             runfile = os.path.join(dirname, 'run-'+run_number+'.run')
             calfile = os.path.join(dirname, 'run-'+run_number+'.cal')
             
-	    self.filename = filename
+    	    self.filename = filename
             self.dirname = dirname
-	    self.basename = 'run-'+run_number
+    	    self.basename = 'run-'+run_number
             self.filetype = 'AM-obc'
             self.title = ''
             self.timestamp = time.ctime(os.path.getmtime(fullname))
@@ -391,50 +416,50 @@ class OBCFile:
             # There is no time channel, so make one
             self.time = arange(0, len(self.data), dtype=float)
             self.time = self.time * .01
-
-        # try to get the run info from runfile
-        try:
-            lines = open(runfile).read().splitlines()
-            for line in lines:
-                if line.find('#RUNTYPE:') <> -1:
-                    runtype = line[line.find('#RUNTYPE:') +9:]
-                    self.title = "AM:run-%s: %s" % (run_number, runtype)
-                    break
-                else:
-                    self.title = "Title Not Defined"
-        except:
-            self.title = ''
             
-        # try to get the cals and channel names from cal file    
-        c = cfgparse.ConfigParser()
-        try:
-            c.add_file(str(calfile))
-            #  Set up some variables to hold the values
-            self.nchans = c.add_option('obc_channels', type='int').get()
-            self.gains = []
-            self.zeros = []
-            self.chan_names = []
-            self.alt_names = []
-            self.data_pkt_locs = []
-            self.eng_units = []
-            self.cal_dates = []
-            
-            # Then read the ini file for the channel cals
-            for channel in range(self.nchans):
-              self.gains.append(c.add_option('gain', type='float', keys='CHAN%d' % channel).get())
-              self.zeros.append(c.add_option('zero', type='float', keys='CHAN%d' % channel).get())
-              self.chan_names.append(c.add_option('sys_name', keys='CHAN%d' % channel).get())
-              self.alt_names.append(c.add_option('alt_name', keys='CHAN%d' % channel).get())
-              self.data_pkt_locs.append(c.add_option('data_pkt_loc', type='int', keys='CHAN%d' % channel).get())
-              self.eng_units.append(c.add_option('eng_units', keys='CHAN%d' % channel).get())
-              self.cal_dates.append(c.add_option('cal_date', keys='CHAN%d' % channel).get())
-            
-	    self.run_stats()
-        except:
-            self.nchans = 0
-            self.gains = ones((self.nchans), dtype=float)
-            self.zeros = zeros((self.nchans), dtype=float)
-            raise
+            # try to get the run info from runfile
+            try:
+                lines = open(runfile).read().splitlines()
+                for line in lines:
+                    if line.find('#RUNTYPE:') <> -1:
+                        runtype = line[line.find('#RUNTYPE:') +9:]
+                        self.title = "AM:run-%s: %s" % (run_number, runtype)
+                        break
+                    else:
+                        self.title = "Title Not Defined"
+            except:
+                self.title = ''
+                
+            # try to get the cals and channel names from cal file    
+            c = cfgparse.ConfigParser()
+            try:
+                c.add_file(str(calfile))
+                #  Set up some variables to hold the values
+                self.nchans = c.add_option('obc_channels', type='int').get()
+                self.gains = []
+                self.zeros = []
+                self.chan_names = []
+                self.alt_names = []
+                self.data_pkt_locs = []
+                self.eng_units = []
+                self.cal_dates = []
+                
+                # Then read the ini file for the channel cals
+                for channel in range(self.nchans):
+                  self.gains.append(c.add_option('gain', type='float', keys='CHAN%d' % channel).get())
+                  self.zeros.append(c.add_option('zero', type='float', keys='CHAN%d' % channel).get())
+                  self.chan_names.append(c.add_option('sys_name', keys='CHAN%d' % channel).get().strip())
+                  self.alt_names.append(c.add_option('alt_name', keys='CHAN%d' % channel).get().strip())
+                  self.data_pkt_locs.append(c.add_option('data_pkt_loc', type='int', keys='CHAN%d' % channel).get())
+                  self.eng_units.append(c.add_option('eng_units', keys='CHAN%d' % channel).get().strip())
+                  self.cal_dates.append(c.add_option('cal_date', keys='CHAN%d' % channel).get())
+                
+                self.run_stats()
+            except:
+                self.nchans = 0
+                self.gains = ones((self.nchans), dtype=float)
+                self.zeros = zeros((self.nchans), dtype=float)
+                raise
 
     def info(self):
         """ Prints information on the run"""
@@ -539,8 +564,8 @@ class OBCFile:
 
 if __name__ == "__main__":
 
-    test = OBCFile('1409')
-    #test = STDFile('774-8385')
+    #test = OBCFile('1409')
+    test = STDFile('9-4104.std', 'known')
     test.info()
     test.run_stats()
     #dummy = test.getEUData(12)

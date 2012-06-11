@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# Modified 7/20/2010 - Christopher M. Pietras
 """
 An example of how to use wx or wxagg in an application with the new
 toolbar - comment out the setA_toolbar line for no toolbar
@@ -17,9 +18,11 @@ from tools.plottools import *
 
 class CanvasFrame(wx.Frame):
     
-    def __init__(self, runData, chans):
+    #added xchan variable to control which channel is used as the x axis.  Defaults
+    #to -1 so nothing should change for other uses.
+    def __init__(self, runData, chans, xchan = -1):
         wx.Frame.__init__(self,None,-1,
-                         'Plot  '+runData.filename,size=(900,900))
+                         'Plot  '+runData.filename)
 
         self.SetBackgroundColour(wx.NamedColor("WHITE"))
 
@@ -29,17 +32,25 @@ class CanvasFrame(wx.Frame):
         lines = []
         names = []
         for chan in chans:
-            xdata, ydata = get_xy(runData, chan, -1)
+            xdata, ydata = get_xy(runData, chan, xchan)
             
             #Get some values from the data for the max/min/mean
             self.ydata = ydata
-            self.xmin = float(xdata[0])
-            self.xmax = float(xdata[-1])
+            #changed code for max and min since they won't always be the first and
+            #last index now.
+            self.xmin = float(min(xdata))
+            self.xmax = float(max(xdata))
             self.dt = runData.dt
             
             line = self.axes.plot(xdata, ydata)
             self.axes.grid(True)
-            self.axes.set_xlabel('nTime (s)')
+            #x channel needs to be properly named
+            if xchan == -2:
+                self.axes.set_xlabel('Time (s)')
+            if xchan == -1:
+                self.axes.set_xlabel('nTime (s)')
+            else:
+                self.axes.set_xlabel(runData.chan_names[xchan])
             name = runData.chan_names[chan]
             lines.append(line)
             names.append(name)

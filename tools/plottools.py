@@ -4,6 +4,7 @@
 #
 # This program is part of the Autonomous Model Software Tools Package
 #
+# Updated 8/13/2010 by C.Michael Pietras
 """
     This is a collection of helper functions for the plotting
     AM and RCM data.  It uses the Matplotlib library to create
@@ -16,6 +17,10 @@
                 tool for reading in the data
     get_xy() -  Returns a tuple of x,y data from a specific run.  The data
                 can either be raw counts or converted to EU
+    get_runs_overplot() - Takes a list of run numbers and returns a list of
+                FileType objects that hold the run data.  This is the primary
+                tool for reading in the data.  It is modified from get_runs to 
+                make overplot work.  
     xy_plt() -  Creates a single xy plot for a list of runs
     
     y_plt() -   Creates a single y vs time plot for a list of runs
@@ -32,6 +37,7 @@
 from tools.filetypes import OBCFile, STDFile
 from pylab import *
 import re, cfgparse, sys, os
+import wx
 
 
 def get_runs( run_list, obc_path='', std_path=''):
@@ -61,9 +67,9 @@ def get_runs( run_list, obc_path='', std_path=''):
     # Now parse the run_list
     runs = []
     
-    std_path = '/disk2/home/'+os.environ['USER']
-    obc_path = '/disk2/home/'+os.environ['USER']+'/obcdata'
-
+    std_path = '/disk2/home/'+os.environ['USERNAME'].lower()
+#    obc_path = '/disk2/home/'+os.environ['USERNAME']+'/obcdata'
+    obc_path = r'\\ATIS21\MODEL\RCM\Autonomous_Model\test_data'
     # search pattern for std filenames - Assumes that a file with a '-' in the
     # name is an STD file.  All others are considered OBC files
     
@@ -92,13 +98,65 @@ def get_run(run_list):
     root, ext = os.path.splitext(tail)
     
     if ext.lower() == '.std':
-        runobj = STDFile(root, search_path=head)
+        runobj = STDFile(run_list, search_path='known')
     elif ext.lower() == '.obc':
         runobj = OBCFile(root[4:], search_path=head)
     else:
         runobj = None
     
     return runobj
+
+#new function created in order to not accidentaly break anything else using get_runs
+def get_runs_overplot( run_list, title_list, obc_path='', std_path=''): #made a new 
+    """  Return a list of FileType objects for each run found
+    
+        Attempt to find each run in the run_list on either the
+        specified paths, or the default.  If found, create a FileType object
+        and return a list of objects found and a list of the index of each 
+        object.  If no runs are found, return None
+    """
+    
+    # First setup the paths if none specifed
+#    if not obc_path:
+#        obc_path = ""
+#        try:
+#            for line in open("./lib/obc_default.pth"):
+#                obc_path = obc_path + line.strip() + ";"
+#        except:
+#            obc_path = "."
+#    if not std_path:
+#        std_path = ""
+#        try:
+#            for line in open("./lib/std_default.pth"):
+#                std_path = std_path + line.strip() + ";"
+#        except:
+#            std_path = "."
+    
+    # Now parse the run_list
+    runs,titles,i = [], [],0
+    
+    std_path = '/disk2/home/'+os.environ['USER']
+    #obc_path = '/disk2/home/'+os.environ['USERNAME']+'/AM_data'
+    obc_path = '//ATIS21/MODEL/RCM/Autonomous_Model/test_data/OHIO_Replacement/10_02_35X'
+
+    # search pattern for std filenames - Assumes that a file with a '-' in the
+    # name is an STD file.  All others are considered OBC files
+    
+    stdm = re.compile(r'^\w+-\w+$')
+    
+    for runnum in run_list:
+        if stdm.match(runnum.strip()):
+            runobj = STDFile(runnum, search_path=std_path)
+        else:
+            runobj = OBCFile(runnum, search_path=obc_path)
+    
+        # If we found a run, add it to the list of run objects
+        if runobj.filename:
+            runs.append(runobj)
+            titles.append(title_list[i])
+        i+=1
+
+    return runs, titles
 
 
 def get_xy(runobj, ychan=0, xchan=-1, EU=True):
@@ -286,54 +344,36 @@ def mplt(run_list, plotdef=None):
     pg = PlotPage(run_list, plotdef)
     # Display first page
     pg.firstpg()
-    
-class PlotPage:
+
+class PlotPageWrapped:
     """
-        PlotPage class is a page of 1 or more
-        plots.  The number of plots displayed at a time is given
-        in the plotdef file.
+        PlotPage class is a page of 1 or more plots.  PlotPageWrapped is passed all
+        the information needed to make a plot, with all the information that would
+        be read from an ini file contained in the dictionary iniData.
+        This makes it possible to make a PlotPage without having a specific ini
+        file for the channels you want plotted.
     """
-    def __init__(self, run_list, params=(0,0,0), plotdef=None):
+    def __init__(self, run_list, params=(0,0,3), iniData=None, plot_title = ''):
         """
             Creates a PlotPage instance using the
             run-list and plotdef file
         """
-        
+        self.plot_title = plot_title
         self.run_list = run_list
-
-        # Check to see if plotdef exists and use default if not
-        if not os.path.isfile(plotdef):
-            if run_list[0].filetype != 'AM-obc':
-                plotdef='plot-std.ini'
-            else:
-                plotdef='plot-obc.ini'
-            
-        self.plotini = plotdef
-        #Read the plot definition file
-        self.numchans = 0
+        self.numchans = iniData['numchans']
+        self.funcs = iniData['funcs']
+        self.ychans = iniData['ychans']
+        self.ymins = iniData['ymins']
+        self.ymaxs = iniData['ymaxs']
+        self.yscales = iniData['yscales']
+        self.yxforms = iniData['yxforms']
+        self.yoffsets = iniData['yoffsets']
+        self.ychanlists = iniData['ychanlists']
+        
+        
         self.perpage = params[2]
         self.xmin = params[0]
         self.xmax = params[1]
-
-        self.ychans = []
-        self.ymins = []
-        self.ymaxs = []
-        self.yscales =[]
-        self.yoffsets = []
-        self.yxforms = []
-
-        plot_file = open(self.plotini)
-        for line in plot_file:
-            line = line.rstrip()
-            ychan, ymin, ymax, yscale, yoffset, yxform = line.split()
-            self.ychans.append(int(ychan))
-            self.ymins.append(float(ymin))
-            self.ymaxs.append(float(ymax))
-            self.yscales.append(float(yscale))
-            self.yoffsets.append(float(yoffset))
-            self.yxforms.append(int(yxform))
-            self.numchans += 1
-            
             
         self.pgpntr = 0
         
@@ -418,7 +458,7 @@ class PlotPage:
                     ylim(yrange)
                     
                 # Put the plot.ini filename on the graph
-                figtext(0.03, 0.03, self.plotini, rotation=90)
+                figtext(0.03, 0.03, self.plot_title, rotation=90)
                 
                 # put run titles
                 yloc = 0.0
@@ -432,6 +472,58 @@ class PlotPage:
             show()
         except:
             pass    
+    
+class PlotPage(PlotPageWrapped):
+    """
+        Wrapper for PlotPageWrapped.  Basically parses the given ini file and
+        passes PlotPageWrapped the information in the ini file in dictionary form.
+    """
+    def __init__(self, run_list, params=(0,0,0), plotdef=None):
+        
+        # Check to see if plotdef exists and use default if not
+        if not os.path.isfile(plotdef):
+            if run_list[0].filetype != 'AM-obc':
+                plotdef='plot-std.ini'
+            else:
+                plotdef='plot-obc.ini'
+                
+        #Read the plot definition file
+        numchans = 0
+
+        ychans = []
+        ymins = []
+        ymaxs = []
+        yscales =[]
+        yoffsets = []
+        yxforms = []
+        funcs = []
+        ychanlists = []
+        
+        plot_file = open(plotdef)
+        for line in plot_file:
+            line = line.rstrip()
+            func = ''
+            try:
+                ychan, ymin, ymax, yscale, yoffset, yxform, func = line.split()
+            except ValueError:
+                ychan, ymin, ymax, yscale, yoffset, yxform = line.split()
+            ychan = np.int_(ychan.split(','))
+            if not func:
+                func = '=$'+str(ychan[0])
+            ychanlists.append(ychan)
+            ychans.append(max(ychan))
+            ymins.append(float(ymin))
+            ymaxs.append(float(ymax))
+            yscales.append(float(yscale))
+            yoffsets.append(float(yoffset))
+            yxforms.append(int(yxform))
+            funcs.append(func)
+            numchans += 1
+            
+        iniData = {'numchans':numchans, 'funcs':funcs, 'ychans':ychans, 'ymins':ymins, 'ymaxs':ymaxs,
+                    'yscales':yscales, 'yoffsets':yoffsets, 'yxforms':yxforms, 'ychanlists':ychanlists}
+            
+        PlotPageWrapped.__init__(self, run_list, params = params, iniData = iniData, plot_title = plotdef)
    
 if __name__ == "__main__":
     runlist = get_run(r's:\autonomous_model\test_data\ssgn\03132007\run-2337.obc')
