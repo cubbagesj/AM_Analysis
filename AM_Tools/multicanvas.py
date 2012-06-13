@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Written whenever by whoever originally wrote this
+# Updated 8/13/2010 by C.Michael Pietras
 """
 An example of how to use wx or wxagg in an application with the new
 toolbar - comment out the setA_toolbar line for no toolbar
@@ -12,19 +14,19 @@ from matplotlib.backends.backend_wx import NavigationToolbar2Wx
 
 from matplotlib.figure import Figure
 
+from numpy import ceil
 
 from tools.plottools import *
+from tools.function_parse import doFunction, makeLabel
 
 class MultiCanvasFrame(wx.Frame):
     
-    def __init__(self, plotData, titles, pgpntr):
-        wx.Frame.__init__(self,None,-1,
-                         'Over Plot  ')
+    def __init__(self, plotData, titles, pgpntr, title = 'Over Plot  '):
+        wx.Frame.__init__(self,None,-1, title)
 
         self.SetBackgroundColour(wx.NamedColor("WHITE"))
 
-        self.figure = Figure(figsize=(8.7,12))
-	self.figure.subplots_adjust(bottom=.15)
+        self.figure = Figure(figsize=(9,10))
         self.plotData = plotData
         self.Build_Menus()
         self.titles = titles
@@ -105,7 +107,7 @@ class MultiCanvasFrame(wx.Frame):
                        "BMP (*.bmp)|*.bmp"                        
                        
         #thisdir  = os.getcwd()
-	thisdir = 'c:/plots'
+        thisdir = 'c:/plots'
 
         dlg = wx.FileDialog(self, message='Save Plot Figure as...',
 			defaultDir = thisdir, defaultFile=self.plotData.run_list[0].filename[:-4]+'-'+str(self.plotData.pgpntr),
@@ -127,6 +129,13 @@ class MultiCanvasFrame(wx.Frame):
             in the plot configuration
         """
         for i in range(self.plotData.perpage):
+            #This should allow for seamless scrolling no matter the number of plots
+            #per page
+            if (self.plotData.pgpntr + i+1) > self.plotData.numchans:
+                self.plotData.pgpntr = self.plotData.pgpntr - self.plotData.numchans
+            elif (self.plotData.pgpntr + i+1) < 0:
+                self.plotData.pgpntr = self.plotData.numchans+self.plotData.pgpntr
+                
             if i == 0:
                 self.ax = self.figure.add_subplot(self.plotData.perpage, 1, i+1)
                 ax0 = self.ax
@@ -136,36 +145,46 @@ class MultiCanvasFrame(wx.Frame):
             scale = self.plotData.yscales[self.plotData.pgpntr + i]
             xform = self.plotData.yxforms[self.plotData.pgpntr + i]
             offset = self.plotData.yoffsets[self.plotData.pgpntr + i]
-            lines = []
-	    lcnt = 0
+            ychans = self.plotData.ychanlists[self.plotData.pgpntr + i]
+            function = self.plotData.funcs[self.plotData.pgpntr + i]
+            ylabel = self.plotData.ychanlabels[self.plotData.pgpntr + i]
+            lines = [] 
+            lcnt = 0
             for runobj in self.plotData.run_list:
-                xdata, ydata = get_xy(runobj, ychan, -1)
+                ydata = {}
+                for chan in ychans:
+                    xdata, ydata[chan] = get_xy(runobj, chan, -1)
+                ydata = doFunction(function, ychans, ydata)
                 if scale or offset or xform:
                     if xform == 3:
                         offset = runobj.init_values[ychan] - self.plotData.run_list[0].init_values[ychan]
                         offset = float(offset)
-			ydata = xfrm(ydata, runobj.dt, scale, offset, xform)
-		    elif xform == 33:
-			if ychan < len(runobj.appr_values):
-			    try:
-			        offset = runobj.appr_values[ychan] - self.plotData.run_list[0].appr_values[ychan]
- 			    except:
-			    	offset = runobj.appr_values[ychan] - 0.0
-			else:
-			    offset = 0
-			offset = float(offset)
-			ydata = xfrm(ydata, runobj.dt, scale, offset, 11)
-		    else:
-			ydata = xfrm(ydata, runobj.dt, scale, offset, xform)
-		line = self.ax.plot(xdata, ydata)
+                        ydata = xfrm(ydata, runobj.dt, scale, offset, xform)
+                    elif xform == 33:
+                        if ychan < len(runobj.appr_values):
+                            try:
+                                offset = runobj.appr_values[ychan] - self.plotData.run_list[0].appr_values[ychan]
+                            except:
+                                offset = runobj.appr_values[ychan] - 0.0
+                        else:
+                            offset = 0
+                        offset = float(offset)
+                        ydata = xfrm(ydata, runobj.dt, scale, offset, 11)
+                    else:
+                        ydata = xfrm(ydata, runobj.dt, scale, offset, xform)
+                line = self.ax.plot(xdata, ydata)
                 lines.append(line)
                 self.ax.grid(True)
                 if i == self.plotData.perpage - 1:
                     self.ax.set_xlabel('nTime (s)')
                 try:
-                    self.ax.set_ylabel(runobj.chan_names[ychan])
+                    if ylabel == '':
+                        self.ax.set_ylabel(makeLabel(function, ychans, runobj.chan_names))
+                    else:
+                        self.ax.set_ylabel(ylabel)
                 except:
                     pass
+                
             yrange = (self.plotData.ymins[self.plotData.pgpntr + i],
                       self.plotData.ymaxs[self.plotData.pgpntr + i])
             if self.plotData.xmin or self.plotData.xmax:
@@ -177,7 +196,7 @@ class MultiCanvasFrame(wx.Frame):
             # Set up the legend
             if i == 0:
 #                leg = ax0.legend(lines, self.titles, (.5, .5))
-                leg = self.figure.legend(lines, self.titles, (.3, .901))
+                leg = self.figure.legend(lines, self.titles, (.3, .901), ncol = int(ceil(len(self.titles)/4.0)))
                 ltext = leg.get_texts()
                 setp(ltext, fontsize='small')
                 
@@ -192,8 +211,8 @@ class MultiCanvasFrame(wx.Frame):
         if event.key == 'p':
             self.figure.clear()
             self.plotData.pgpntr -= self.plotData.perpage
-            if self.plotData.pgpntr < 0:
-                self.plotData.pgpntr = 0
+#            if self.plotData.pgpntr < 0:
+#                self.plotData.pgpntr = 0
             self.makePlot()
             self.canvas.draw()
             
@@ -222,7 +241,7 @@ class MultiCanvasFrame(wx.Frame):
     def OnClose(self, event):
         self.canvas.mpl_disconnect(self.cid)
         self.Destroy()
-
+        
 
         
 if __name__ == "__main__":

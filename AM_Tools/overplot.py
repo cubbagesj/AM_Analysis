@@ -202,19 +202,23 @@ class EditFrame(wx.Frame):
     def __init__(self, cfgFile):
         wx.Frame.__init__(self, None,
                           title="Edit plot Configuration",
-                          size=(640,480))
+                          size=(740,480))
         self.cfgFile = cfgFile
         plot_file = open(cfgFile)
         cfgData = []
         for line in plot_file:
+            ylbl = ''
             line = line.rstrip()
             try:
-                ychan, ymin, ymax, yscale, yoffset, yxform, yfunc = line.split()
+                ychan, ymin, ymax, yscale, yoffset, yxform, yfunc, ylbl = line.split()
             except ValueError:
-                ychan, ymin, ymax, yscale, yoffset, yxform = line.split()
-                channels = ychan.split(',')
-                yfunc = '=$'+channels[0]
-            rowdata = [ychan, ymin, ymax, yscale, yoffset, yxform, yfunc]
+                try:
+                    ychan, ymin, ymax, yscale, yoffset, yxform, yfunc = line.split()
+                except ValueError:
+                    ychan, ymin, ymax, yscale, yoffset, yxform = line.split()
+                    channels = ychan.split(',')
+                    yfunc = '=$'+channels[0]
+            rowdata = [ychan, ymin, ymax, yscale, yoffset, yxform, yfunc, ylbl]
             cfgData.append(rowdata)
 
         self._grid = editGrid(self, cfgData)
@@ -399,7 +403,7 @@ class DataTable(wx.grid.PyGridTableBase):
     def __init__(self, cfgData):
         wx.grid.PyGridTableBase.__init__(self)
         self.data = cfgData
-        self.colLabels = ["Channel", "Ymin", "Ymax", "Scale", "Offset", "Xform", "Function"]
+        self.colLabels = ["Channel", "Ymin", "Ymax", "Scale", "Offset", "Xform", "Function", "YLabel"]
         self._rows = self.GetNumberRows()
         self._cols = self.GetNumberCols()
         
