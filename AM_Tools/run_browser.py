@@ -27,13 +27,13 @@ from BoS_run_comparison import CorrelateFrame
 class BrowserFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, title="Run File Browser", size=(1000,650))
-        
+
         # Set up the status bar
         self.statusbar = self.CreateStatusBar()
-        
+
         # Set up the split window
         self.sp = wx.SplitterWindow(self)
-        
+
         #Left Pane
         self.p1 = wx.Panel(self.sp, style= wx.SUNKEN_BORDER)
         self.createFileTree(self.p1)
@@ -42,45 +42,45 @@ class BrowserFrame(wx.Frame):
         self.p2 = wx.Panel(self.sp, style= wx.SUNKEN_BORDER)
         self.createInfoView(self.p2)
         self.createMenuBar()
-        
+
         self.sp.SplitVertically(self.p1, self.p2, 300)
-     
+
     def createInfoView(self, panel):
         # The display components
         topLbl = wx.StaticText(panel, -1, "File Information")
         topLbl.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
-        
+
         fnameLbl = wx.StaticText(panel, -1, "Filename:")
         self.fname = wx.TextCtrl(panel, -1, "", style=wx.TE_READONLY)
-        
+
         titleLbl = wx.StaticText(panel, -1, "Title:")
         self.title = wx.TextCtrl(panel, -1, "", style=wx.TE_READONLY)
-        
+
         timestmpLbl = wx.StaticText(panel, -1, "Time Stamp:")
         self.timestmp = wx.TextCtrl(panel, -1, "", style=wx.TE_READONLY)
-        
+
         nchansLbl = wx.StaticText(panel, -1, "Number of Channels:")
         self.nchans = wx.TextCtrl(panel, -1, "", style=wx.TE_READONLY)
-        
+
         dtLbl = wx.StaticText(panel, -1, "Timestep:")
         self.dt = wx.TextCtrl(panel, -1, "", style=wx.TE_READONLY)
-        
+
         stdbyLbl = wx.StaticText(panel, -1, "Standby At:")
         self.stdbytime = wx.TextCtrl(panel, -1, "", style=wx.TE_READONLY)
-        
+
         execLbl = wx.StaticText(panel, -1, "Execute At:")
         self.exectime = wx.TextCtrl(panel, -1, "", style=wx.TE_READONLY)
-        
+
         #Listbox for y axis channels
         chanList = wx.StaticText(panel, -1, "Channel List:")
         self.chanList = wx.ListBox(panel, -1, size=(200,200),
                                    style=wx.LB_EXTENDED, name="Channel List")
-        
+
         #Listbox for x axis channels
         xchanList = wx.StaticText(panel, -1, "X Axis Channel List:")
         self.xchanList = wx.ListBox(panel, -1, size=(150,180),
-                                   style=wx.LB_SINGLE, name="X Axis Channel List")
-        
+                                    style=wx.LB_SINGLE, name="X Axis Channel List")
+
         # The buttons
         self.calBtn = wx.Button(panel, -1, "View CAL File")
         self.calBtn.Enable(False)
@@ -88,12 +88,12 @@ class BrowserFrame(wx.Frame):
         self.dataBtn.Enable(False)
         self.graphBtn = wx.Button(panel, -1, "Quick Graph")
         self.graphBtn.Enable(False)
-        
+
         #Button Events
         self.Bind(wx.EVT_BUTTON, self.OnCalClick, self.calBtn)
         self.Bind(wx.EVT_BUTTON, self.OnDataClick, self.dataBtn)
         self.Bind(wx.EVT_BUTTON, self.OnGraphClick, self.graphBtn)
-        
+
         # Set up the layout with sizers
         mainSizer = wx.BoxSizer(wx.VERTICAL)
         mainSizer.Add(topLbl, 0, wx.ALL, 5)
@@ -108,28 +108,28 @@ class BrowserFrame(wx.Frame):
         infoSizer.Add(timestmpLbl, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
         infoSizer.Add(self.timestmp, 0, wx.EXPAND)
         infoSizer.Add(nchansLbl, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
-        
+
         ndtSizer = wx.BoxSizer(wx.HORIZONTAL)
         ndtSizer.Add(self.nchans, 0, wx.RIGHT, 20)
         ndtSizer.Add(dtLbl, 0)
         ndtSizer.Add(self.dt, 0, wx.LEFT|wx.RIGHT,5)
         infoSizer.Add(ndtSizer, 0, wx.EXPAND)
-        
+
         timeSizer = wx.BoxSizer(wx.HORIZONTAL)
         infoSizer.Add(stdbyLbl, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
         timeSizer.Add(self.stdbytime, 0, wx.RIGHT, 10)
         timeSizer.Add(execLbl, 0)
         timeSizer.Add(self.exectime, 0, wx.LEFT|wx.RIGHT, 5)
         infoSizer.Add(timeSizer, 0)
-                
+
         infoSizer.Add(chanList, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
-        
+
         chanSizer = wx.BoxSizer(wx.HORIZONTAL)
         chanSizer.Add(self.chanList, 0, wx.LEFT|wx.RIGHT)
         chanSizer.Add(xchanList, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
         chanSizer.Add(self.xchanList, 0, wx.LEFT|wx.RIGHT)
         infoSizer.Add(chanSizer)
-              
+
         btnSizer = wx.BoxSizer(wx.HORIZONTAL)
         btnSizer.Add((20,20), 1)
         btnSizer.Add(self.calBtn)
@@ -138,36 +138,36 @@ class BrowserFrame(wx.Frame):
         btnSizer.Add((20,20), 1)
         btnSizer.Add(self.graphBtn)
         btnSizer.Add((20,20), 1)
-       
+
         mainSizer.Add(infoSizer, 0, wx.EXPAND|wx.ALL, 10)
         mainSizer.Add((20,20),1)
         mainSizer.Add(btnSizer, 0, wx.EXPAND|wx.BOTTOM, 10)
         panel.SetSizer(mainSizer)
         mainSizer.Fit(panel)
         mainSizer.SetSizeHints(panel)
-      
-    
+
+
     def createFileTree(self, parent):
         self.tree = wx.TreeCtrl(parent, -1,
                                 style=wx.TR_HAS_BUTTONS)
-              
+
         sizer=wx.GridSizer()
         sizer.Add(self.tree, flag = wx.GROW)
         parent.SetSizer(sizer)
         parent.Fit()
-        
+
         # Create an Image list for the pictures in the tree
         il = wx.ImageList(16,16)
         self.fldridx = il.Add(wx.ArtProvider.GetBitmap(wx.ART_FOLDER, wx.ART_OTHER, (16,16)))
         self.fldropenidx = il.Add(wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_OTHER, (16,16)))
         self.fileidx = il.Add(wx.ArtProvider.GetBitmap(wx.ART_NORMAL_FILE, wx.ART_OTHER, (16,16)))
-        
+
         self.tree.AssignImageList(il)
-        
+
         root = self.tree.AddRoot("Data Files")
         self.tree.SetItemImage(root, self.fldridx, wx.TreeItemIcon_Normal)
         self.tree.SetItemImage(root, self.fldropenidx, wx.TreeItemIcon_Expanded)
-        
+
 
         # Add a root node for OBC File
         self.obcroot = self.tree.AppendItem(root, "OBC Files")
@@ -178,7 +178,7 @@ class BrowserFrame(wx.Frame):
         self.stdroot = self.tree.AppendItem(root, "STD Files")
         self.tree.SetItemImage(self.stdroot, self.fldridx, wx.TreeItemIcon_Normal)
         self.tree.SetItemImage(self.stdroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
-                
+
         # Add a root node for FST Files
         # Do only if the sim1 disk exists
         rootDir = os.path.join('/disk2/home', os.environ['USER'])
@@ -187,18 +187,18 @@ class BrowserFrame(wx.Frame):
             self.fstroot = self.tree.AppendItem(root, "FST Files")
             self.tree.SetItemImage(self.fstroot, self.fldridx, wx.TreeItemIcon_Normal)
             self.tree.SetItemImage(self.fstroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
-        
+
         # Bind some interesting events
         self.Bind(wx.EVT_TREE_ITEM_EXPANDED, self.OnItemExpanded, self.tree)
         self.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.OnItemCollapsed, self.tree)
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged, self.tree)
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnActivated, self.tree)
-        
+
         #Expand the first level        
         self.tree.Expand(root)
-        
+
         self.buildFileTree()
-    
+
     def buildFileTree(self):
         """
             Creates the nodes for STD, OBC, and FST files.  Also used to rebuild
@@ -212,11 +212,11 @@ class BrowserFrame(wx.Frame):
         else:
             rootDir = '~'
             self.TreeBuilder(rootDir, self.obcroot)        
-        
+
         # Add nodes for the STD files
         # First try sim1 disks then default to local
         rootDir = os.path.join('/disk2/home', os.environ['USER'])
-	stdDir = os.path.join(rootDir, 'rcmdata')
+        stdDir = os.path.join(rootDir, 'rcmdata')
         if os.path.exists(stdDir):
             self.TreeBuilder(stdDir, self.stdroot)
         else:
@@ -230,7 +230,7 @@ class BrowserFrame(wx.Frame):
         if (os.path.exists(fstDir)):
             if self.fstroot:
                 self.TreeBuilder(fstDir, self.fstroot)
-        
+
     def TreeBuilder(self, currdir, branch):
         for file in os.listdir(currdir):
             path = os.path.join(currdir, file)
@@ -247,11 +247,11 @@ class BrowserFrame(wx.Frame):
                 newbranch = self.tree.AppendItem(branch, tail)
                 self.tree.SetItemImage(newbranch, self.fldridx, wx.TreeItemIcon_Normal)
                 self.tree.SetItemImage(newbranch, self.fldropenidx, wx.TreeItemIcon_Expanded)
-                
+
                 self.tree.SetItemPyData(newbranch, path)
                 self.tree.SortChildren(branch)
                 #self.tree.Expand(branch)
-                
+
     def menuData(self):
         return (("&File",
                  ("&Update Tree", "Update Tree",self.OnTreeUpdate),
@@ -270,7 +270,7 @@ class BrowserFrame(wx.Frame):
                  ("Extract Data...", "Extract Data", self.OnData)),
                 ("&Help",
                  ("&About", "About Program", self.OnAbout)))
-    
+
     def createMenuBar(self):
         menuBar = wx.MenuBar()
         for eachMenuData in self.menuData():
@@ -278,7 +278,7 @@ class BrowserFrame(wx.Frame):
             menuItems = eachMenuData[1:]
             menuBar.Append(self.createMenu(menuItems), menuLabel)
         self.SetMenuBar(menuBar)
-    
+
     def createMenu(self, menuData):
         menu = wx.Menu()
         for eachLabel, eachStatus, eachHandler in menuData:
@@ -288,16 +288,16 @@ class BrowserFrame(wx.Frame):
             menuItem = menu.Append(-1, eachLabel, eachStatus)
             self.Bind(wx.EVT_MENU, eachHandler, menuItem)
         return menu
-         
+
     def GetItemText(self, item):
         if item:
             return self.tree.GetItemText(item)
         else:
             return ""
-        
+
     def OnItemExpanded(self, evt):
         pass
-        
+
     def OnItemCollapsed(self, evt):
         pass
 
@@ -316,7 +316,7 @@ class BrowserFrame(wx.Frame):
 
     def OnActivated(self, evt):
         wx.SetCursor(wx.StockCursor(wx.CURSOR_ARROWWAIT))
-        
+
         try:
             runName = self.tree.GetItemPyData(evt.GetItem())
         except:
@@ -324,25 +324,25 @@ class BrowserFrame(wx.Frame):
         if os.path.isfile(runName):
             self.fname.SetValue(runName)
             runObj = plottools.get_run(runName)
-            
+
             self.runObj = runObj
-            
+
             self.title.SetValue(runObj.title)
             self.timestmp.SetValue(runObj.timestamp)
             self.nchans.SetValue(str(runObj.nchans))
             self.dt.SetValue(str(runObj.dt))
             self.stdbytime.SetValue(str(runObj.stdbytime))
             self.exectime.SetValue(str(runObj.exectime))
-            
+
             self.chanList.Set([])
             self.chanList.InsertItems(runObj.chan_names, 0)
             self.chanList.SetSelection(0)
-            
+
             self.xchanList.Set([])
             self.xchanList.InsertItems(runObj.chan_names,0)
             self.xchanList.InsertItems(['nTime'],0)
             self.xchanList.SetSelection(0)
-            
+
             # Turn on the buttons as appropriate
             if runObj.filetype == 'AM-obc':
                 self.calBtn.Enable(True)
@@ -352,12 +352,12 @@ class BrowserFrame(wx.Frame):
             self.graphBtn.Enable(True)
 
         wx.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
-    
+
     def OnCalClick(self, evt):
         if self.runObj.nchans != 0:
             frame = CalFrame(self.runObj)
             frame.Show()
-            
+
     def OnTreeUpdate(self, evt):
         """
             Rebuilds the file tree so it can take into account any changes to 
@@ -380,10 +380,10 @@ class BrowserFrame(wx.Frame):
         xchan = self.xchanList.GetSelection() - 1
         frame = CanvasFrame(self.runObj, chans, xchan)
         frame.Show()
-    
+
     def OnCloseWindow(self, event):
         self.Destroy()
-    
+
     def OnMerge(self, event):
         wizard = wx.wizard.Wizard(self, -1, "Merge Wizard", images.getWizTest1Bitmap())
         page1 = mergewiz.StartPage(wizard)
@@ -399,60 +399,60 @@ class BrowserFrame(wx.Frame):
 
         wizard.RunWizard(page1)
         wx.MessageBox("Merge completed successfully", "That's all folks!")
-        
-        
+
+
     def OnPlot(self, event):
         frame = overplot.OverPlotFrame()
         frame.Show()
-        
+
     def OnPlotMore(self, event):
         frame = overplot.OverPlotFrame(20)
         frame.Show()
-        
-        
+
+
     def OnAnalyze(self, event):
         frame = analysis.AnalysisFrame()
         frame.Show()
-               
+
     def OnData(self, event): 
         pass 
-        
+
     def OnPathUpdate(self,event):         
         frame = PathFrame()
         frame.Show()
-        
+
     def OnCompareBoS(self, event):
         frame = CorrelateFrame()
         frame.Show()
-    
+
     def OnAbout(self, event):
         dlg = ToolsAbout(self)
         dlg.ShowModal()
         dlg.Destroy()
-        
+
     def OnExtrema(self, event):
         frame = extrema.ExtremaFrame()
         frame.Show()
-        
+
 class PathFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None,
                           title="Update Search Paths",
                           size=(600, 500))
         self.pathCtrl = wx.TextCtrl(self, -1, "",style=wx.TE_MULTILINE )  
-        
+
         self.pathlist = open("./lib/std_default.pth").read()
         self.pathCtrl.ChangeValue(self.pathlist)
         updateBtn = wx.Button(self, -1, "Update Paths")
-        
+
         self.Bind(wx.EVT_BUTTON, self.OnPathWrite, updateBtn)
-        
+
         mainSizer = wx.BoxSizer(wx.VERTICAL)
         mainSizer.Add(self.pathCtrl, 4, wx.EXPAND, 0)
         mainSizer.Add(updateBtn, 0, wx.TOP|wx.ALIGN_CENTER_HORIZONTAL, 10)
         self.SetSizer(mainSizer)
         self.Layout()
-        
+
     def OnPathWrite(self,event):
         self.pathlist = self.pathCtrl.GetValue()
         outfile = open("./lib/std_default.pth", "w")
@@ -460,31 +460,31 @@ class PathFrame(wx.Frame):
         outfile.close()
         self.Destroy()
 
-        
+
 class DataFrame(wx.Frame):
     def __init__(self, runData):
         wx.Frame.__init__(self, None,
                           title="Run Data  "+runData.filename,
                           size=(640,480))
-        
+
         grid = wx.grid.Grid(self)
         table = DataTable(runData)
         grid.SetTable(table, True)
         grid.SetDefaultColSize(80)
-        
+
 class CalFrame(wx.Frame):
     def __init__(self, runData):
         #file = open(r'.\lib\obc_channel_table.txt','w')
-        
+
         wx.Frame.__init__(self, None,
                           title="Cal File Viewer   "+runData.filename,
                           size=(600, 500))
-                
+
         columns = ['Ch. #', 'Name', 'Alt Name', 'Gain', 'Zero', 'Eng. Units']
         self.list = wx.ListCtrl(self, -1, style=wx.LC_REPORT|wx.LC_HRULES)
         for col, text in enumerate(columns):
             self.list.InsertColumn(col, text)
-        
+
         #lines = []
         for item in range(runData.nchans):
             index = self.list.InsertStringItem(item, str(item))
@@ -495,38 +495,38 @@ class CalFrame(wx.Frame):
             self.list.SetStringItem(index, 5, str(runData.eng_units[index]))
             #lines.append(str(index)+' - '+runData.chan_names[index]+'\n')
         #file.writelines(lines)
-            
+
         self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE_USEHEADER)
         self.list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
         self.list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
         self.list.SetColumnWidth(3, wx.LIST_AUTOSIZE)
         self.list.SetColumnWidth(4, wx.LIST_AUTOSIZE)
         self.list.SetColumnWidth(5, wx.LIST_AUTOSIZE)
-        
+
 class DataTable(wx.grid.PyGridTableBase):
     def __init__(self, runData):
         wx.grid.PyGridTableBase.__init__(self)
         self.runData = runData
-        
+
     def GetNumberRows(self):
         return len(self.runData.data)
-    
+
     def GetNumberCols(self):
         return self.runData.nchans
-    
+
     def GetValue(self, row, col):
         value = self.runData.data[row][col]
         return value
-    
+
     def IsEmptyCell(self, row, col):
         return False
-    
+
     def SetValue(self, row, col, value):
         pass
-    
+
     def GetColLabelValue(self, col):
         return self.runData.chan_names[col]
-    
+
 class ToolsAbout(wx.Dialog):
     text = '''
     <html>
@@ -540,36 +540,36 @@ class ToolsAbout(wx.Dialog):
     </center>
     <p><b>AM Tools</b> is a package of tools for analyzing and manipulating
     data from the Autonomous Model </p>
-    
+
     <p><b>Am Tools</b> is brought to you by Sam Cubbage, Copyright &copy; 2007.</p>
     </body>
     </html>
     '''
-    
+
     def __init__(self, parent):
         wx.Dialog.__init__(self, parent, -1, 'About AM Tools', size=(440, 400) )
-        
+
         html = wx.html.HtmlWindow(self)
         html.SetPage(self.text)
         button = wx.Button(self, wx.ID_OK, "Okay")
-        
+
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(html, 1, wx.EXPAND|wx.ALL, 5)
         sizer.Add(button, 0, wx.ALIGN_CENTER|wx.ALL, 5)
-        
+
         self.SetSizer(sizer)
         self.Layout()
-        
-    
+
+
 class App(wx.App):
     # Main app, derived from wx.App
-    
+
     def OnInit(self):
         # Start with a splash screen, skip if the file can not be found
         try:
             bmp = wx.Image("./lib/tool_img.png").ConvertToBitmap()
             wx.SplashScreen(bmp, wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT,
-                    500, None, -1)
+                            500, None, -1)
             wx.Yield()
         except:
             pass
@@ -579,7 +579,7 @@ class App(wx.App):
         frame.Center()
         frame.Show()
         return True
-    
+
 if __name__ == "__main__":
     app = App(redirect = False)
     app.MainLoop()

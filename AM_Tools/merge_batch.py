@@ -23,22 +23,25 @@ except:
 app=wx.PySimpleApp()
 
 for line in batch_lines:
-    
+
     fullname, std_dir, merge_file = line.split()
 
     # First we need to extract the runnumber and merge parameters
     obcpath =  os.path.dirname(fullname)
-    
+
     rootname, ext = os.path.splitext(os.path.basename(fullname))
     runnumber = rootname[4:]
-    
+
     print "runnumber = ", runnumber
     print "stddir = " , std_dir
     print "merge_file = ", merge_file
-    
+
     # Now change to the directory with the run
     os.chdir(obcpath)
 
-    MergeRun(int(runnumber), std_dir, merge_file)
-
+    try:
+        MergeRun(int(runnumber), std_dir, merge_file)
+    except:
+        print "Merge failed for run: ", runnumber
+        raise
 

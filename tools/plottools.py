@@ -369,6 +369,7 @@ class PlotPageWrapped:
         self.yxforms = iniData['yxforms']
         self.yoffsets = iniData['yoffsets']
         self.ychanlists = iniData['ychanlists']
+        self.ychanlabels = iniData['ylabels']
         
         
         self.perpage = params[2]
@@ -456,6 +457,8 @@ class PlotPageWrapped:
                     xlim(self.xmin, self.xmax)
                 if yrange[0] or yrange[1]:
                     ylim(yrange)
+                if self.ychanlabels[self.pgpntr + i] != '':
+                    ylabel(self.ychanlabels[self.pgpntr + i])
                     
                 # Put the plot.ini filename on the graph
                 figtext(0.03, 0.03, self.plot_title, rotation=90)
@@ -498,15 +501,20 @@ class PlotPage(PlotPageWrapped):
         yxforms = []
         funcs = []
         ychanlists = []
+        ylabels = []
         
         plot_file = open(plotdef)
         for line in plot_file:
             line = line.rstrip()
             func = ''
+            ylbl=''
             try:
-                ychan, ymin, ymax, yscale, yoffset, yxform, func = line.split()
+                ychan, ymin, ymax, yscale, yoffset, yxform, func, ylbl = line.split()
             except ValueError:
-                ychan, ymin, ymax, yscale, yoffset, yxform = line.split()
+                try:
+                    ychan, ymin, ymax, yscale, yoffset, yxform, func = line.split()
+                except ValueError:
+                    ychan, ymin, ymax, yscale, yoffset, yxform = line.split()
             ychan = np.int_(ychan.split(','))
             if not func:
                 func = '=$'+str(ychan[0])
@@ -518,10 +526,11 @@ class PlotPage(PlotPageWrapped):
             yoffsets.append(float(yoffset))
             yxforms.append(int(yxform))
             funcs.append(func)
+            ylabels.append(ylbl.replace('_',' '))
             numchans += 1
             
         iniData = {'numchans':numchans, 'funcs':funcs, 'ychans':ychans, 'ymins':ymins, 'ymaxs':ymaxs,
-                    'yscales':yscales, 'yoffsets':yoffsets, 'yxforms':yxforms, 'ychanlists':ychanlists}
+                'yscales':yscales, 'yoffsets':yoffsets, 'yxforms':yxforms, 'ychanlists':ychanlists, 'ylabels':ylabels}
             
         PlotPageWrapped.__init__(self, run_list, params = params, iniData = iniData, plot_title = plotdef)
    

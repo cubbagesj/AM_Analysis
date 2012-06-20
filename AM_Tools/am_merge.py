@@ -758,32 +758,82 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
 
-                elif mrg_chans[i] == 930 and 'Deck' in sp_gauges:         # Computed SOF5 Fx
+                elif mrg_chans[i] == 930 and 'Deck' in sp_gauges:         # Combined Deck Fx
                     EUdata[i] = sp_gauges['Deck'].CFx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 931 and 'Deck' in sp_gauges:         # Computed SOF5 Fy
+                elif mrg_chans[i] == 931 and 'Deck' in sp_gauges:         # Combined Deck Fy
                     EUdata[i] = sp_gauges['Deck'].CFy
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 932 and 'Deck' in sp_gauges:         # Computed SOF5 Fz
+                elif mrg_chans[i] == 932 and 'Deck' in sp_gauges:         # Combined Deck Fz
                     EUdata[i] = sp_gauges['Deck'].CFz
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 933 and 'Deck' in sp_gauges:         # Computed SOF5 Mx
+                elif mrg_chans[i] == 933 and 'Deck' in sp_gauges:         # Combined Deck Mx
                     EUdata[i] = sp_gauges['Deck'].CMx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 934 and 'Deck' in sp_gauges:         # Computed SOF5 My
+                elif mrg_chans[i] == 934 and 'Deck' in sp_gauges:         # Combined Deck My
                     EUdata[i] = sp_gauges['Deck'].CMy
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 935 and 'Deck' in sp_gauges:         # Computed SOF5 Mz
+                elif mrg_chans[i] == 935 and 'Deck' in sp_gauges:         # Combined Deck Mz
                     EUdata[i] = sp_gauges['Deck'].CMz
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
 
+                elif mrg_chans[i] == 940 and 'Deck' in sp_gauges:         # Fwd Deck Fx - No wt corr
+                    EUdata[i] = sp_gauges['Deck'].compForcesa[0]
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 941 and 'Deck' in sp_gauges:         # Fwd Deck Fy - No wt corr
+                    EUdata[i] = sp_gauges['Deck'].compForcesa[1]
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 942 and 'Deck' in sp_gauges:         # Fwd Deck Fz - No wt Corr
+                    EUdata[i] = sp_gauges['Deck'].compForcesa[2]
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 943 and 'Deck' in sp_gauges:         # Fwd Deck Mx - No wt Corr
+                    EUdata[i] = sp_gauges['Deck'].compForcesa[3]
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 944 and 'Deck' in sp_gauges:         # Fwd Deck My - No wt Corr
+                    EUdata[i] = sp_gauges['Deck'].compForcesa[4]
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 945 and 'Deck' in sp_gauges:         # Fwd Deck Mz - No wt Corr
+                    EUdata[i] = sp_gauges['Deck'].compForcesa[5]
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
 
+                elif mrg_chans[i] == 950 and 'Deck' in sp_gauges:         # Aft Deck Fx - No wt corr
+                    EUdata[i] = sp_gauges['Deck'].compForcesf[0]
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 951 and 'Deck' in sp_gauges:         # Aft Deck Fy - No wt corr
+                    EUdata[i] = sp_gauges['Deck'].compForcesf[1]
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 952 and 'Deck' in sp_gauges:         # Aft Deck Fz - No wt Corr
+                    EUdata[i] = sp_gauges['Deck'].compForcesf[2]
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 953 and 'Deck' in sp_gauges:         # Aft Deck Mx - No wt Corr
+                    EUdata[i] = sp_gauges['Deck'].compForcesf[3]
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 954 and 'Deck' in sp_gauges:         # Aft Deck My - No wt Corr
+                    EUdata[i] = sp_gauges['Deck'].compForcesf[4]
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 955 and 'Deck' in sp_gauges:         # Aft Deck Mz - No wt Corr
+                    EUdata[i] = sp_gauges['Deck'].compForcesf[5]
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+
+                      
                 elif mrg_chans[i] == 850 and 'Kistler' in sp_gauges:         # Computed Kistler Fx
                     EUdata[i] = sp_gauges['Kistler'].CFx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])

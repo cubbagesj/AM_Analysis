@@ -24,14 +24,14 @@ class STDFile:
         Initializing an instance of the class reads
         the run into memory and provides methods for accessing and
         getting info on the run.
-        
+
         Public Methods are:
             __init__    : Intializes object, finds run and loads data
             info        : Prints the run information
             getEUData   : Returns a column of data converted to EU
             getRawData  : Returns a column of raw data
     """
-    
+
     # Set up the boat geometry info based on ship length
     # Format is len: [radius, xnose, xsail, hsail]
     GeoTable = {'688/751':[16.50, 164.4, 66.21, 16.19],
@@ -40,7 +40,7 @@ class STDFile:
                 'S23':[20.0, 209.93, 116.10, 17.0],
                 'VA':[17.0, 172.27, 89.25, 19.58],
                 'SSGN':[21.0, 257.42, 154.96, 26.6]}
-    
+
     def __init__(self, run_number='0', search_path='.'):
         """ Initialize the run, find and read in the data.
         The search_path defaults to the local directory.  The files must
@@ -53,14 +53,14 @@ class STDFile:
         else:
             # Attempt to find the run on the path, return empty structure if not found
             fullname = find_file(run_number+'.std', search_path)
-            
+
         if not fullname:
             if not search_path == 'c:\AM_merge_data':
                 if not os.path.exists(search_path):
                     #if the file does not exist and the search path does not exist
                     #check the default local directory
                     fullname = search_file_walk(run_number+'.std', 'c:\AM_merge_data')
-        
+
         if not fullname:
             self.filename = ''
             self.dirname = ''
@@ -74,10 +74,10 @@ class STDFile:
             self.len = 0.0
         else:      
             dirname, filename = os.path.split(fullname)
-            
-	    # First open the file and read the header info
+
+            # First open the file and read the header info
             f = open(fullname, 'r')
-            
+
             self.filename = filename
             self.dirname = dirname
             self.filetype = f.readline().strip()
@@ -87,7 +87,7 @@ class STDFile:
                 # Delimtxt format
                 self.title = f.readline().strip()
                 self.timestamp = f.readline().strip()
-                
+
                 line1 = f.readline().strip()
                 line1 = line1.replace(',', ' ')
                 self.nchans = int(line1.split()[0])
@@ -96,7 +96,7 @@ class STDFile:
                     self.length = float(line1.split()[2])
                 except:
                     self.length = 377.33
-                    
+
                 # get the geometry info from the table based on boat length
                 if abs(self.length - 362) < 0.8 :
                     self.boat = '688/751'
@@ -112,8 +112,8 @@ class STDFile:
                     self.boat = 'TB'
                 else:
                     self.boat = '688/751'
-                       
-                
+
+
                 line1 = f.readline().strip()
                 line1 = line1.replace("' '", "'  '")
                 self.chan_names = line1.split("'  '")
@@ -126,12 +126,12 @@ class STDFile:
                 # Block
                 self.title = self.filetype
                 self.timestamp = f.readline().strip()
-                
+
                 line1 = f.readline().strip()
                 line1 = line1.replace(',', ' ')
                 self.nchans = int(line1.split()[0])
                 self.dt = float(line1.split()[1])
-                 
+
                 # Chan names are 6 per line
                 self.chan_names = []
                 for cnt in range(self.nchans/6):
@@ -150,7 +150,7 @@ class STDFile:
                         else:
                             name = line1[5+(12*x):13+(12*x)]
                         self.chan_names.append(name)
-                    
+
                 # get the rest of the file in one big gulp
                 alldata = f.read().split()
                 datalist = []
@@ -168,17 +168,17 @@ class STDFile:
                 self.time = arange(0, len(self.data), dtype=float)
                 self.time = self.time * self.dt
 
-    
+
             # For STD files, the gains are 1 and zeros are zero
             self.gains = ones((self.nchans), dtype = float)
             self.zeros = zeros((self.nchans), dtype=float)
-            
+
             # Compute the run stats
             self.run_stats()
 
     def info(self):
         """ Prints information on the run"""
-        
+
         print "Filename: %s" % self.filename
         try:
             print "Filetype: %s" % self.filetype
@@ -192,56 +192,56 @@ class STDFile:
             print
             print "Standby at record: %d  time: %f" % (self.stdbyrec, self.stdbytime)
             print "Execute at record: %d  time: %f" % (self.execrec, self.exectime)
-            
+
         except:
             pass
-        
+
     def getEUData(self, channel):
         """ Returns an array containing the request channel of data
             in engineering units - Full scale values
         """
-        
+
         if channel < 0 or channel > self.nchans:
             return None
         else:
             return (self.data[:,channel]-self.zeros[channel])* self.gains[channel]
-        
+
     def getRAWData(self, channel):
         """ Returns an array containing the request channel of data
             in raw units (no conversion)
         """
         # For STD filesm there are no RAW units so return EU instead
-        
+
         if channel < 0 or channel > self.nchans:
             return None
         else:
             return self.data[:,channel]
-        
+
     def run_stats(self):
         """ Calculate important run stats like time of execute"""
 
         # Status is always at channel 25
 
-	try:
+        try:
             # Find where the status goes to 5, this is execute time
             status = list(self.data[:,25])
             self.execrec = status.index(5)
             self.exectime = self.time[self.execrec]
             self.stdbyrec = status.index(2)
             self.stdbytime = self.time[self.stdbyrec]
-        
+
             # Compute the normalized time, i.e. time from execute
             self.ntime = self.time - self.exectime
-	except:
-	    self.ntime = self.time
-	    self.execrec = 0
-	    self.exectime = 0
-	    self.stdbyrec = 0
-	    self.stdbytime = 0
+        except:
+            self.ntime = self.time
+            self.execrec = 0
+            self.exectime = 0
+            self.stdbyrec = 0
+            self.stdbytime = 0
 
         # Now compute the value of each channel for 10 steps before
         # execute and store this in case we want to match up initial values
-        
+
         self.init_values = []
         for channel in range(self.nchans):
             chan_avg = 0.0
@@ -253,7 +253,7 @@ class STDFile:
 
         # Now compute the approach value of each channel btwn stdby and 
         # execute and store this
-        
+
         self.appr_values = []
         for channel in range(self.nchans):
             chan_avg = 0.0
@@ -262,7 +262,7 @@ class STDFile:
                 chan_avg += self.data[x,channel]
                 count += 1
             self.appr_values.append(chan_avg/count)
-              
+
     def compStats(self, start=None, end=None):
         """ This routine will compute the max/min for each data channel
         between start and end times.  The values are stored in 4 seperate lists
@@ -276,10 +276,10 @@ class STDFile:
             rundata = self.data[start:,:]
         else:
             rundata = self.data[start:end,:]
-            
+
         # Compute the nose and sail depths
         self.compZnosesail(STDFile.GeoTable[self.boat], rundata)
-        
+
         # Now to get the max and mins for the normal channels
         self.maxValues = []
         self.minValues = []
@@ -303,7 +303,7 @@ class STDFile:
             self.minValues.append(chanmin)
             self.maxTimes.append(self.ntime[self.execrec+maxrec])
             self.minTimes.append(self.ntime[self.execrec+minrec])
-        
+
         # Compute the maxes and mins of the nose and sail depth channels
         # Filter the data first
         for i in range(len(self.Znose)):
@@ -318,9 +318,9 @@ class STDFile:
         self.maxZsailtime = self.ntime[self.execrec+self.Zsail.index(self.maxZsail)]
         self.minZsail = min(self.Zsail)
         self.minZsailtime = self.ntime[self.execrec+self.Zsail.index(self.minZsail)]
-        
-            
-            
+
+
+
     def compZnosesail(self, geometry, data):
         """ Computes the nose and sail depth based on the geometry info
         Assumes that ZGA is at 22, pitch at 8, and roll at 7
@@ -332,7 +332,7 @@ class STDFile:
         self.Zsailappr = self.appr_values[22] + (-xsail * m.sin(m.radians(self.appr_values[8]))+
                                                  zsail * m.cos(m.radians(self.appr_values[8]))*
                                                  m.cos(m.radians(self.appr_values[7])))
-        
+
         self.Znose = []
         self.Zsail = []
         for tstep in range(len(data)):
@@ -343,23 +343,23 @@ class STDFile:
             saildepth = data[tstep,22] + (-xsail * sinTH + zsail * cosTH * cosPH)
             self.Znose.append(nosedepth)
             self.Zsail.append(saildepth)
-            
-        
-        
-        
+
+
+
+
 class OBCFile:
     """ Run file class for manipulation of AM OBC data:
         Initializing an instance of the class reads
         the run into memory and provides methods for accessing and
         getting info on the run.
-        
+
         Public Methods are:
             __init__    : Intializes objetc, finds run and loads data
             info        : Prints the run information
             getEUData   : Returns a column of data converted to EU
             getRawData  : Returns a column of raw data
     """
-        
+
     def __init__(self, run_number='0', search_path='.'):
         """ Initialize the run, find and read in the data.
             The search_path defults to only the local directory.
@@ -369,14 +369,14 @@ class OBCFile:
         fullname = search_file_walk(str('run-'+run_number+'.obc'), search_path)
         fname = (str('run-'+run_number+'.obc'), search_path)
         print fname
-        
+
         if not fullname:
             if not search_path == 'c:\AM_data':
                 if not os.path.exists(search_path):
                     #if the file does not exist and the search path does not exist
                     #check the default local directory
                     fullname = search_file_walk('run-'+run_number+'.obc', 'c:\AM_data')
-        
+
         if not fullname:
             self.filename = ''
             self.dirname = ''
@@ -387,15 +387,15 @@ class OBCFile:
             self.data = []
             self.time = []
             self.dt = 0
-            
+
         else:      
             dirname, filename = os.path.split(fullname)
             runfile = os.path.join(dirname, 'run-'+run_number+'.run')
             calfile = os.path.join(dirname, 'run-'+run_number+'.cal')
-            
-    	    self.filename = filename
+
+            self.filename = filename
             self.dirname = dirname
-    	    self.basename = 'run-'+run_number
+            self.basename = 'run-'+run_number
             self.filetype = 'AM-obc'
             self.title = ''
             self.timestamp = time.ctime(os.path.getmtime(fullname))
@@ -405,18 +405,18 @@ class OBCFile:
             # Because the obc files are large (>10Mb), using the load()
             # call takes 30-40s.  For faster access, keep the values as strings
             # until we need them
-            
+
             self.data = []
             obcfile = open(fullname, 'r')
             for record in obcfile:
                 record = record.rstrip()
                 row = record.split()
                 self.data.append(row)
-            
+
             # There is no time channel, so make one
             self.time = arange(0, len(self.data), dtype=float)
             self.time = self.time * .01
-            
+
             # try to get the run info from runfile
             try:
                 lines = open(runfile).read().splitlines()
@@ -429,7 +429,7 @@ class OBCFile:
                         self.title = "Title Not Defined"
             except:
                 self.title = ''
-                
+
             # try to get the cals and channel names from cal file    
             c = cfgparse.ConfigParser()
             try:
@@ -443,17 +443,17 @@ class OBCFile:
                 self.data_pkt_locs = []
                 self.eng_units = []
                 self.cal_dates = []
-                
+
                 # Then read the ini file for the channel cals
                 for channel in range(self.nchans):
-                  self.gains.append(c.add_option('gain', type='float', keys='CHAN%d' % channel).get())
-                  self.zeros.append(c.add_option('zero', type='float', keys='CHAN%d' % channel).get())
-                  self.chan_names.append(c.add_option('sys_name', keys='CHAN%d' % channel).get().strip())
-                  self.alt_names.append(c.add_option('alt_name', keys='CHAN%d' % channel).get().strip())
-                  self.data_pkt_locs.append(c.add_option('data_pkt_loc', type='int', keys='CHAN%d' % channel).get())
-                  self.eng_units.append(c.add_option('eng_units', keys='CHAN%d' % channel).get().strip())
-                  self.cal_dates.append(c.add_option('cal_date', keys='CHAN%d' % channel).get())
-                
+                    self.gains.append(c.add_option('gain', type='float', keys='CHAN%d' % channel).get())
+                    self.zeros.append(c.add_option('zero', type='float', keys='CHAN%d' % channel).get())
+                    self.chan_names.append(c.add_option('sys_name', keys='CHAN%d' % channel).get().strip())
+                    self.alt_names.append(c.add_option('alt_name', keys='CHAN%d' % channel).get().strip())
+                    self.data_pkt_locs.append(c.add_option('data_pkt_loc', type='int', keys='CHAN%d' % channel).get())
+                    self.eng_units.append(c.add_option('eng_units', keys='CHAN%d' % channel).get().strip())
+                    self.cal_dates.append(c.add_option('cal_date', keys='CHAN%d' % channel).get())
+
                 self.run_stats()
             except:
                 self.nchans = 0
@@ -463,7 +463,7 @@ class OBCFile:
 
     def info(self):
         """ Prints information on the run"""
-        
+
         print "Filename: %s" % self.filename
         try:
             print "Filetype: %s" % self.filetype
@@ -478,37 +478,37 @@ class OBCFile:
             print "Execute at record: %d  time: %f" % (self.execrec, self.exectime)
         except:
             pass
-        
+
     def getEUData(self, channel):
         """ Returns an array containing the request channel of data
             in engineering units - Model Scale Units
         """
-        
+
         if channel < 0 or channel > self.nchans:
             return None
         else:
             column = []
             for x in range(len(self.data)):
                 column.append(float(self.data[x][channel]))
-            
+
             col_array = array((column), dtype=float)
             return (col_array-self.zeros[channel])* self.gains[channel]
-        
+
     def getRAWData(self, channel):
         """ Returns an array containing the request channel of data
             in raw units (no conversion)
         """
-        
+
         if channel < 0 or channel > self.nchans:
             return None
         else:
             column = []
             for x in range(len(self.data)):
                 column.append(float(self.data[x][channel]))
-            
+
             col_array = array((column), dtype=float)
             return col_array
-        
+
     def run_stats(self):
         """ Calculate important run stats.
             Current Stats:
@@ -522,19 +522,19 @@ class OBCFile:
         status = []
         for x in range(len(self.data)):
             status.append(int(self.data[x][325]))
-	try: 
+        try: 
             self.stdbyrec = status.index(0x0F33)
             self.stdbytime = self.time[self.stdbyrec]
             self.execrec = status.index(0x0F43)
             self.exectime = self.time[self.execrec]
-	except:
-	    self.stdbyrec = 0
-	    self.stdbytime = 0.0
-	    self.execrec = 0
-	    self.exectime = 0.0
+        except:
+            self.stdbyrec = 0
+            self.stdbytime = 0.0
+            self.execrec = 0
+            self.exectime = 0.0
         # Create a normalized time i.e. time since execute
         self.ntime = self.time - self.exectime
-        
+
         # For obc, we don't want to do the initial values for all 364
         # channels, so just set these to zeros
         self.init_values = zeros((self.nchans), dtype=float)
@@ -544,22 +544,22 @@ class OBCFile:
             Created in same dir as obc file with .eu extension
         """
 
-	# First open the output file using the filename
-	eufile = open(os.path.join(self.dirname, self.basename+'.eu'), 'w')
-	
-	# First ouput the titles in one line
-	for name in self.chan_names:
-	    eufile.write(name+',  ')
-	eufile.write('\n')
-        
-	# Now output the EU data line by line
-	for row in range(len(self.data)):
-	    for column in range(self.nchans):
-		value = (float(self.data[row][column])-self.zeros[column]) * self.gains[column]
-		eufile.write(str(value)+', ')
-	    eufile.write('\n')
+        # First open the output file using the filename
+        eufile = open(os.path.join(self.dirname, self.basename+'.eu'), 'w')
 
-	eufile.close()
+        # First ouput the titles in one line
+        for name in self.chan_names:
+            eufile.write(name+',  ')
+        eufile.write('\n')
+
+        # Now output the EU data line by line
+        for row in range(len(self.data)):
+            for column in range(self.nchans):
+                value = (float(self.data[row][column])-self.zeros[column]) * self.gains[column]
+                eufile.write(str(value)+', ')
+            eufile.write('\n')
+
+        eufile.close()
 
 
 if __name__ == "__main__":
@@ -572,4 +572,3 @@ if __name__ == "__main__":
     print test.stdbytime
     print test.exectime
     test.EU_file()
-    

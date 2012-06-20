@@ -17,23 +17,23 @@ import wx
 from tools.plottools import *
 
 class CanvasFrame(wx.Frame):
-    
+
     #added xchan variable to control which channel is used as the x axis.  Defaults
     #to -1 so nothing should change for other uses.
     def __init__(self, runData, chans, xchan = -1):
         wx.Frame.__init__(self,None,-1,
-                         'Plot  '+runData.filename)
+                          'Plot  '+runData.filename)
 
         self.SetBackgroundColour(wx.NamedColor("WHITE"))
 
         self.figure = Figure(figsize=(12,6))
         self.axes = self.figure.add_subplot(111)
-	self.figure.subplots_adjust(bottom=.2)
+        self.figure.subplots_adjust(bottom=.2)
         lines = []
         names = []
         for chan in chans:
             xdata, ydata = get_xy(runData, chan, xchan)
-            
+
             #Get some values from the data for the max/min/mean
             self.ydata = ydata
             #changed code for max and min since they won't always be the first and
@@ -41,7 +41,7 @@ class CanvasFrame(wx.Frame):
             self.xmin = float(min(xdata))
             self.xmax = float(max(xdata))
             self.dt = runData.dt
-            
+
             line = self.axes.plot(xdata, ydata)
             self.axes.grid(True)
             #x channel needs to be properly named
@@ -54,17 +54,17 @@ class CanvasFrame(wx.Frame):
             name = runData.chan_names[chan]
             lines.append(line)
             names.append(name)
-            
+
         if len(chans) > 1:
             leg = self.axes.legend(lines, names, 'lower left')
             ltext = leg.get_texts()
             setp(ltext, fontsize='small')
         else:
             self.axes.set_ylabel(names[0])
-        
+
         self.canvas = FigureCanvas(self, -1, self.figure)
         self.cid = self.canvas.mpl_connect('draw_event', self.onDraw)
-        
+
         self.Bind(wx.EVT_CLOSE, self.OnClose)
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
@@ -88,43 +88,42 @@ class CanvasFrame(wx.Frame):
         self.sizer.Add(self.toolbar, 0, wx.LEFT | wx.EXPAND)
         # update the axes menu on the toolbar
         self.toolbar.update()  
-       
+
     def onDraw(self, event):
         xstart, xstop = self.axes.get_xlim()
         if xstart < self.xmin:
             xstart = self.xmin
         if xstop > self.xmax:
             xstop = self.xmax
-        
+
         yminindex = int((xstart - self.xmin) / self.dt)
         ymaxindex = int((xstop - self.xmin) / self.dt)
-        
+
         if yminindex < 0:
             yminindex = 0
         if ymaxindex > len(self.ydata)-1:
             ymaxindex = -1
-        
+
         yrange = self.ydata[yminindex:ymaxindex]
         ymax = float(max(yrange))
         ymin = float(min(yrange))
         ymean = float(average(yrange))
-        
+
         self.statusbar.SetStatusText('Max = %.3f' %ymax, 1)
         self.statusbar.SetStatusText('Min = %.3f' %ymin, 2)
         self.statusbar.SetStatusText('Mean = %.3f' %ymean, 3)
-        
+
     def OnPaint(self, event):
         self.canvas.draw()
-    
+
     def OnClose(self, event):
         self.canvas.mpl_disconnect(self.cid)
         self.Destroy()
 
 
-        
+
 if __name__ == "__main__":
     app = wx.PySimpleApp(redirect=False)
     frame = CanvasFrame()
     frame.Show()
     app.MainLoop()
-
