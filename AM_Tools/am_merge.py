@@ -446,11 +446,11 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
             #Roll
             sinPH = sin(radians(EUdata[7]))
             cosPH = cos(radians(EUdata[7]))
-            
+
             # Roll zero 
             sinPHZ = sin(radians(EUzero[7]))
             cosPHZ = cos(radians(EUzero[7]))
-            
+
             bodyAngles = [sinTH, cosTH, sinPH, cosPH, sinTHZ, cosTHZ, sinPHZ, cosPHZ]
 
             # And now to process the 6DOF dynos
@@ -861,7 +861,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
 
-                      
+
                 elif mrg_chans[i] == 850 and 'Kistler' in sp_gauges:         # Computed Kistler Fx
                     EUdata[i] = sp_gauges['Kistler'].CFx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
