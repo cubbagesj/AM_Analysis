@@ -49,7 +49,10 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
 
     # LOG File - Open up a file to write diagnostic info to
     #
-    logfile = open('merge.log','w')
+    try:
+        logfile = open('merge.log','w')
+    except:
+        logfile = open('/dev/null', 'w')
     logfile.write("AM_merge:  Merging run %d \n" % runnumber)
     logfile.write('STD Directory: %s' % std_dir)
     logfile.write("AM_Merge.py -- Autonomous model merge program\n")
@@ -683,78 +686,103 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
 
-                elif mrg_chans[i] == 900 and 'SOF3' in sp_gauges:         # Computed SOF3 Fx
-                    EUdata[i] = sp_gauges['SOF3'].CFx
+                elif mrg_chans[i] == 890 and '6DOF3' in sp_gauges:         # Computed 6DOF3 Fx
+                    EUdata[i] = sp_gauges['6DOF3'].CFx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 901 and 'SOF3' in sp_gauges:         # Computed SOF3 Fy
-                    EUdata[i] = sp_gauges['SOF3'].CFy
+                elif mrg_chans[i] == 891 and '6DOF3' in sp_gauges:         # Computed 6DOF3 Fy
+                    EUdata[i] = sp_gauges['6DOF3'].CFy
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 902 and 'SOF3' in sp_gauges:         # Computed SOF3 Fz
-                    EUdata[i] = sp_gauges['SOF3'].CFz
+                elif mrg_chans[i] == 892 and '6DOF3' in sp_gauges:         # Computed 6DOF3 Fz
+                    EUdata[i] = sp_gauges['6DOF3'].CFz
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 903 and 'SOF3' in sp_gauges:         # Computed SOF3 Mx
-                    EUdata[i] = sp_gauges['SOF3'].CMx
+                elif mrg_chans[i] == 893 and '6DOF3' in sp_gauges:         # Computed 6DOF3 Mx
+                    EUdata[i] = sp_gauges['6DOF3'].CMx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 904 and 'SOF3' in sp_gauges:         # Computed SOF3 My
-                    EUdata[i] = sp_gauges['SOF3'].CMy
+                elif mrg_chans[i] == 894 and '6DOF3' in sp_gauges:         # Computed 6DOF3 My
+                    EUdata[i] = sp_gauges['6DOF3'].CMy
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 905 and 'SOF3' in sp_gauges:         # Computed SOF3 Mz
-                    EUdata[i] = sp_gauges['SOF3'].CMz
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-
-                elif mrg_chans[i] == 910 and 'SOF4' in sp_gauges:         # Computed SOF4 Fx
-                    EUdata[i] = sp_gauges['SOF4'].CFx
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 911 and 'SOF4' in sp_gauges:         # Computed SOF4 Fy
-                    EUdata[i] = sp_gauges['SOF4'].CFy
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 912 and 'SOF4' in sp_gauges:         # Computed SOF4 Fz
-                    EUdata[i] = sp_gauges['SOF4'].CFz
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 913 and 'SOF4' in sp_gauges:         # Computed SOF4 Mx
-                    EUdata[i] = sp_gauges['SOF4'].CMx
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 914 and 'SOF4' in sp_gauges:         # Computed SOF4 My
-                    EUdata[i] = sp_gauges['SOF4'].CMy
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 915 and 'SOF4' in sp_gauges:         # Computed SOF4 Mz
-                    EUdata[i] = sp_gauges['SOF4'].CMz
+                elif mrg_chans[i] == 895 and '6DOF3' in sp_gauges:         # Computed 6DOF3 Mz
+                    EUdata[i] = sp_gauges['6DOF3'].CMz
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
 
-                elif mrg_chans[i] == 920 and 'SOF5' in sp_gauges:         # Computed SOF5 Fx
-                    EUdata[i] = sp_gauges['SOF5'].CFx
+                elif mrg_chans[i] == 900 and '6DOF4' in sp_gauges:         # Computed 6DOF4 Fx
+                    EUdata[i] = sp_gauges['6DOF4'].CFx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 921 and 'SOF5' in sp_gauges:         # Computed SOF5 Fy
-                    EUdata[i] = sp_gauges['SOF5'].CFy
+                elif mrg_chans[i] == 901 and '6DOF4' in sp_gauges:         # Computed 6DOF4 Fy
+                    EUdata[i] = sp_gauges['6DOF4'].CFy
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 922 and 'SOF5' in sp_gauges:         # Computed SOF5 Fz
-                    EUdata[i] = sp_gauges['SOF5'].CFz
+                elif mrg_chans[i] == 902 and '6DOF4' in sp_gauges:         # Computed 6DOF4 Fz
+                    EUdata[i] = sp_gauges['6DOF4'].CFz
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 923 and 'SOF5' in sp_gauges:         # Computed SOF5 Mx
-                    EUdata[i] = sp_gauges['SOF5'].CMx
+                elif mrg_chans[i] == 903 and '6DOF4' in sp_gauges:         # Computed 6DOF4 Mx
+                    EUdata[i] = sp_gauges['6DOF4'].CMx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 924 and 'SOF5' in sp_gauges:         # Computed SOF5 My
-                    EUdata[i] = sp_gauges['SOF5'].CMy
+                elif mrg_chans[i] == 904 and '6DOF4' in sp_gauges:         # Computed 6DOF4 My
+                    EUdata[i] = sp_gauges['6DOF4'].CMy
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 925 and 'SOF5' in sp_gauges:         # Computed SOF5 Mz
-                    EUdata[i] = sp_gauges['SOF5'].CMz
+                elif mrg_chans[i] == 905 and '6DOF4' in sp_gauges:         # Computed 6DOF4 Mz
+                    EUdata[i] = sp_gauges['6DOF4'].CMz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+
+                elif mrg_chans[i] == 910 and '6DOF5' in sp_gauges:         # Computed 6DOF5 Fx
+                    EUdata[i] = sp_gauges['6DOF5'].CFx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 911 and '6DOF5' in sp_gauges:         # Computed 6DOF5 Fy
+                    EUdata[i] = sp_gauges['6DOF5'].CFy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 912 and '6DOF5' in sp_gauges:         # Computed 6DOF5 Fz
+                    EUdata[i] = sp_gauges['6DOF5'].CFz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 913 and '6DOF5' in sp_gauges:         # Computed 6DOF5 Mx
+                    EUdata[i] = sp_gauges['6DOF5'].CMx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 914 and '6DOF5' in sp_gauges:         # Computed 6DOF5 My
+                    EUdata[i] = sp_gauges['6DOF5'].CMy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 915 and '6DOF5' in sp_gauges:         # Computed 6DOF5 Mz
+                    EUdata[i] = sp_gauges['6DOF5'].CMz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+
+                elif mrg_chans[i] == 920 and '6DOF6' in sp_gauges:         # Computed 6DOF6 Fx
+                    EUdata[i] = sp_gauges['6DOF6'].CFx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 921 and '6DOF6' in sp_gauges:         # Computed 6DOF6 Fy
+                    EUdata[i] = sp_gauges['6DOF6'].CFy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 922 and '6DOF6' in sp_gauges:         # Computed 6DOF6 Fz
+                    EUdata[i] = sp_gauges['6DOF6'].CFz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 923 and '6DOF6' in sp_gauges:         # Computed 6DOF6 Mx
+                    EUdata[i] = sp_gauges['6DOF6'].CMx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 924 and '6DOF6' in sp_gauges:         # Computed 6DOF6 My
+                    EUdata[i] = sp_gauges['6DOF6'].CMy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 925 and '6DOF6' in sp_gauges:         # Computed 6DOF6 Mz
+                    EUdata[i] = sp_gauges['6DOF6'].CMz
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
 
