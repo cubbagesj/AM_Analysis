@@ -67,7 +67,8 @@ def get_runs( run_list, obc_path='', std_path=''):
     # Now parse the run_list
     runs = []
     
-    std_path = '/disk2/home/'+os.environ['USERNAME'].lower()
+    std_path = os.path.expanduser('~')
+#    std_path = '/disk2/home/'+os.environ['USERNAME'].lower()
 #    obc_path = '/disk2/home/'+os.environ['USERNAME']+'/obcdata'
     obc_path = r'\\ATIS21\MODEL\RCM\Autonomous_Model\test_data'
     # search pattern for std filenames - Assumes that a file with a '-' in the

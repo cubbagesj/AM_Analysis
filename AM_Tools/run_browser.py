@@ -215,12 +215,13 @@ class BrowserFrame(wx.Frame):
 
         # Add nodes for the STD files
         # First try sim1 disks then default to local
-        rootDir = os.path.join('/disk2/home', os.environ['USER'])
+        #rootDir = os.path.join('/disk2/home', os.environ['USER'])
+        rootDir = os.path.expanduser('~')
         stdDir = os.path.join(rootDir, 'rcmdata')
         if os.path.exists(stdDir):
             self.TreeBuilder(stdDir, self.stdroot)
         else:
-            stdDir = '/disk2/home/samc'
+            stdDir = '/disk2/home/samc/rcmdata'
             self.TreeBuilder(stdDir, self.stdroot)
 
         # Add nodes for FS data
