@@ -136,9 +136,10 @@ def get_runs_overplot( run_list, title_list, obc_path='', std_path=''): #made a 
     # Now parse the run_list
     runs,titles,i = [], [],0
     
-    std_path = '/disk2/home/'+os.environ['USER']
+    std_path = os.path.expanduser('~')
+    #std_path = '/disk2/home/'+os.environ['USER']
     #obc_path = '/disk2/home/'+os.environ['USERNAME']+'/AM_data'
-    obc_path = '//ATIS21/MODEL/RCM/Autonomous_Model/test_data/OHIO_Replacement/10_02_35X'
+    obc_path = '/frmg/Autonomous_Model/test_data/SSN_23/SSN23-Starboard-Tray/'
 
     # search pattern for std filenames - Assumes that a file with a '-' in the
     # name is an STD file.  All others are considered OBC files
