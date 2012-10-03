@@ -652,14 +652,17 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     EUdata[i] = sp_gauges['SOF1'].CMx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
                 elif mrg_chans[i] == 834 and 'SOF1' in sp_gauges:         # Computed SOF1 My
                     EUdata[i] = sp_gauges['SOF1'].CMy
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
                 elif mrg_chans[i] == 835 and 'SOF1' in sp_gauges:         # Computed SOF1 Mz
                     EUdata[i] = sp_gauges['SOF1'].CMz
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
 
                 elif mrg_chans[i] == 840 and 'SOF2' in sp_gauges:         # Computed SOF2 Fx
                     EUdata[i] = sp_gauges['SOF2'].CFx
@@ -677,14 +680,17 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     EUdata[i] = sp_gauges['SOF2'].CMx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
                 elif mrg_chans[i] == 844 and 'SOF2' in sp_gauges:         # Computed SOF2 My
                     EUdata[i] = sp_gauges['SOF2'].CMy
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
                 elif mrg_chans[i] == 845 and 'SOF2' in sp_gauges:         # Computed SOF2 Mz
                     EUdata[i] = sp_gauges['SOF2'].CMz
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
 
                 elif mrg_chans[i] == 890 and '6DOF3' in sp_gauges:         # Computed 6DOF3 Fx
                     EUdata[i] = sp_gauges['6DOF3'].CFx
@@ -702,14 +708,17 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     EUdata[i] = sp_gauges['6DOF3'].CMx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
                 elif mrg_chans[i] == 894 and '6DOF3' in sp_gauges:         # Computed 6DOF3 My
                     EUdata[i] = sp_gauges['6DOF3'].CMy
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
                 elif mrg_chans[i] == 895 and '6DOF3' in sp_gauges:         # Computed 6DOF3 Mz
                     EUdata[i] = sp_gauges['6DOF3'].CMz
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
 
                 elif mrg_chans[i] == 900 and '6DOF4' in sp_gauges:         # Computed 6DOF4 Fx
                     EUdata[i] = sp_gauges['6DOF4'].CFx
@@ -727,14 +736,17 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     EUdata[i] = sp_gauges['6DOF4'].CMx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
                 elif mrg_chans[i] == 904 and '6DOF4' in sp_gauges:         # Computed 6DOF4 My
                     EUdata[i] = sp_gauges['6DOF4'].CMy
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
                 elif mrg_chans[i] == 905 and '6DOF4' in sp_gauges:         # Computed 6DOF4 Mz
                     EUdata[i] = sp_gauges['6DOF4'].CMz
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
 
                 elif mrg_chans[i] == 910 and '6DOF5' in sp_gauges:         # Computed 6DOF5 Fx
                     EUdata[i] = sp_gauges['6DOF5'].CFx
@@ -752,14 +764,17 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     EUdata[i] = sp_gauges['6DOF5'].CMx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
                 elif mrg_chans[i] == 914 and '6DOF5' in sp_gauges:         # Computed 6DOF5 My
                     EUdata[i] = sp_gauges['6DOF5'].CMy
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
                 elif mrg_chans[i] == 915 and '6DOF5' in sp_gauges:         # Computed 6DOF5 Mz
                     EUdata[i] = sp_gauges['6DOF5'].CMz
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
 
                 elif mrg_chans[i] == 920 and '6DOF6' in sp_gauges:         # Computed 6DOF6 Fx
                     EUdata[i] = sp_gauges['6DOF6'].CFx
@@ -777,14 +792,17 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     EUdata[i] = sp_gauges['6DOF6'].CMx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
                 elif mrg_chans[i] == 924 and '6DOF6' in sp_gauges:         # Computed 6DOF6 My
                     EUdata[i] = sp_gauges['6DOF6'].CMy
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
                 elif mrg_chans[i] == 925 and '6DOF6' in sp_gauges:         # Computed 6DOF6 Mz
                     EUdata[i] = sp_gauges['6DOF6'].CMz
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
 
                 elif mrg_chans[i] == 930 and 'Deck' in sp_gauges:         # Combined Deck Fx
                     EUdata[i] = sp_gauges['Deck'].CFx
@@ -802,14 +820,17 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     EUdata[i] = sp_gauges['Deck'].CMx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
                 elif mrg_chans[i] == 934 and 'Deck' in sp_gauges:         # Combined Deck My
                     EUdata[i] = sp_gauges['Deck'].CMy
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
                 elif mrg_chans[i] == 935 and 'Deck' in sp_gauges:         # Combined Deck Mz
                     EUdata[i] = sp_gauges['Deck'].CMz
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
 
                 elif mrg_chans[i] == 940 and 'Deck' in sp_gauges:         # Fwd Deck Fx - No wt corr
                     EUdata[i] = sp_gauges['Deck'].compForcesa[0]
@@ -827,14 +848,17 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     EUdata[i] = sp_gauges['Deck'].compForcesa[3]
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
                 elif mrg_chans[i] == 944 and 'Deck' in sp_gauges:         # Fwd Deck My - No wt Corr
                     EUdata[i] = sp_gauges['Deck'].compForcesa[4]
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
                 elif mrg_chans[i] == 945 and 'Deck' in sp_gauges:         # Fwd Deck Mz - No wt Corr
                     EUdata[i] = sp_gauges['Deck'].compForcesa[5]
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
 
                 elif mrg_chans[i] == 950 and 'Deck' in sp_gauges:         # Aft Deck Fx - No wt corr
                     EUdata[i] = sp_gauges['Deck'].compForcesf[0]
@@ -852,14 +876,17 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     EUdata[i] = sp_gauges['Deck'].compForcesf[3]
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
                 elif mrg_chans[i] == 954 and 'Deck' in sp_gauges:         # Aft Deck My - No wt Corr
                     EUdata[i] = sp_gauges['Deck'].compForcesf[4]
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
                 elif mrg_chans[i] == 955 and 'Deck' in sp_gauges:         # Aft Deck Mz - No wt Corr
                     EUdata[i] = sp_gauges['Deck'].compForcesf[5]
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
 
 
                 elif mrg_chans[i] == 850 and 'Kistler' in sp_gauges:         # Computed Kistler Fx
