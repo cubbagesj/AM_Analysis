@@ -322,7 +322,7 @@ class EditFrame(wx.Frame):
         </tr>
         </table>
         </center>
-        <p>The function plottiing functionality allows you to plot functions of one or multiple
+        <p>The function plotting functionality allows you to plot functions of one or multiple
         channels.</p>
         
         <p>To plot a function, put a comma deliminated list of the channels you wish to plot 
