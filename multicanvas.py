@@ -16,8 +16,8 @@ from matplotlib.figure import Figure
 
 from numpy import ceil
 
-from tools.plottools import *
-from tools.function_parse import doFunction, makeLabel
+from plottools import *
+from function_parse import doFunction, makeLabel
 
 class MultiCanvasFrame(wx.Frame):
     

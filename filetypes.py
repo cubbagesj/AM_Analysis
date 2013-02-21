@@ -12,7 +12,7 @@
 
 # Updated 8/13/2010 by C.Michael Pietras
 
-from tools.search_file import *
+from search_file import *
 import math as m
 from pylab import *
 import cfgparse

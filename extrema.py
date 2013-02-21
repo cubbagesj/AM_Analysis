@@ -11,7 +11,7 @@ import wx
 import wx.html
 import os
 import fnmatch
-import tools.plottools as plottools
+import plottools as plottools
 import numpy as np
 import time as time_mod
 from scipy import signal

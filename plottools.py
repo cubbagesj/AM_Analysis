@@ -34,7 +34,7 @@
     
 """
 
-from tools.filetypes import OBCFile, STDFile
+from filetypes import OBCFile, STDFile
 from pylab import *
 import re, cfgparse, sys, os
 import wx

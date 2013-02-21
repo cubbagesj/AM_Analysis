@@ -17,7 +17,7 @@ import wx
 import os
 import math
 
-from tools.plottools import *
+from plottools import *
 from multicanvas import MultiCanvasFrame
 
 

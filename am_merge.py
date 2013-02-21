@@ -41,8 +41,8 @@
 
 import os, sys, time
 import cfgparse
-from tools.calfile_new import CalFile
-from tools.dynos_new import *
+from calfile_new import CalFile
+from dynos_new import *
 import wx
 
 def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):  

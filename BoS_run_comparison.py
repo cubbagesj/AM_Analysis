@@ -13,10 +13,10 @@ Used to compare beginning of run files to determine if any dynos have gone bad.
 correlation_threshold = .5
 
 import os
-from tools.filetypes import STDFile
+from filetypes import STDFile
 import numpy as np
 from scipy import signal
-from tools.plottools import PlotPageWrapped
+from plottools import PlotPageWrapped
 from multicanvas import MultiCanvasFrame
 import wx
 

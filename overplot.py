@@ -23,7 +23,7 @@ import os
 # The actual plotting routines are found in plottools and the actual plot
 # page frame comes from multicanvas
 
-from tools.plottools import *
+from plottools import *
 from multicanvas import MultiCanvasFrame
 from printplot import PrintPlot
 

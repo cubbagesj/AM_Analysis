@@ -14,7 +14,7 @@ from matplotlib.backends.backend_wx import NavigationToolbar2Wx
 from matplotlib.figure import Figure
 
 import wx
-from tools.plottools import *
+from plottools import *
 
 class CanvasFrame(wx.Frame):
 

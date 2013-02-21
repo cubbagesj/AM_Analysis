@@ -16,7 +16,7 @@ import os
 import fnmatch
 from plotcanvas import CanvasFrame
 #from multicanvas import MultiCanvasFrame
-import tools.plottools as plottools
+import plottools as plottools
 import images
 import mergewiz
 import overplot
@@ -568,7 +568,7 @@ class App(wx.App):
     def OnInit(self):
         # Start with a splash screen, skip if the file can not be found
         try:
-            bmp = wx.Image("./lib/tool_img.png").ConvertToBitmap()
+            bmp = wx.Image("./tool_img.png").ConvertToBitmap()
             wx.SplashScreen(bmp, wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT,
                             500, None, -1)
             wx.Yield()
