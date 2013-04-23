@@ -127,7 +127,7 @@ class OverPlotFrame(wx.Frame):
 
     def OnFileClick(self, evt):
         dlg = wx.FileDialog(self, "Open plot config file...",
-                                defaultDir="/disk2/home/samc/AM_Analysis/AM_Tools/lib", wildcard="*.ini",
+                                defaultDir="./plotfiles", wildcard="*.ini",
                                 style=wx.OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             self.PlotCfg = dlg.GetPath()
@@ -262,14 +262,14 @@ class EditFrame(wx.Frame):
         """
             View a list the STD file channels and channel names
         """
-        frame = ViewFrame('STD Channels', './lib/std_channel_table.txt')
+        frame = ViewFrame('STD Channels', 'std_channel_table.txt')
         frame.Show()
     
     def onOBCView(self, evt):           
         """
             View a list the OBC file channels and channel names
         """  
-        frame = ViewFrame('OBC Channels', './lib/obc_channel_table.txt')
+        frame = ViewFrame('OBC Channels', 'obc_channel_table.txt')
         frame.Show()
     
     def onXFormView(self, evt):
@@ -278,7 +278,7 @@ class EditFrame(wx.Frame):
             View a list the available transforms by number what the transform 
             does.
         """
-        frame = ViewFrame('Available Transforms', './lib/xform_table.txt')
+        frame = ViewFrame('Available Transforms', 'xform_table.txt')
         frame.Show()
         
     def onExit(self, evt):
