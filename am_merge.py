@@ -541,23 +541,23 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     else:
                         EUdata[i] = EUdata[w_chan]
                     # The following filters out the data shifts when crossing the trench
-                    if abs(EUdata[i]-Wprev) >= 3.5:    #was 3.5
-                        if inwjump:
-                            newoffset = EUdata[i] - Wprev
-                            if newoffset * woffset < 0:
-                                inwjump -= 1
-                                woffset += newoffset
-                                if inwjump < 0:
-                                    inwjump = 0
-                            elif newoffset * woffset > 0:
-                                woffset += newoffset
-                                inwjump += 1
-                        else:
-                            woffset = EUdata[i] - Wprev
-                            inwjump += 1
+#                    if abs(EUdata[i]-Wprev) >= 3.5:    #was 3.5
+#                        if inwjump:
+#                            newoffset = EUdata[i] - Wprev
+#                            if newoffset * woffset < 0:
+#                                inwjump -= 1
+#                                woffset += newoffset
+#                                if inwjump < 0:
+#                                    inwjump = 0
+#                            elif newoffset * woffset > 0:
+#                                woffset += newoffset
+#                                inwjump += 1
+#                        else:
+#                            woffset = EUdata[i] - Wprev
+#                            inwjump += 1
                     Wprev = EUdata[i]
-                    if inwjump:
-                        EUdata[i] -= woffset
+#                    if inwjump:
+#                        EUdata[i] -= woffset
                     EUdata[i] += (((EUdata[4]/57.296)*ADCPLoc[0])-((EUdata[3]/57.296)*ADCPLoc[1]))
 
                 elif mrg_chans[i] == 807 and 'Rotor' in sp_gauges:         # Computed Rotor Fx
