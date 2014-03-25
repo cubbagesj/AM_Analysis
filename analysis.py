@@ -40,7 +40,7 @@ class AnalysisFrame(wx.Frame):
                     ['Rudder', 15],
                     ['Fwd. Pln.', 14]]
         
-        boats = ['688/751', 'S21', 'S23', 'VA', 'SSGN', 'TB']
+        boats = ['688/751', 'S21', 'S23', 'VA', 'SSGN', 'TB','OR']
         
         maneuvers = ['None','Cont Turn','FP Turn','Vert OS','Horz OS','Dive Jam','Rise Jam',
                      'Rud Jam','Accel','Decel','Rev Spiral','Speed Cal']
@@ -310,7 +310,7 @@ class AnalysisFrame(wx.Frame):
             loads the run into memory
         """
         try:
-            runPath = self.runFile
+            runPath = self.runFile[:-10]
         except:
             runPath = '/disk2/home/'+os.environ['USER']+'/rcmdata' 
             

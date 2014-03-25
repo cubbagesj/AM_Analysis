@@ -39,7 +39,8 @@ class STDFile:
                 'TB':[16.25, 130.0, 53.80, 13.813],
                 'S23':[20.0, 209.93, 116.10, 17.0],
                 'VA':[17.0, 172.27, 89.25, 19.58],
-                'SSGN':[21.0, 257.42, 154.96, 26.6]}
+                'SSGN':[21.0, 257.42, 154.96, 26.6],
+                'OR':[21.67, 253.67, 157.3, 33.2] }
 
     def __init__(self, run_number='0', search_path='.'):
         """ Initialize the run, find and read in the data.
@@ -110,6 +111,8 @@ class STDFile:
                     self.boat = 'SSGN'
                 elif abs(self.length - 299.25) < 1:
                     self.boat = 'TB'
+                elif abs(self.length - 555.08) <1:
+                    self.boat = 'OR'
                 else:
                     self.boat = '688/751'
 
