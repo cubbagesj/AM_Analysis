@@ -71,10 +71,6 @@ class OverPlotFrame(wx.Frame):
         plotBtn.SetFont(wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD))
         self.Bind(wx.EVT_BUTTON, self.OnPlotClick, plotBtn)
 
-        # Print Plot Button
-        prnplotBtn = wx.Button(self, -1, "Create Pdf Plot")
-        prnplotBtn.SetFont(wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD))
-        self.Bind(wx.EVT_BUTTON, self.OnPrnPlotClick, prnplotBtn)
 
         # Set up the layout with sizers
         mainSizer = wx.BoxSizer(wx.VERTICAL)
@@ -118,7 +114,6 @@ class OverPlotFrame(wx.Frame):
         mainSizer.Add((20,20), 0)
         mainSizer.Add(wx.StaticLine(self), 0, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         mainSizer.Add(plotBtn, 0, wx.EXPAND|wx.ALL, 5)
-        mainSizer.Add(prnplotBtn, 0, wx.EXPAND|wx.ALL, 5)
         
         self.SetSizer(mainSizer)
         self.Fit()
