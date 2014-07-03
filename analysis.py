@@ -310,7 +310,7 @@ class AnalysisFrame(wx.Frame):
             loads the run into memory
         """
         try:
-            runPath = self.runFile[:-10]
+            runPath = self.runFile[:-11]
         except:
             runPath = '/disk2/home/'+os.environ['USER']+'/rcmdata' 
             

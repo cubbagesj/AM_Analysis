@@ -233,7 +233,8 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                 'Uncontrolled Turn',
                 'Manual Mode',
                 'Shore Test',
-                'Todds Astern 3 turn']
+                'Todds Astern 3 turn',
+                'Rudder Perturbation']
     try:
         lines = open('run-'+str(runnumber)+'.run').read().splitlines()
     except:

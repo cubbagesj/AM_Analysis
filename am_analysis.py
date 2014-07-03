@@ -407,7 +407,7 @@ class BrowserFrame(wx.Frame):
         frame.Show()
 
     def OnPlotMore(self, event):
-        frame = overplot.OverPlotFrame(20)
+        frame = overplot.OverPlotFrame(15)
         frame.Show()
 
 

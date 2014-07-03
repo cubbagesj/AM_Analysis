@@ -15,18 +15,49 @@ import wx.aui
 import wx.html
 import socket, struct
 from pylab import *
+import glob
 
-class CalFrame(wx.Frame):
+
+obcDir = '/frmg/Autonomous_Model/Test_Data'
+
+
+class PatchFrame(wx.Frame):
 
     def __init__(self):
         wx.Frame.__init__(self, None, title="Cal Patch", size=(650,700))
+        self.SetBackgroundColour(wx.NamedColor("LIGHTGREY"))
 
-        # Create the notebook control
-        nb = wx.aui.AuiNotebook(self)
+        self.dataDir = '/frmg/Autonomous_Model/Test_Data/'
 
-        # Add the pages to the notebook
-        for eachPage, eachTitle in self.pageData():
-            nb.AddPage(eachPage(nb), eachTitle)
+        #select files section
+        fileLabel = wx.StaticText(self, -1, "Files to Patch:")
+
+        self.dirpick = wx.DirPickerCtrl(self, -1, path=self.dataDir, message="Choose Directory")
+        self.dirpick.SetTextCtrlGrowable(grow=True)
+        self.dirpick.SetTextCtrlProportion(1)
+        self.dirpick.SetPickerCtrlProportion(0)
+        self.fileList = wx.CheckListBox(self, -1, size=(200,200), style=wx.LB_MULTIPLE)
+
+        self.Bind(wx.EVT_DIRPICKER_CHANGED,  self.OnDirPick, self.dirpick)
+        self.Bind(wx.EVT_CHECKLISTBOX, self.OnCheck, self.fileList)
+
+
+        #Now do the Layout
+        mainSizer = wx.BoxSizer(wx.VERTICAL)
+        mainSizer.Add(fileLabel, 0, wx.ALL, 5)
+
+        fileSizer = wx.FlexGridSizer(cols=1, hgap=5, vgap=5)
+        fileSizer.AddGrowableCol(0)
+        fileSizer.Add(self.dirpick, 0, wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
+        fileSizer.Add(self.fileList, 0, wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
+        mainSizer.Add(fileSizer, 0, wx.EXPAND|wx.ALL, 5)
+
+
+
+        self.SetSizer(mainSizer)
+        self.Layout()
+        self.Fit()
+
 
         # add a status bar
         self.statusbar = self.CreateStatusBar()
@@ -34,11 +65,32 @@ class CalFrame(wx.Frame):
         # build the menubar
         self.createMenuBar()
 
+    def OnDirPick(self, evt):
+        global obcDir
+        self.dataDir = self.dirpick.GetPath()
+        obcDir = self.dataDir
+        runsToMerge = []
+        self.fileList.Set(self.getFiles())
 
-    def pageData(self):
-        return ((self.makeSinglePanel, "Patch Single"),
-                (self.makeBatchPanel, "Patch Batch"))
-
+    def getFiles(self):
+        obcfiles = []
+        
+        for file in glob.glob(os.path.join(self.dataDir,'*.cal')):
+            head, tail = os.path.split(file)
+            name, ext = os.path.splitext(tail)
+            obcfiles.append(name)
+        return obcfiles
+ 
+    def OnCheck(self, evt):
+        global runsToMerge
+        runsToMerge = []
+        for item in range(self.fileList.GetCount()):
+            if self.fileList.IsChecked(item):
+                try:
+                    runsToMerge.index(self.fileList.GetString(item))
+                except:
+                    runsToMerge.append(self.fileList.GetString(item))
+    
     def menuData(self):
         return (("&File",
                  ("&Quit", "Quit", self.OnCloseWindow)),
@@ -63,54 +115,10 @@ class CalFrame(wx.Frame):
             self.Bind(wx.EVT_MENU, eachHandler, menuItem)
         return menu
 
-    def makeSinglePanel(self, parent):
 
-        # Make the basic panel
-        p = wx.Panel(parent, -1, style=wx.SUNKEN_BORDER)
-
-        # Create the decorations
-        topLbl = wx.StaticText(p, -1, "Select File")
-        topLbl.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
-
- 
-
-        patchBtn = wx.Button(p, -1, "Patch")
-        patchBtn.SetFont(wx.Font(14, wx.SWISS, wx.NORMAL, wx.NORMAL))
-
-
-
-        #Now do the Layout
-        mainSizer = wx.BoxSizer(wx.VERTICAL)
-        mainSizer.Add(topLbl, 0, wx.ALL, 5)
-        mainSizer.Add(wx.StaticLine(p), 0, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-
-        mainSizer.Add(patchBtn, 0, wx.ALL, 10)
-        p.SetSizer(mainSizer)
-        p.Layout()
-        p.Fit()
-
-        return p
-
-    def makeBatchPanel(self, parent):
-        p = wx.Panel(parent, -1, style=wx.SUNKEN_BORDER)
-        
-        topLbl = wx.StaticText(p, -1, "Select Files")
-        topLbl.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
-
-        mainSizer = wx.BoxSizer(wx.VERTICAL)
-        mainSizer.Add(topLbl, 0, wx.ALL, 5)
-        mainSizer.Add(wx.StaticLine(p), 0, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-
-        btnSizer = wx.BoxSizer(wx.HORIZONTAL)
-
-
-        p.SetSizer(mainSizer)
-
-        return p
-
-    def OnBoatChoice(self, evt):
+    def OnFileClick(self, event):
         pass
-    
+
 
     def OnCloseWindow(self, event):
         self.Destroy()
@@ -157,7 +165,7 @@ if __name__ == "__main__":
     os.chdir('..')
 
     app = wx.PySimpleApp(0)
-    frame = CalFrame()
+    frame = PatchFrame()
     app.SetTopWindow(frame)
     frame.Show()
     app.MainLoop()
