@@ -44,6 +44,8 @@ import cfgparse
 from calfile_new import CalFile
 from dynos_new import *
 import wx
+import utm
+
 
 def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):  
 
@@ -275,6 +277,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
     #--------------------------------------
 
     obcname = 'run-'+str(runnumber)+'.obc'
+    gpsname = 'run-'+str(runnumber)+'.gps'
 
     logfile.write('\nProcessing the OBC file............')
     logfile.write('Created: ' + time.ctime(os.path.getmtime(obcname)))
@@ -351,6 +354,14 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
     # Open the obc file
     obcfile = open(obcname, 'r')
 
+    # Open the gps file - used to put lat/long in position columns
+    gpsfile = open(gpsname, 'r')
+
+    # Used to hold the initial position to subtract off from rest of points
+    north_init = 0.0
+    east_init = 0.0
+
+
     rawzero = []
     EUzero = []
     EUdata = []
@@ -372,15 +383,39 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
 
 
     # loop for each line in the obc file
+    # read in line by line - get line from gps file and obc file
     for line in obcfile:
         line = line.rstrip()
         rawdata = []
+        gpsdata = []
 
         for channel in line.split():
             try:
                 rawdata.append(float(channel))
             except ValueError:
                 rawdata.append(0)
+
+        # Pull out gps position in case needed, default to zeros
+        try:
+            gpsline = gpsfile.readline().rstrip()
+            gpsdata = gpsline.split()
+            latd = float(gpsdata[6])
+            gpslat = int(latd/100)+((latd - int(latd/100)*100)/60)
+            longd = float(gpsdata[8])
+            gpslong = int(longd/100) + ((longd - int(longd/100)*100)/60)
+
+            northing, easting, dummy1, dummy2 = utm.from_latlon(gpslat, -gpslong)
+
+            if north_init == 0.0:
+                north_init = northing
+                east_init = easting
+
+            # subtract off initial point
+            northing = northing - north_init
+            easting = easting - east_init
+        except:
+            northing = 0.0
+            eastlin = 0.0
 
         # Progress bar
         if (update % 200):
@@ -487,7 +522,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                         EUdata[i] = EUdata[u_chan]
                     # The following filters out the data shifts when crossing the trench
 #                    if rawdata[mode_chan] == 0x0F33 or rawdata[mode_chan] == 0x0F43
-#                        if abs(EUdata[i]-Uprev) >= 3:	#was 3
+#                        if abs(EUdata[i]-Uprev) >= 3:  #was 3
 #                            if inujump:
 #                                newoffset = EUdata[i] - Uprev
 #                                if newoffset * uoffset < 0:
@@ -987,13 +1022,22 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     if rawdata[port_rpm_com] < -50:
                         EUdata[i] *= -1
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                
+                elif mrg_chans[i] == 960:                                   #gps Latitude
+                    EUdata[i] = easting
+                    EUdata[i] *=pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 3.2808399
+                elif mrg_chans[i] == 961:                                   #gps Longitude
+                    EUdata[i] = northing
+                    EUdata[i] *=pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 3.2808399
 
 
 
 
             if (step % c_skip) == 0:         # Output only the records we want
                 for data in EUdata:
-                    stdfile.write(" %12.5e " % data)
+                    stdfile.write(" %12.7e " % data)
                 stdfile.write('\n')
 
             # Increment the step counter
@@ -1005,6 +1049,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
 
     obcfile.close()    
     stdfile.close()
+    gpsfile.close()
 
     # Move the std file to the new directory
 #    try:
