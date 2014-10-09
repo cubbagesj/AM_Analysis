@@ -404,7 +404,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
             longd = float(gpsdata[8])
             gpslong = int(longd/100) + ((longd - int(longd/100)*100)/60)
 
-            northing, easting, dummy1, dummy2 = utm.from_latlon(gpslat, -gpslong)
+            easting, northing, dummy1, dummy2 = utm.from_latlon(gpslat, -gpslong)
 
             if north_init == 0.0:
                 north_init = northing
@@ -1023,11 +1023,11 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                         EUdata[i] *= -1
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                 
-                elif mrg_chans[i] == 960:                                   #gps Latitude
+                elif mrg_chans[i] == 960:                                   #gps Easting
                     EUdata[i] = easting
                     EUdata[i] *=pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 3.2808399
-                elif mrg_chans[i] == 961:                                   #gps Longitude
+                elif mrg_chans[i] == 961:                                   #gps Northing
                     EUdata[i] = northing
                     EUdata[i] *=pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 3.2808399
