@@ -46,6 +46,10 @@ from dynos_new import *
 import wx
 import utm
 
+from math import * 
+
+from filetypes import STDFile
+
 
 def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):  
 
@@ -352,7 +356,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
     stdfile.write("\n")
 
     # Open the obc file
-    obcfile = open(obcname, 'r')
+    obcfile = open(obcname, 'r').readlines()
 
     # Open the gps file - used to put lat/long in position columns
     gpsfile = open(gpsname, 'r')
@@ -1028,7 +1032,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     EUdata[i] *=pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 3.2808399
                 elif mrg_chans[i] == 961:                                   #gps Northing
-                    EUdata[i] = northing
+                    EUdata[i] = -northing
                     EUdata[i] *=pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 3.2808399
 
@@ -1047,22 +1051,70 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
             bytecount = maxcnt-1000
         update += 1
 
-    obcfile.close()    
+    #obcfile.close()    
     stdfile.close()
     gpsfile.close()
 
-    # Move the std file to the new directory
-#    try:
-#      alpha_name = '\\\\alpha1\\disk31\\'+std_dir+'\\'+stdfilename
-#      alpha_name = std_dir+'/'+stdfilename
-#      prgbar.Update(maxcnt-1000, newmsg='Moving STD file to %s' % alpha_name)
-#      logfile.write('\nMoving STD file to %s\n' % alpha_name)
-#    except:
-#        prgbar.Update(maxcnt-1000,
-#                      newmsg='Error moving STD file!! - File Left in Current Directory')
-
     prgbar.Update(maxcnt) 
     logfile.close()
+
+    # The following code is used to offset and rotate the x,y, positions so that
+    # the position at execute is (0,0) and the initial track is along the x-axis
+    # To do this we need to re-read the file to get the stats and then rewrite the 
+    # new data back out.
+
+    # At this point in the code the name of the std file is in stdfilename.  Us this 
+    # in a call to the OBCFile class to read in the file and get the stats
+
+    stdrun = STDFile(stdfilename, 'known')
+    
+    stdrunxpos = stdrun.getEUData(20)
+    stdrunypos = stdrun.getEUData(21)
+
+
+    stdruntrack = arctan((stdrunypos[stdrun.execrec]-stdrunypos[stdrun.execrec-50])/(stdrunxpos[stdrun.execrec] - stdrunxpos[stdrun.execrec-50]))
+   
+    if stdruntrack <=0:
+        stdruntrack = stdruntrack + 2*pi
+    else:
+        stdruntrack = stdruntrack + pi
+
+    stdrunxposzero = stdrunxpos[stdrun.execrec]*cos(stdruntrack) + stdrunypos[stdrun.execrec]*sin(stdruntrack)
+    stdrunyposzero = -stdrunxpos[stdrun.execrec]*sin(stdruntrack) + stdrunypos[stdrun.execrec]*cos(stdruntrack)
+    
+    # Got needed info, now process
+
+    stdfile = open(stdfilename, 'r')
+    newfile = open(stdfilename+'new','w')
+
+    new_x = 0.0
+    new_y = 0.0
+
+    for x in range(5):
+        newfile.write(stdfile.readline())
+
+    for line in stdfile:
+        line = line.rstrip()
+        data = []
+
+        for channel in line.split():
+            data.append(float(channel))
+
+        rot_x = data[20]*cos(stdruntrack) + data[21]*sin(stdruntrack)
+        rot_y = -data[20]*sin(stdruntrack) + data[21]*cos(stdruntrack)
+
+        data[20] = rot_x - stdrunxposzero
+        data[21] = rot_y - stdrunyposzero
+
+        for channel in data:
+            newfile.write(" %12.7e " % channel)
+        newfile.write('\n')
+
+    stdfile.close()
+    newfile.close()
+    os.remove(stdfilename)
+    os.rename(stdfilename+'new', stdfilename)
+
     prgbar.Destroy()
     return
 

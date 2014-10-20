@@ -264,7 +264,10 @@ class STDFile:
             for x in range(self.stdbyrec, self.execrec):
                 chan_avg += self.data[x,channel]
                 count += 1
-            self.appr_values.append(chan_avg/count)
+            try:
+                self.appr_values.append(chan_avg/count)
+            except:
+                self.appr_values.append(0.0)
 
     def compStats(self, start=None, end=None):
         """ This routine will compute the max/min for each data channel
