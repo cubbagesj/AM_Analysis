@@ -351,6 +351,101 @@ class STDFile:
             self.Zsail.append(saildepth)
 
 
+    def turnstats(self):
+        """
+            Returns the advance, transfer and tactical diameter
+            for a turn maneuver
+        """
+
+
+        # extract the yaw data 
+        yaw180 = self.getEUData(9)
+
+        #compute the approach yaw
+        yawappr = yaw180[self.stdbyrec:self.execrec].mean()
+
+        # Now for advance/xfer  - where yaw has changed by 90
+        # Need to look for both positive and negative yaw change
+
+        yawpos90 = yawappr + 90
+        if yawpos90 > 180:
+            yawpos90 -= 360
+
+        yawneg90 = yawappr - 90
+        if yawneg90 < -180:
+            yawneg90 += 360
+
+        # Now look for this value in the data
+        # need to look in both directions and see which comes first
+
+        if yawpos90 > 0:
+            try:
+                posIndex90 = np.where(abs(yaw180-yawpos90)<0.1)[0][0]
+            except IndexError:
+                posIndex90 = 0
+        else:
+            posIndex90 = 0
+
+        if yawneg90 < 0:
+            try:
+                negIndex90 = np.where(abs(yaw180-yawneg90)<0.1)[0][0]
+            except IndexError:
+                negIndex90 = 0
+        else:
+            negIndex90 = 0
+
+        # The advance/xfer occurs at the lowest non zero index
+
+        self.index90 = min(posIndex90, negIndex90)
+
+        if self.index90 == 0:
+            self.index90 = max(posIndex90, negIndex90)
+
+        self.advance = abs(self.getEUData(20)[self.index90])
+        self.transfer = abs(self.getEUData(21)[self.index90])
+
+        self.time90 = self.ntime[self.index90]
+
+        # Now for tactical Diam  - where yaw has changed by 180
+        # Need to look for both positive and negative yaw change
+        yawpos180 = yawappr + 180
+        if yawpos180 > 180:
+            yawpos180 -= 360
+
+        yawneg180 = yawappr - 180
+        if yawneg180 < -180:
+            yawneg180 += 360
+
+        # Now look for this value in the data
+        # need to look in both directions and see which comes first
+
+        if yawpos180 > 0:
+            try:
+                posIndex180 = np.where(abs(yaw180-yawpos180)< 0.1)[0][0]
+            except IndexError:
+                posIndex180 = 0
+        else:
+            posIndex180 = 0
+
+        if yawneg180 < 0:
+            try:
+                negIndex180 = np.where(abs(yaw180-yawneg180)<0.1)[0][0]
+            except IndexError:
+                negIndex180 = 0
+        else:
+            negIndex180 = 0
+
+        # The advance occurs at the lowest non zero index
+
+        self.index180 = min(posIndex180, negIndex180)
+
+        if self.index180 == 0:
+            self.index180 = max(posIndex180, negIndex180)
+
+
+        self.tactdiam = abs(self.getEUData(21)[self.index180])
+        self.time180 = self.ntime[self.index180]
+
 
 
 class OBCFile:

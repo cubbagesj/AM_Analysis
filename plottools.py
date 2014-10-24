@@ -139,6 +139,8 @@ def get_runs_overplot( run_list, title_list, obc_path='', std_path=''): #made a 
     std_path = os.path.expanduser('~')
     #std_path = '/disk2/home/'+os.environ['USER']
     #obc_path = '/disk2/home/'+os.environ['USERNAME']+'/AM_data'
+
+    #obc path needs to be called out specifically since there are multiple rns with same number 
     obc_path = '/frmg/Autonomous_Model/test_data/SSN_23/SSN23-Starboard-Tray/'
 
     # search pattern for std filenames - Assumes that a file with a '-' in the
