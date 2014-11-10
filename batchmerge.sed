@@ -4,7 +4,7 @@
 # 
 # SJC 9/2013
 #
-s|\./|/frmg/Autonomous_Model/Test_Data/VIRGINIA/BLOCK_III_Surfaced-201309/|g 
-s|obc|obc /disk2/home/samc/rcmdata/DNSSNI-N31R-DG-BLK3-SURFACED-1309|
-s|-1309|-1309 /frmg/Autonomous_Model/Test_Data/Merge_Files/CB10/MERGE_VA_BLOCK3-MASK.INP |
+s|\./|/frmg/Autonomous_Model/Test_Data/VIRGINIA/VPM_Surfaced_97ft-201410/|g 
+s|obc|obc /disk2/home/samc/rcmdata/NSSN_VA/dnssni-n31r-dg-vpm97ft-surfaced-1410|
+s|-1410|-1410 /frmg/Autonomous_Model/Test_Data/Merge_Files/CB10/MERGE_VA_VPM97ft_Lake-Depth3.INP |
 

@@ -20,6 +20,9 @@ import math
 from plottools import *
 from multicanvas import MultiCanvasFrame
 
+from trackplot import TrackPlot
+
+
 
 class AnalysisFrame(wx.Frame):
     
@@ -40,7 +43,7 @@ class AnalysisFrame(wx.Frame):
                     ['Rudder', 15],
                     ['Fwd. Pln.', 14]]
         
-        boats = ['688/751', 'S21', 'S23', 'VA', 'SSGN', 'TB','OR']
+        boats = ['688/751', 'S21', 'S23', 'VA', 'SSGN', 'TB','OR', 'VPM97', 'VPM62']
         
         maneuvers = ['None','Cont Turn','FP Turn','Vert OS','Horz OS','Dive Jam','Rise Jam',
                      'Rud Jam','Accel','Decel','Rev Spiral','Speed Cal']
@@ -74,7 +77,7 @@ class AnalysisFrame(wx.Frame):
         # Maneuvering Data section
         dataLabel = wx.StaticText(self, -1, "Maneuvering Data (Full-Scale, Times from Execute)")
         dataLabel.SetFont(wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD))
-        # Each data channel needs 8 text labels for the data and times
+        # Each data channel needs 5 text labels for the data and times
         for data in self.dataList:
             for i in range(5):
                 textLabel = wx.StaticText(self, -1, " ", style=wx.ALIGN_RIGHT)
@@ -97,7 +100,7 @@ class AnalysisFrame(wx.Frame):
 
         # Extra data fields
         self.extraData = []
-        for i in range(12):
+        for i in range(14):
             self.extraData.append(wx.StaticText(self, -1, " ", style=wx.CENTER))
         self.extraList = []
                   
@@ -172,27 +175,27 @@ class AnalysisFrame(wx.Frame):
 
         mainSizer.Add(wx.StaticLine(self), 0, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
-        extradataSizer = wx.FlexGridSizer(cols=6, hgap=25, vgap=6)
+        extradataSizer = wx.FlexGridSizer(cols=7, hgap=25, vgap=6)
         
         tempLbl = wx.StaticText(self, -1, ' ')
         tempLbl.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))
         self.extraList.append(tempLbl)
         mainSizer.Add(tempLbl, 0, wx.ALL, 5)
         
-        for i in range(6):
+        for i in range(7):
             tempLbl = wx.StaticText(self, -1, " ")
             tempLbl.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))               
             extradataSizer.Add(tempLbl, 0, wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL)
             self.extraList.append(tempLbl)
-        for i in range(6):
+        for i in range(7):
             extradataSizer.Add(self.extraData[i], 0, wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL)
-        for i in range(6):
+        for i in range(7):
             tempLbl = wx.StaticText(self, -1, " ")
             tempLbl.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))               
             extradataSizer.Add(tempLbl, 0, wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL)
             self.extraList.append(tempLbl)
-        for i in range(6):
-            extradataSizer.Add(self.extraData[i+6], 0, wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL)
+        for i in range(7):
+            extradataSizer.Add(self.extraData[i+7], 0, wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL)
 
         mainSizer.Add(extradataSizer, 0, wx.EXPAND|wx.ALL, 5)
 
@@ -323,6 +326,7 @@ class AnalysisFrame(wx.Frame):
             self.runnumText.SetLabel(self.runObj.filename)
             self.runtitleText.SetLabel(self.runObj.title)
             self.runObj.compStats()
+            self.runObj.turnstats()
             self.startTime.ChangeValue(str(0.0))
             self.endTime.ChangeValue(str(self.runObj.ntime[-1]))
             # Compute and Display data
@@ -377,20 +381,21 @@ class AnalysisFrame(wx.Frame):
                             'ApprRud','ApprStr2','AvgUpw','AvgRoll','AvgPitch','AvgYaw','AvgStr1',
                             'AvgBow','AvgRud','AvgStr2','RollStbd','RollPort','PitchUp','PitchDn',
                             'YawStbd','YawPort','ZCGMax','ZCGMin','ZNose','ZSail','MaxRise','YawRate',
-                            'StdRud','TDiam','EPA','EPATime','EPADepth','OSPitch','OSDepth','EYA',
-                            'EYATime','OSYaw','TimeTo0','Uat30','Uat60','Uat90','Uat120',' ']
+                            'StdRud','TrnDiam','EPA','EPATime','EPADepth','OSPitch','OSDepth','EYA',
+                            'EYATime','OSYaw','TimeTo0','Uat30','Uat60','Uat90','Uat120',
+                            'Advance','Transfer','TactDiam',' ']
 
-        self.ManeuverDict ={'Cont Turn':[' ','CT Steady Data', 8, 14, 12, 15, 13, 10, 9, 16, 17, 27, 29, 43],
-            'FP Turn':[' ','UT Steady Data', 8, 14, 12, 15, 13, 10, 9, 16, 17, 27, 29, 43],
-            'Vert OS':['EPA','Vertical Overshoot', 2, 30, 31, 32, 33, 34, 43, 43, 43, 43, 43, 43],
-            'Horz OS':['EYA','Horizontal Overshoot', 3, 35, 36, 37, 43, 43, 43, 43, 43, 43, 43, 43],
-            'Dive Jam':[' ','Dive Jam', 22, 19, 16, 17, 43, 43, 43, 43, 43, 43, 43, 43],
-            'Rise Jam':[' ','Rise Jam', 23, 24, 25, 26, 18, 16, 17, 43, 43, 43, 43, 43],
-            'Rud Jam':[' ','Rudder Jam', 22, 23, 24, 25, 26, 19, 18, 16, 17, 43, 43, 43],
-            'Accel':[' ','Acceleration', 39, 40, 41, 42, 43, 43, 43, 43, 43, 43, 43, 43],
-            'Decel':[' ','Deceleration', 22, 23, 24, 25, 26, 19, 18, 16, 17, 20, 21, 38],
-            'Rev Spiral':[' ','Reverse Spiral', 27, 28, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43],
-            'Speed Cal':[' ','Speed Calibration', 0, 6, 4, 7, 5, 2, 1, 43, 43, 43, 43, 43]}
+        self.ManeuverDict ={'Cont Turn':[' ','CT Steady Data', 8, 14, 12, 15, 13, 10, 9, 16, 17, 27, 29, 43, 44, 45],
+            'FP Turn':[' ','UT Steady Data', 8, 14, 12, 15, 13, 10, 9, 16, 17, 27, 29, 46, 46, 46],
+            'Vert OS':['EPA','Vertical Overshoot', 2, 30, 31, 32, 33, 34, 46, 46, 46, 46, 46, 46, 46, 46],
+            'Horz OS':['EYA','Horizontal Overshoot', 3, 35, 36, 37, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46],
+            'Dive Jam':[' ','Dive Jam', 22, 19, 16, 17, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46],
+            'Rise Jam':[' ','Rise Jam', 23, 24, 25, 26, 18, 16, 17, 46, 46, 46, 46, 46, 46, 46],
+            'Rud Jam':[' ','Rudder Jam', 22, 23, 24, 25, 26, 19, 18, 16, 17, 46, 46, 46, 46, 46],
+            'Accel':[' ','Acceleration', 39, 40, 41, 42, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46],
+            'Decel':[' ','Deceleration', 22, 23, 24, 25, 26, 19, 18, 16, 17, 20, 21, 38, 46, 46],
+            'Rev Spiral':[' ','Reverse Spiral', 27, 28, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46],
+            'Speed Cal':[' ','Speed Calibration', 0, 6, 4, 7, 5, 2, 1, 46, 46, 46, 46, 46, 46, 46]}
         
         self.extracalc = []
         #Approach Values (Upw [0], Roll [1], Pitch [2], Yaw [3], Str1 [4], Bow [5], Rud [6], Str2 [7])
@@ -495,7 +500,14 @@ class AnalysisFrame(wx.Frame):
             else:
                 self.extracalc.append('--')
         
-        #Blank (' ' [43])
+        # Advance, transfer, tactDiam
+        self.extracalc.append('%.1f' % self.runObj.advance)
+        self.extracalc.append('%.1f' % self.runObj.transfer)
+        self.extracalc.append('%.1f' % self.runObj.tactdiam)
+
+        
+        
+        #Blank (' ' [46])
         self.extracalc.append('')
         
         #Updates extracalc list and extraList list
@@ -516,9 +528,9 @@ class AnalysisFrame(wx.Frame):
             self.extrastartTime.ChangeValue('')
             self.extraendTime.ChangeValue('')
             self.parameter.ChangeValue('')
-            for i in range (12):
+            for i in range (14):
                 self.extraData[i].SetLabel(' ')
-            for i in range (13):
+            for i in range (15):
                 self.extraList[i].SetLabel(' ')
         else:
             self.extrastartTime.ChangeValue(self.startTime.GetValue())
@@ -539,6 +551,10 @@ class AnalysisFrame(wx.Frame):
         plotData = PlotPage([self.runObj], params, cfgfile)
         frame = MultiCanvasFrame(plotData, [self.runObj.filename], 0)
         frame.Show()
+
+        # Make an xy plot for turns
+        TrackPlot(plotData, '')
+
 
     def setData(self):
         """

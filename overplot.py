@@ -25,7 +25,7 @@ import os
 
 from plottools import *
 from multicanvas import MultiCanvasFrame
-from printplot import PrintPlot
+from trackplot import TrackPlot
 
 class OverPlotFrame(wx.Frame):
     
@@ -71,6 +71,10 @@ class OverPlotFrame(wx.Frame):
         plotBtn.SetFont(wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD))
         self.Bind(wx.EVT_BUTTON, self.OnPlotClick, plotBtn)
 
+        # XY Track Plot Button
+        trkplotBtn = wx.Button(self, -1, "Create XY Track Plot")
+        trkplotBtn.SetFont(wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD))
+        self.Bind(wx.EVT_BUTTON, self.OnTrkPlotClick, trkplotBtn)
 
         # Set up the layout with sizers
         mainSizer = wx.BoxSizer(wx.VERTICAL)
@@ -114,6 +118,7 @@ class OverPlotFrame(wx.Frame):
         mainSizer.Add((20,20), 0)
         mainSizer.Add(wx.StaticLine(self), 0, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         mainSizer.Add(plotBtn, 0, wx.EXPAND|wx.ALL, 5)
+        mainSizer.Add(trkplotBtn, 0, wx.EXPAND|wx.ALL,5)
         
         self.SetSizer(mainSizer)
         self.Fit()
@@ -148,15 +153,16 @@ class OverPlotFrame(wx.Frame):
             frame = MultiCanvasFrame(plotData, titles, 0)
             frame.Show()
 
-    def OnPrnPlotClick(self, evt):
+    def OnTrkPlotClick(self, evt):
         """
-            Get the values from the dialog box and save a pdf plot in the output
-            folder using the PrintPlot function from the printplot module
+            Plot the xy position track and mark the execute and
+            90/180 points
         """
         plotData, titles = self.GetPlotData()
         if plotData:
-            PrintPlot(plotData, titles, 0)
-            
+            TrackPlot(plotData, titles)
+
+         
     def GetPlotData(self):
         cfgfile = self.PlotCfg
         

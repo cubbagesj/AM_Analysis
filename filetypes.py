@@ -40,7 +40,9 @@ class STDFile:
                 'S23':[20.0, 209.93, 116.10, 17.0],
                 'VA':[17.0, 172.27, 89.25, 19.58],
                 'SSGN':[21.0, 257.42, 154.96, 26.6],
-                'OR':[21.67, 253.67, 157.3, 33.2] }
+                'OR':[21.67, 253.67, 157.3, 33.2],
+                'VPM97':[17.0, 221.62, 138.61, 19.58],
+                'VPM62':[17.0, 172.27, 89.25, 19.58]}
 
     def __init__(self, run_number='0', search_path='.'):
         """ Initialize the run, find and read in the data.
@@ -111,8 +113,12 @@ class STDFile:
                     self.boat = 'SSGN'
                 elif abs(self.length - 299.25) < 1:
                     self.boat = 'TB'
-                elif abs(self.length - 555.08) <1:
+                elif abs(self.length - 555.08) < 1:
                     self.boat = 'OR'
+                elif abs(self.length - 474.33) < 1:
+                    self.boat = 'VPM97'
+                elif abs(self.length - 439.33) < 1:
+                    self.boat = 'VPM62'
                 else:
                     self.boat = '688/751'
 
@@ -360,6 +366,7 @@ class STDFile:
 
         # extract the yaw data 
         yaw180 = self.getEUData(9)
+        yawrate = self.getEUData(5)
 
         #compute the approach yaw
         yawappr = yaw180[self.stdbyrec:self.execrec].mean()
@@ -378,28 +385,20 @@ class STDFile:
         # Now look for this value in the data
         # need to look in both directions and see which comes first
 
-        if yawpos90 > 0:
-            try:
-                posIndex90 = np.where(abs(yaw180-yawpos90)<0.1)[0][0]
-            except IndexError:
-                posIndex90 = 0
-        else:
+        try:
+            posIndex90 = np.where(abs(yaw180-yawpos90)<0.1)[0][0]
+        except IndexError:
             posIndex90 = 0
-
-        if yawneg90 < 0:
-            try:
-                negIndex90 = np.where(abs(yaw180-yawneg90)<0.1)[0][0]
-            except IndexError:
-                negIndex90 = 0
-        else:
+        try:
+            negIndex90 = np.where(abs(yaw180-yawneg90)<0.1)[0][0]
+        except IndexError:
             negIndex90 = 0
 
-        # The advance/xfer occurs at the lowest non zero index
 
-        self.index90 = min(posIndex90, negIndex90)
-
-        if self.index90 == 0:
-            self.index90 = max(posIndex90, negIndex90)
+        if yawrate[posIndex90] > 0:
+            self.index90 = posIndex90
+        else:
+            self.index90 = negIndex90
 
         self.advance = abs(self.getEUData(20)[self.index90])
         self.transfer = abs(self.getEUData(21)[self.index90])
