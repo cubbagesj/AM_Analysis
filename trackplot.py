@@ -36,7 +36,9 @@ def TrackPlot(plotData, titles):
 
 
     # Legend
-    leg = fig.legend(lines, titles)
-
+    try:
+        leg = fig.legend(lines, titles)
+    except ValueError:
+        pass
 
     fig.show()

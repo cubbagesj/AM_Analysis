@@ -395,7 +395,7 @@ class STDFile:
             negIndex90 = 0
 
 
-        if yawrate[posIndex90] > 0:
+        if posIndex90 != 0 and yawrate[posIndex90] > 0:
             self.index90 = posIndex90
         else:
             self.index90 = negIndex90

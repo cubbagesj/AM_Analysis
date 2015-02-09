@@ -326,6 +326,14 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                mrg_input['Z_Z_LOC'],
                int(mrg_input['Z_CHAN']))
 
+    try:
+        zsensor2 = (mrg_input['Z2_X_LOC'],
+                   mrg_input['Z2_Y_LOC'],
+                   mrg_input['Z2_Z_LOC'],
+                   int(mrg_input['Z2_CHAN']))
+    except: 
+        zsensor2 = (0, 0, 0, 0)
+
     # ADCP Location
     ADCPLoc = (mrg_input['ADCP_X'],
                mrg_input['ADCP_Y'],
@@ -1036,6 +1044,9 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     EUdata[i] *=pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 3.2808399
 
+                elif mrg_chans[i] == 965:                                   # Computed pitch from depth gages
+                    # compute pitch using depth2 and depth3 - hardwired for now
+                    EUdata[i] = degrees(arcsin((EUdata[zsensor[3]] - EUdata[zsensor2[3]])/(zsensor2[0] - zsensor[0])))
 
 
 
