@@ -32,8 +32,11 @@ class StartPage(wx.wizard.WizardPageSimple):
             
 class SelectFilesPage(wx.wizard.WizardPageSimple):
     def __init__(self, parent):
-        self.dataDir = '/frmg/Autonomous_Model/Test_Data/'
-        
+        if os.name == 'posix':
+            self.dataDir = '/frmg/Autonomous_Model/Test_Data/'
+        else:
+            self.dataDir = 'C:/OBC_Data'
+            
         wx.wizard.WizardPageSimple.__init__(self, parent)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
@@ -93,9 +96,13 @@ class SelectFilesPage(wx.wizard.WizardPageSimple):
 class MrgDirPage(wx.wizard.WizardPageSimple):
     def __init__(self, parent):
 
-        self.mrgDir = '/disk2/home/'+os.environ['USER']+'/rcmdata'
-        self.mrgInpDir = '/disk2/home/'+os.environ['USER']+'/obcdata/Merge_Files/'
-        self.mrgInpDir = '/frmg/Autonomous_Model/Test_Data/Merge_Files/'
+        if os.name == 'posix':
+            self.mrgDir = '/disk2/home/'+os.environ['USER']+'/rcmdata'
+            self.mrgInpDir = '/frmg/Autonomous_Model/Test_Data/Merge_Files/'
+        else:
+            self.mrgDir = 'C:/STD_Data'
+            self.mrgInpDir = 'C:/'
+            
         wx.wizard.WizardPageSimple.__init__(self, parent)
         
         self.sizer = wx.BoxSizer(wx.VERTICAL)

@@ -1077,54 +1077,58 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
     # At this point in the code the name of the std file is in stdfilename.  Us this 
     # in a call to the OBCFile class to read in the file and get the stats
 
-    stdrun = STDFile(stdfilename, 'known')
+    # Wrap it in a try clause in case we get an error
+    try:
+        stdrun = STDFile(stdfilename, 'known')
+        
+        stdrunxpos = stdrun.getEUData(20)
+        stdrunypos = stdrun.getEUData(21)
     
-    stdrunxpos = stdrun.getEUData(20)
-    stdrunypos = stdrun.getEUData(21)
-
-
-    stdruntrack = arctan((stdrunypos[stdrun.execrec]-stdrunypos[stdrun.execrec-50])/(stdrunxpos[stdrun.execrec] - stdrunxpos[stdrun.execrec-50]))
-   
-    if stdruntrack <=0:
-        stdruntrack = stdruntrack + 2*pi
-    else:
-        stdruntrack = stdruntrack + pi
-
-    stdrunxposzero = stdrunxpos[stdrun.execrec]*cos(stdruntrack) + stdrunypos[stdrun.execrec]*sin(stdruntrack)
-    stdrunyposzero = -stdrunxpos[stdrun.execrec]*sin(stdruntrack) + stdrunypos[stdrun.execrec]*cos(stdruntrack)
     
-    # Got needed info, now process
+        stdruntrack = arctan((stdrunypos[stdrun.execrec]-stdrunypos[stdrun.execrec-50])/(stdrunxpos[stdrun.execrec] - stdrunxpos[stdrun.execrec-50]))
+       
+        if stdruntrack <=0:
+            stdruntrack = stdruntrack + 2*pi
+        else:
+            stdruntrack = stdruntrack + pi
+    
+        stdrunxposzero = stdrunxpos[stdrun.execrec]*cos(stdruntrack) + stdrunypos[stdrun.execrec]*sin(stdruntrack)
+        stdrunyposzero = -stdrunxpos[stdrun.execrec]*sin(stdruntrack) + stdrunypos[stdrun.execrec]*cos(stdruntrack)
+        
+        # Got needed info, now process
+    
+        stdfile = open(stdfilename, 'r')
+        newfile = open(stdfilename+'new','w')
+    
+        new_x = 0.0
+        new_y = 0.0
+    
+        for x in range(5):
+            newfile.write(stdfile.readline())
+    
+        for line in stdfile:
+            line = line.rstrip()
+            data = []
+    
+            for channel in line.split():
+                data.append(float(channel))
+    
+            rot_x = data[20]*cos(stdruntrack) + data[21]*sin(stdruntrack)
+            rot_y = -data[20]*sin(stdruntrack) + data[21]*cos(stdruntrack)
+    
+            data[20] = rot_x - stdrunxposzero
+            data[21] = rot_y - stdrunyposzero
+    
+            for channel in data:
+                newfile.write(" %12.7e " % channel)
+            newfile.write('\n')
 
-    stdfile = open(stdfilename, 'r')
-    newfile = open(stdfilename+'new','w')
-
-    new_x = 0.0
-    new_y = 0.0
-
-    for x in range(5):
-        newfile.write(stdfile.readline())
-
-    for line in stdfile:
-        line = line.rstrip()
-        data = []
-
-        for channel in line.split():
-            data.append(float(channel))
-
-        rot_x = data[20]*cos(stdruntrack) + data[21]*sin(stdruntrack)
-        rot_y = -data[20]*sin(stdruntrack) + data[21]*cos(stdruntrack)
-
-        data[20] = rot_x - stdrunxposzero
-        data[21] = rot_y - stdrunyposzero
-
-        for channel in data:
-            newfile.write(" %12.7e " % channel)
-        newfile.write('\n')
-
-    stdfile.close()
-    newfile.close()
-    os.remove(stdfilename)
-    os.rename(stdfilename+'new', stdfilename)
+        stdfile.close()
+        newfile.close()
+        os.remove(stdfilename)
+        os.rename(stdfilename+'new', stdfilename)
+    except:
+        pass
 
     prgbar.Destroy()
     return

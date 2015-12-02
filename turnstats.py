@@ -17,10 +17,10 @@ import matplotlib.pyplot as plt
 from filetypes import STDFile
 
 runlist = []
-for i in range(8650,8677):
-    runlist.append('9-'+str(i))
+for i in range(7244,7256):
+    runlist.append('10-'+str(i))
 
-runpath = '/disk2/home/samc/rcmdata/ORP10-02/OR1002-SchC-Mod-35X-TNT-BL-Surfaced-1411/'
+runpath = '/disk2/home/samc/rcmdata/NSSN_VA/dnssni-n31r-g-vpm62ft-surfaced-1411/'
 outfile = open('turnstats.txt', 'w')
 outfile.write( 'run, advance, transfer, tactdiam, time90, time180\n')
 

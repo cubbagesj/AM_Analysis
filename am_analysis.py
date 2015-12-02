@@ -27,7 +27,11 @@ from BoS_run_comparison import CorrelateFrame
 class BrowserFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, title="Run File Browser", size=(1000,650))
-
+        
+        # Some of the functions differ between windows and linux
+        # So check here for the system and set a flag
+        self.osname = os.name
+ 
         # Set up the status bar
         self.statusbar = self.CreateStatusBar()
 
@@ -180,13 +184,9 @@ class BrowserFrame(wx.Frame):
         self.tree.SetItemImage(self.stdroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
 
         # Add a root node for FST Files
-        # Do only if the sim1 disk exists
-        rootDir = os.path.join('/disk2/home', os.environ['USER'])
-        self.fstroot = False
-        if os.path.exists(rootDir):
-            self.fstroot = self.tree.AppendItem(root, "FST Files")
-            self.tree.SetItemImage(self.fstroot, self.fldridx, wx.TreeItemIcon_Normal)
-            self.tree.SetItemImage(self.fstroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
+        self.fstroot = self.tree.AppendItem(root, "FST Files")
+        self.tree.SetItemImage(self.fstroot, self.fldridx, wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(self.fstroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
 
         # Bind some interesting events
         self.Bind(wx.EVT_TREE_ITEM_EXPANDED, self.OnItemExpanded, self.tree)
@@ -204,33 +204,27 @@ class BrowserFrame(wx.Frame):
             Creates the nodes for STD, OBC, and FST files.  Also used to rebuild
             the file tree after it's been cleared
         """
-        #Add nodes for the OBC files
-        # First try sim1 disks then default to local
-        rootDir = '/frmg/Autonomous_Model/test_data'
-        if os.path.exists(rootDir):
-            self.TreeBuilder(rootDir, self.obcroot)
-        else:
-            rootDir = '~'
-            self.TreeBuilder(rootDir, self.obcroot)        
 
-        # Add nodes for the STD files
-        # First try sim1 disks then default to local
-        #rootDir = os.path.join('/disk2/home', os.environ['USER'])
-        rootDir = os.path.expanduser('~')
-        stdDir = os.path.join(rootDir, 'rcmdata')
+        # Paths depend on platforms so check and setup
+        if self.osname == 'posix':
+            # OBC data is on system share
+            obcDir = '/frmg/Autonomous_Model/test_data'
+            # For rcmdata and fstdata, rely on symlink in user directory
+            rootDir = os.path.expanduser('~')
+            stdDir = os.path.join(rootDir, 'rcmdata')
+            fstDir = os.path.join(rootDir,'fstdata')
+        else:       
+            # For windows, everything sits on C:
+            obcDir = 'C:/OBC_Data'
+            stdDir = 'C:/STD_Data'
+            fstDir = 'C:/FST_Data'
+            
+        if os.path.exists(obcDir):
+            self.TreeBuilder(obcDir, self.obcroot)
         if os.path.exists(stdDir):
             self.TreeBuilder(stdDir, self.stdroot)
-        else:
-            stdDir = '/disk2/home/samc/rcmdata'
-            self.TreeBuilder(stdDir, self.stdroot)
-
-        # Add nodes for FS data
-        # Only try sim1 disks.  
-        # Will work only if the FST node was created the first time around
-        fstDir = os.path.join(rootDir,'fstdata')
-        if (os.path.exists(fstDir)):
-            if self.fstroot:
-                self.TreeBuilder(fstDir, self.fstroot)
+        if os.path.exists(fstDir):
+            self.TreeBuilder(fstDir, self.fstroot)
 
     def TreeBuilder(self, currdir, branch):
         for file in os.listdir(currdir):
@@ -241,7 +235,6 @@ class BrowserFrame(wx.Frame):
                     fileItem = self.tree.AppendItem(branch, tail)
                     self.tree.SetItemImage(fileItem, self.fileidx, wx.TreeItemIcon_Normal)
                     self.tree.SetItemPyData(fileItem, path)
-                #self.tree.Expand(branch)
                 self.tree.SortChildren(branch)
             else:
                 head, tail = os.path.split(path)
@@ -251,7 +244,6 @@ class BrowserFrame(wx.Frame):
 
                 self.tree.SetItemPyData(newbranch, path)
                 self.tree.SortChildren(branch)
-                #self.tree.Expand(branch)
 
     def menuData(self):
         return (("&File",
@@ -324,6 +316,8 @@ class BrowserFrame(wx.Frame):
             runName = ""
         if os.path.isfile(runName):
             self.fname.SetValue(runName)
+            
+            # Here we open and process the run file
             runObj = plottools.get_run(runName)
 
             self.runObj = runObj
@@ -575,6 +569,7 @@ class App(wx.App):
         except:
             pass
 
+       
         # Start the main app window
         frame = BrowserFrame()
         frame.Center()
