@@ -393,7 +393,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
     update = 0
     bytecount = 0
 
-
+    
     # loop for each line in the obc file
     # read in line by line - get line from gps file and obc file
     for line in obcfile:
@@ -427,7 +427,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
             easting = easting - east_init
         except:
             northing = 0.0
-            eastlin = 0.0
+            easting = 0.0
 
         # Progress bar
         if (update % 200):
@@ -474,6 +474,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     EUdata[i] = (rawdata[mrg_chans[i]]-cal.zeros[mrg_chans[i]])*cal.gains[mrg_chans[i]]
                     EUdata[i] -= EUzero[i]*mrg_zero[i]
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    
                     if mrg_scale[i] >= 3:
                         EUdata[i] *= 1.0284
                     if mrg_scale[i] == 4:       # in-lb to ft-lb conversion
@@ -1083,9 +1084,16 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
         
         stdrunxpos = stdrun.getEUData(20)
         stdrunypos = stdrun.getEUData(21)
-    
-    
-        stdruntrack = arctan((stdrunypos[stdrun.execrec]-stdrunypos[stdrun.execrec-50])/(stdrunxpos[stdrun.execrec] - stdrunxpos[stdrun.execrec-50]))
+        
+        t1 = stdrunypos[stdrun.execrec]
+        t2 = stdrunypos[stdrun.execrec-50]
+        t3 = stdrunxpos[stdrun.execrec]
+        t4 = stdrunxpos[stdrun.execrec-50]
+        if t3 - t4 != 0:
+            test = (stdrunypos[stdrun.execrec]-stdrunypos[stdrun.execrec-50])/(stdrunxpos[stdrun.execrec] - stdrunxpos[stdrun.execrec-50])
+            stdruntrack = arctan(test)
+        else:
+            stdruntrack = 0
        
         if stdruntrack <=0:
             stdruntrack = stdruntrack + 2*pi
@@ -1122,7 +1130,6 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
             for channel in data:
                 newfile.write(" %12.7e " % channel)
             newfile.write('\n')
-
         stdfile.close()
         newfile.close()
         os.remove(stdfilename)

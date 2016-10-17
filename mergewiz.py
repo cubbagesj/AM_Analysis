@@ -9,8 +9,12 @@ import glob
 from am_merge import MergeRun
 
 runsToMerge = []
-mrgDir = ''
-obcDir = '/frmg/Autonomous_Model/Test_Data'
+if os.name == 'posix':
+    obcDir = '/frmg/Autonomous_Model/Test_Data/'
+    mrgDir = ''
+else:
+    obcDir = 'C:/OBC_Data'
+    mrgDir = 'C:/STD_Data'
 
 
 class StartPage(wx.wizard.WizardPageSimple):
@@ -36,6 +40,7 @@ class SelectFilesPage(wx.wizard.WizardPageSimple):
             self.dataDir = '/frmg/Autonomous_Model/Test_Data/'
         else:
             self.dataDir = 'C:/OBC_Data'
+        
             
         wx.wizard.WizardPageSimple.__init__(self, parent)
         self.sizer = wx.BoxSizer(wx.VERTICAL)

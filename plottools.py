@@ -33,8 +33,9 @@
     
     
 """
-
-from filetypes import OBCFile, STDFile
+import matplotlib
+matplotlib.use('WXAgg')
+from filetypes import OBCFile, STDFile, TDMSFile
 from pylab import *
 import re, cfgparse, sys, os
 import wx
@@ -72,15 +73,18 @@ def get_runs( run_list, obc_path='', std_path=''):
 #    obc_path = '/disk2/home/'+os.environ['USERNAME']+'/obcdata'
     obc_path = r'\\ATIS21\MODEL\RCM\Autonomous_Model\test_data'
     # search pattern for std filenames - Assumes that a file with a '-' in the
-    # name is an STD file.  All others are considered OBC files
+    # name is an STD file.  If the file ends in 'obc' it is an OBC file, all
+    # others are considered TDMS files.
     
     stdm = re.compile(r'^\w+-\w+$')
     
     for runnum in run_list:
         if stdm.match(runnum.strip()):
             runobj = STDFile(runnum, search_path=std_path)
-        else:
+        elif runnum[-3:] == 'obc':
             runobj = OBCFile(runnum, search_path=obc_path)
+        else:
+            runobj = TDMSFile(runnum, search_path=obc_path)
     
         # If we found a run, add it to the list of run objects
         if runobj.filename:
@@ -102,6 +106,8 @@ def get_run(run_list):
         runobj = STDFile(run_list, search_path='known')
     elif ext.lower() == '.obc':
         runobj = OBCFile(root[4:], search_path=head)
+    elif ext.lower() == '.tdms':
+        runobj = TDMSFile(root[4:], search_path=head)
     else:
         runobj = None
     
@@ -151,8 +157,10 @@ def get_runs_overplot( run_list, title_list, obc_path='', std_path=''): #made a 
     for runnum in run_list:
         if stdm.match(runnum.strip()):
             runobj = STDFile(runnum, search_path=std_path)
-        else:
+        elif runnum[-3:] == 'obc':
             runobj = OBCFile(runnum, search_path=obc_path)
+        else:
+            runobj = TDMSFile(runnum, search_path=obc_path)
     
         # If we found a run, add it to the list of run objects
         if runobj.filename:

@@ -10,6 +10,8 @@
 # 3/23/2007s
 # Updated 8/13/2010 by C.Michael Pietras
 
+# Updated 3/10/2016 to add .tdms data file support by Woody Pfitsch
+
 import wx
 import wx.grid, wx.html
 import os
@@ -23,6 +25,7 @@ import overplot
 import analysis
 import extrema
 from BoS_run_comparison import CorrelateFrame
+import TDMStoOBCwiz
 
 class BrowserFrame(wx.Frame):
     def __init__(self):
@@ -88,15 +91,22 @@ class BrowserFrame(wx.Frame):
         # The buttons
         self.calBtn = wx.Button(panel, -1, "View CAL File")
         self.calBtn.Enable(False)
-        self.dataBtn = wx.Button(panel, -1, "View Data")
+        self.dataBtn = wx.Button(panel, -1, "View RAW Data")
         self.dataBtn.Enable(False)
-        self.graphBtn = wx.Button(panel, -1, "Quick Graph")
+        self.dataBtnEU = wx.Button(panel, -1, "View EU Data")
+        self.dataBtnEU.Enable(False)
+        self.graphBtnRaw = wx.Button(panel, -1, "Quick RAW Graph")
+        self.graphBtnRaw.Enable(False)
+        self.graphBtn = wx.Button(panel, -1, "Quick EU Graph")
         self.graphBtn.Enable(False)
+
 
         #Button Events
         self.Bind(wx.EVT_BUTTON, self.OnCalClick, self.calBtn)
         self.Bind(wx.EVT_BUTTON, self.OnDataClick, self.dataBtn)
+        self.Bind(wx.EVT_BUTTON, self.OnDataEUClick, self.dataBtnEU)
         self.Bind(wx.EVT_BUTTON, self.OnGraphClick, self.graphBtn)
+        self.Bind(wx.EVT_BUTTON, self.OnGraphRawClick, self.graphBtnRaw)
 
         # Set up the layout with sizers
         mainSizer = wx.BoxSizer(wx.VERTICAL)
@@ -140,8 +150,13 @@ class BrowserFrame(wx.Frame):
         btnSizer.Add((20,20), 1)
         btnSizer.Add(self.dataBtn)
         btnSizer.Add((20,20), 1)
+        btnSizer.Add(self.dataBtnEU)
+        btnSizer.Add((20,20), 1)
+        btnSizer.Add(self.graphBtnRaw)
+        btnSizer.Add((20,20), 1)
         btnSizer.Add(self.graphBtn)
         btnSizer.Add((20,20), 1)
+        
 
         mainSizer.Add(infoSizer, 0, wx.EXPAND|wx.ALL, 10)
         mainSizer.Add((20,20),1)
@@ -178,6 +193,11 @@ class BrowserFrame(wx.Frame):
         self.tree.SetItemImage(self.obcroot, self.fldridx, wx.TreeItemIcon_Normal)
         self.tree.SetItemImage(self.obcroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
 
+        # Add a root node for TDMS File
+        self.tdmsroot = self.tree.AppendItem(root, "TDMS Files")
+        self.tree.SetItemImage(self.tdmsroot, self.fldridx, wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(self.tdmsroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
+
         # Add a root node for STD File
         self.stdroot = self.tree.AppendItem(root, "STD Files")
         self.tree.SetItemImage(self.stdroot, self.fldridx, wx.TreeItemIcon_Normal)
@@ -209,6 +229,7 @@ class BrowserFrame(wx.Frame):
         if self.osname == 'posix':
             # OBC data is on system share
             obcDir = '/frmg/Autonomous_Model/test_data'
+            tdmsDir = '/frmg/Autonomous_Model/test_data'
             # For rcmdata and fstdata, rely on symlink in user directory
             rootDir = os.path.expanduser('~')
             stdDir = os.path.join(rootDir, 'rcmdata')
@@ -216,11 +237,14 @@ class BrowserFrame(wx.Frame):
         else:       
             # For windows, everything sits on C:
             obcDir = 'C:/OBC_Data'
+            tdmsDir = 'C:/TDMS_Data'
             stdDir = 'C:/STD_Data'
             fstDir = 'C:/FST_Data'
             
         if os.path.exists(obcDir):
             self.TreeBuilder(obcDir, self.obcroot)
+        if os.path.exists(tdmsDir):
+            self.TreeBuilder(tdmsDir, self.tdmsroot)
         if os.path.exists(stdDir):
             self.TreeBuilder(stdDir, self.stdroot)
         if os.path.exists(fstDir):
@@ -231,7 +255,7 @@ class BrowserFrame(wx.Frame):
             path = os.path.join(currdir, file)
             if not os.path.isdir(path):
                 head, tail = os.path.split(path)
-                if fnmatch.fnmatch(tail, '*.obc') or fnmatch.fnmatch(tail, '*.std'):
+                if fnmatch.fnmatch(tail, '*.obc') or fnmatch.fnmatch(tail, '*.std') or fnmatch.fnmatch(tail, '*.tdms'):
                     fileItem = self.tree.AppendItem(branch, tail)
                     self.tree.SetItemImage(fileItem, self.fileidx, wx.TreeItemIcon_Normal)
                     self.tree.SetItemPyData(fileItem, path)
@@ -251,7 +275,8 @@ class BrowserFrame(wx.Frame):
                  ("Update Paths", "Update Paths",self.OnPathUpdate),
                  ("&Quit", "Quit", self.OnCloseWindow)),
                 ("&Merge",
-                 ("Merge Wizard...", "Merge Files", self.OnMerge)),
+                 ("Merge Wizard...", "Merge Files", self.OnMerge),
+                 ("Convert TDMS to OBC for Merge...", "Convert TDMS Files", self.OnTDMStoOBC)),
                 ("&Plot",
                  ("Overplot Tool...", "Overplot Files", self.OnPlot),
                  ("Overplot Tool (More plots)", "Overplot Files", self.OnPlotMore)),
@@ -344,7 +369,9 @@ class BrowserFrame(wx.Frame):
             else:
                 self.calBtn.Enable(False)
             self.dataBtn.Enable(True)
+            self.dataBtnEU.Enable(True)
             self.graphBtn.Enable(True)
+            self.graphBtnRaw.Enable(True)
 
         wx.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
 
@@ -360,6 +387,7 @@ class BrowserFrame(wx.Frame):
         """
         self.statusbar.SetStatusText('Working...')
         self.tree.DeleteChildren(self.obcroot)
+        self.tree.DeleteChildren(self.tdmsroot)
         self.tree.DeleteChildren(self.stdroot)
         if self.fstroot:
             self.tree.DeleteChildren(self.fstroot)
@@ -369,11 +397,21 @@ class BrowserFrame(wx.Frame):
     def OnDataClick(self, evt):
         frame = DataFrame(self.runObj)
         frame.Show()
+        
+    def OnDataEUClick(self, evt):
+        frame = DataFrame(self.runObj, EU=True)
+        frame.Show()
 
     def OnGraphClick(self, evt):
         chans = self.chanList.GetSelections()
         xchan = self.xchanList.GetSelection() - 1
-        frame = CanvasFrame(self.runObj, chans, xchan)
+        frame = CanvasFrame(self.runObj, chans, xchan, EU=True)
+        frame.Show()
+        
+    def OnGraphRawClick(self, evt):
+        chans = self.chanList.GetSelections()
+        xchan = self.xchanList.GetSelection() - 1
+        frame = CanvasFrame(self.runObj, chans, xchan, EU=False)
         frame.Show()
 
     def OnCloseWindow(self, event):
@@ -394,7 +432,20 @@ class BrowserFrame(wx.Frame):
 
         wizard.RunWizard(page1)
         wx.MessageBox("Merge completed successfully", "That's all folks!")
+        
+    def OnTDMStoOBC(self, event):
+        wizard = wx.wizard.Wizard(self, -1, "TDMS to OBC conversion", images.getWizTest1Bitmap())
+        page1 = TDMStoOBCwiz.StartPage(wizard)
+        page2 = TDMStoOBCwiz.SelectFilesPage(wizard)
+        page3 = TDMStoOBCwiz.RunConvPage(wizard)
+        
+        wx.wizard.WizardPageSimple_Chain(page1, page2)
+        wx.wizard.WizardPageSimple_Chain(page2, page3)
 
+        wizard.FitToPage(page1)
+
+        wizard.RunWizard(page1)
+        wx.MessageBox("Conversion completed successfully", "That's all folks!")
 
     def OnPlot(self, event):
         frame = overplot.OverPlotFrame()
@@ -457,15 +508,16 @@ class PathFrame(wx.Frame):
 
 
 class DataFrame(wx.Frame):
-    def __init__(self, runData):
+    def __init__(self, runData, EU=False):
         wx.Frame.__init__(self, None,
                           title="Run Data  "+runData.filename,
                           size=(640,480))
 
         grid = wx.grid.Grid(self)
-        table = DataTable(runData)
+        table = DataTable(runData, EU)
         grid.SetTable(table, True)
-        grid.SetDefaultColSize(80)
+        grid.AutoSizeColumns(True)
+        #grid.SetDefaultColSize(80)
 
 class CalFrame(wx.Frame):
     def __init__(self, runData):
@@ -499,9 +551,10 @@ class CalFrame(wx.Frame):
         self.list.SetColumnWidth(5, wx.LIST_AUTOSIZE)
 
 class DataTable(wx.grid.PyGridTableBase):
-    def __init__(self, runData):
+    def __init__(self, runData, EU=False):
         wx.grid.PyGridTableBase.__init__(self)
         self.runData = runData
+        self.EU = EU
 
     def GetNumberRows(self):
         return len(self.runData.data)
@@ -510,7 +563,10 @@ class DataTable(wx.grid.PyGridTableBase):
         return self.runData.nchans
 
     def GetValue(self, row, col):
-        value = self.runData.data[row][col]
+        if self.EU:
+            value = self.runData.dataEU[row][col]
+        else:
+            value = self.runData.data[row][col]
         return value
 
     def IsEmptyCell(self, row, col):

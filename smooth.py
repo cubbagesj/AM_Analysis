@@ -78,8 +78,6 @@ class TableFrame(wx.Frame):
             runPath = self.runFile[:-10]
         except:
             runPath = '/disk2/home/'+os.environ['USER']+'/rcmdata' 
-
-        print(runPath)
         # Open "File Save Dialog" window      
         dlg = wx.FileDialog(self, "Choose Run File for Plot Group",
                                 defaultDir=runPath, wildcard="*.std",

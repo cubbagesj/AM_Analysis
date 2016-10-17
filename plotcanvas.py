@@ -20,7 +20,7 @@ class CanvasFrame(wx.Frame):
 
     #added xchan variable to control which channel is used as the x axis.  Defaults
     #to -1 so nothing should change for other uses.
-    def __init__(self, runData, chans, xchan = -1):
+    def __init__(self, runData, chans, xchan = -1, EU=True):
         wx.Frame.__init__(self,None,-1,
                           'Plot  '+runData.filename)
 
@@ -32,7 +32,7 @@ class CanvasFrame(wx.Frame):
         lines = []
         names = []
         for chan in chans:
-            xdata, ydata = get_xy(runData, chan, xchan)
+            xdata, ydata = get_xy(runData, chan, xchan, EU=EU)
 
             #Get some values from the data for the max/min/mean
             self.ydata = ydata
@@ -54,9 +54,12 @@ class CanvasFrame(wx.Frame):
             name = runData.chan_names[chan]
             lines.append(line)
             names.append(name)
-
+        
         if len(chans) > 1:
-            leg = self.axes.legend(lines, names, 'lower left')
+            handles = []
+            for i in range(len(chans)):
+                handles.append(matplotlib.lines.Line2D([], [], color=lines[i][0].get_color(), marker=None))
+            leg = self.axes.legend(handles, names, loc='lower left')
             ltext = leg.get_texts()
             setp(ltext, fontsize='small')
         else:

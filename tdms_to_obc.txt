@@ -1,0 +1,45 @@
+phins_bin_XV1_rot_rate,199,1,0
+phins_bin_XV2_rot_rate,198,1,0
+phins_bin_XV3_rot_rate,200,1,0
+phins_roll,205,1,0
+phins_pitch,204,1,0
+phins_heading,206,1,0
+LVDT2,15,1,0
+FWD LVDT,18,1,0
+LVDT1,17,1,0
+X1IMU acceleration,197,32.17405,0
+X2IMU acceleration,196,32.17405,0
+X3IMU acceleration,195,32.17405,0
+phins_latitude,326,1,0
+phins_longitude,327,1,0
+Depth2,11,1,0
+RPM Counter Reading,31,1,0
+rpm echo,217,1,0
+BTIR Xvel,246,0.00328084,0
+BTIR Yvel,247,0.00328084,0
+BTIR Zvel,248,0.00328084,0
+Top Rud ST,64,1,0
+Top Rud NF,48,1,0
+Top Rud AF,56,1,0
+Bot Rud ST,96,1,0
+Bot Rud NF,80,1,0
+Bot Rud AF,88,1,0
+Port Flap ST,63,1,0
+Port Flap NF,47,1,0
+Port Flap AF,55,1,0
+STBD Flap ST,95,1,0
+STBD Flap NF,79,1,0
+STBD Flap AF,87,1,0
+STBD SP NF,143,1,0
+STBD SP AF,151,1,0
+Port SP Dyno NF,111,1,0
+Port SP Dyno AF,119,1,0
+Slip Ring FX,185,1,0
+Slip Ring FY,186,1,0
+Slip Ring FZ,187,1,0
+Slip Ring MX,188,1,0
+Slip Ring MY,189,1,0
+Slip Ring MZ,190,1,0
+Port SP Dyno ST,127,1,0
+STBD SP ST,159,1,0
+script_mode,325,1,0

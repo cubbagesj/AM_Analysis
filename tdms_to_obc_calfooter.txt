@@ -1,0 +1,487 @@
+# For all of the 6 DOF gauges and the Kistler, the values for the forces and moments
+# are the corresponding [CHAN###] of the gauge, not the data packet position which was
+# used during the cal.  The forces and moments for the gauges correspond to the native
+# coordinate system of the gauge, not the model coordinate system. Transformation to model
+# coords is handled by the orientation matrix if needed.
+#
+# NOTES - This is different than the way the prop was handled in the old models so be careful!
+#       - ALL interaction matricies are in DYNO coordinates.  The orientation matrix
+#         does all of the rotations
+#
+# The weight and arm for the prop is used to subtract the self weight of the prop and needs to
+# be measured for each prop.
+# 
+# The position is the prop-position for zero rotation found from minimizing the dyno Fy force
+
+
+[ROTOR]
+Fx = 185
+Fy = 186
+Fz = 187
+Mx = 188
+My = 189
+Mz = 190
+
+# Baseline Updated on 16 Mar 2016 - DWP
+weight = 0.0
+arm = 0.0
+
+# Updated on 16 Mar 2016 - DWP
+position = 00000
+
+# cal date 19 Oct 2015 - DWP & BG
+int_row1 =  17.631605  -0.166634    0.006770   -0.034820   -1.205144   -0.054907
+int_row2 =  0.315006   17.641662    0.016439    1.155230    0.086257    0.015002
+int_row3 = -0.087947    0.076960   67.941430    0.229947    0.533134    0.232779
+int_row4 = -0.002701    0.238294   -0.015250   12.356526    0.056118    0.002580
+int_row5 = -0.205737   -0.125244   -0.112821    0.096846   12.527049    0.010082
+int_row6 =  0.130277    0.144277   -0.035000    0.330553   -0.114916   63.757462
+
+# Updated/Verified 16 Mar 2016 - DWP
+orient_row1 = 0  0  1  0  0  0
+orient_row2 = 0 -1  0  0  0  0
+orient_row3 = 1  0  0  0  0  0
+orient_row4 = 0  0  0  0  0  1
+orient_row5 = 0  0  0  0 -1  0
+orient_row6 = 0  0  0  1  0  0
+
+# Rotor installed
+serial_num = UDW3-6-500
+
+
+[STATOR]
+# No Stator installed
+Fx = 47
+Fy = 55
+Fz = 63
+Mx = 48
+My = 56
+Mz = 64
+
+# for Baseline DP0.2 Stator - PS
+weight = 5.0
+arm = 2.2
+position = 0
+angle = 0
+
+# For DP1.2 Stator updated data 27 Jun 2014 - PS
+#weight = 1.98
+#arm = 1.32
+#position = 0
+#angle = 0
+
+# cal date 30 May 2014 - PS
+int_row1 =  0.00297393  0.00000156  0.00002917  0.00005739  0.00039878 -0.00001383
+int_row2 =  0.00000904  0.00297324  0.00003400 -0.00041151 -0.00001785 -0.00003825
+int_row3 =  0.00002480  0.00001453  0.01134840  0.00011604  0.00006231 -0.00001691
+int_row4 =  0.00010578 -0.00032073 -0.00018694  0.02221418  0.00000894 -0.00010218
+int_row5 =  0.00034422  0.00011115  0.00001985  0.00005859  0.02215993 -0.00005840
+int_row6 =  0.00000411 -0.00004458 -0.00005434 -0.00023691  0.00013492  0.02058027
+
+
+# for Stator with it's connector on the bottom 12 June 2014 - PS
+orient_row1 = 0 -1  0  0  0  0
+orient_row2 = 0  0 -1  0  0  0
+orient_row3 = 1  0  0  0  0  0
+orient_row4 = 0  0  0  0 -1  0
+orient_row5 = 0  0  0  0  0 -1
+orient_row6 = 0  0  0  1  0  0
+
+serial_num = M5434M
+
+
+[SOF1]
+# SOF1 - NOT INSTALLED
+Fx = 81
+Fy = 89
+Fz = 97
+Mx = 82
+My = 90
+Mz = 98
+
+angle = 0.0
+
+int_row1 =  1 0 0 0 0 0
+int_row2 =  0 1 0 0 0 0
+int_row3 =  0 0 1 0 0 0 
+int_row4 =  0 0 0 1 0 0 
+int_row5 =  0 0 0 0 1 0 
+int_row6 =  0 0 0 0 0 1 
+
+orient_row1 = -1  0  0  0  0  0
+orient_row2 =  0 -1  0  0  0  0
+orient_row3 =  0  0  1  0  0  0
+orient_row4 =  0  0  0 -1  0  0
+orient_row5 =  0  0  0  0 -1  0
+orient_row6 =  0  0  0  0  0  1
+
+serial_num = 
+
+
+[SOF2]
+# SOF2 - NOT INSTALLED
+Fx = 51
+Fy = 59
+Fz = 67
+Mx = 83
+My = 91
+Mz = 99
+
+angle = 0.0
+
+int_row1 =  1 0 0 0 0 0
+int_row2 =  0 1 0 0 0 0
+int_row3 =  0 0 1 0 0 0 
+int_row4 =  0 0 0 1 0 0 
+int_row5 =  0 0 0 0 1 0 
+int_row6 =  0 0 0 0 0 1 
+
+orient_row1 = 1 0 0 0 0 0
+orient_row2 = 0 1 0 0 0 0
+orient_row3 = 0 0 1 0 0 0
+orient_row4 = 0 0 0 1 0 0
+orient_row5 = 0 0 0 0 1 0
+orient_row6 = 0 0 0 0 0 1
+
+serial_num =
+
+
+[6DOF1]
+# 6DOF1 Not installed
+Fx = 79
+Fy = 87
+Fz = 95
+Mx = 80
+My = 88
+Mz = 96
+
+angle = 0.0
+
+int_row1 =  1 0 0 0 0 0
+int_row2 =  0 1 0 0 0 0
+int_row3 =  0 0 1 0 0 0 
+int_row4 =  0 0 0 1 0 0 
+int_row5 =  0 0 0 0 1 0 
+int_row6 =  0 0 0 0 0 1 
+
+orient_row1 = -1  0  0  0  0  0
+orient_row2 =  0  0  1  0  0  0
+orient_row3 =  0  1  0  0  0  0
+orient_row4 =  0  0  0 -1  0  0
+orient_row5 =  0  0  0  0  0  1
+orient_row6 =  0  0  0  0  1  0
+
+serial_num =
+
+
+[6DOF2]
+# 6DOF2 Not installed
+Fx = 111
+Fy = 119
+Fz = 127
+Mx = 112
+My = 120
+Mz = 128
+
+angle = 0.0
+
+int_row1 =  1 0 0 0 0 0
+int_row2 =  0 1 0 0 0 0
+int_row3 =  0 0 1 0 0 0 
+int_row4 =  0 0 0 1 0 0 
+int_row5 =  0 0 0 0 1 0 
+int_row6 =  0 0 0 0 0 1 
+
+orient_row1 =  1  0  0  0  0  0
+orient_row2 =  0  0  1  0  0  0
+orient_row3 =  0  1  0  0  0  0
+orient_row4 =  0  0  0  1  0  0
+orient_row5 =  0  0  0  0  0  1
+orient_row6 =  0  0  0  0 -1  0
+
+serial_num = 
+
+
+[6DOF3]
+# 6DOF3 Not installed
+Fx = 53
+Fy = 61
+Fz = 77
+Mx = 77
+My = 77
+Mz = 69
+
+angle = 0.0
+
+int_row1 =  1 0 0 0 0 0
+int_row2 =  0 1 0 0 0 0
+int_row3 =  0 0 1 0 0 0 
+int_row4 =  0 0 0 1 0 0 
+int_row5 =  0 0 0 0 1 0 
+int_row6 =  0 0 0 0 0 1 
+
+orient_row1 =  0  0  1  0  0  0
+orient_row2 =  1  0  0  0  0  0
+orient_row3 =  0  1  0  0  0  0
+orient_row4 =  0  0  0  0  0  1
+orient_row5 =  0  0  0  1  0  0
+orient_row6 =  0  0  0  0  1  0
+
+serial_num = 
+
+
+[6DOF4]
+# 6DOF4 Not installed
+Fx = 85
+Fy = 93
+Fz = 109
+Mx = 109
+My = 109
+Mz = 101
+
+angle = 0.0
+
+int_row1 =  1 0 0 0 0 0
+int_row2 =  0 1 0 0 0 0
+int_row3 =  0 0 1 0 0 0 
+int_row4 =  0 0 0 1 0 0 
+int_row5 =  0 0 0 0 1 0 
+int_row6 =  0 0 0 0 0 1 
+
+orient_row1 =  1  0  0  0  0  0
+orient_row2 =  0  0 -1  0  0  0
+orient_row3 =  0  1  0  0  0  0
+orient_row4 =  0  0  0  1  0  0
+orient_row5 =  0  0  0  0  0 -1
+orient_row6 =  0  0  0  0  1  0
+
+serial_num = 
+
+
+[6DOF5]
+# 6DOF5 Not installed
+Fx = 86
+Fy = 94
+Fz = 110
+Mx = 110
+My = 110
+Mz = 102
+
+angle = 0.0
+
+int_row1 =  1 0 0 0 0 0
+int_row2 =  0 1 0 0 0 0
+int_row3 =  0 0 1 0 0 0 
+int_row4 =  0 0 0 1 0 0 
+int_row5 =  0 0 0 0 1 0 
+int_row6 =  0 0 0 0 0 1 
+
+orient_row1 =  1  0  0  0  0  0
+orient_row2 =  0  0  1  0  0  0
+orient_row3 =  0 -1  0  0  0  0
+orient_row4 =  0  0  0  1  0  0
+orient_row5 =  0  0  0  0  0  1
+orient_row6 =  0  0  0  0 -1  0
+
+serial_num =
+
+
+[6DOF6]
+# 6DOF6 Not installed
+Fx = 54
+Fy = 62
+Fz = 78
+Mx = 78
+My = 78
+Mz = 70
+
+angle = 0.0
+
+int_row1 =  1 0 0 0 0 0
+int_row2 =  0 1 0 0 0 0
+int_row3 =  0 0 1 0 0 0 
+int_row4 =  0 0 0 1 0 0 
+int_row5 =  0 0 0 0 1 0 
+int_row6 =  0 0 0 0 0 1 
+
+orient_row1 =  0  0  1  0  0  0
+orient_row2 = -1  0  0  0  0  0
+orient_row3 =  0 -1  0  0  0  0
+orient_row4 =  0  0  0  0  0  1
+orient_row5 =  0  0  0 -1  0  0
+orient_row6 =  0  0  0  0 -1  0
+
+serial_num = 
+
+
+[KISTLER3]
+# KISTLER3 Not Installed
+
+Fx1 = 51
+Fy1 = 83
+Fz1 = 115
+Fx2 = 59
+Fy2 = 91
+Fz2 = 123
+Fx3 = 67
+Fy3 = 99
+Fz3 = 131
+
+xdist = 1.219
+ydist = 1.712
+
+#Distance from FP and CL to gage center
+gagex = 0.0
+gagey = 0.0
+gagez = 0.0
+
+armx = -0.0
+army = -0.0
+armz = -15.0
+
+weight = -4.2
+
+# Interaction cal from 05 Feb 2015 - IMA
+int_row1 =  0.94346094 -0.00561123 -0.00345894 -0.00649949 0.01924937 -0.01608704
+int_row2 =  0.00827954  0.95271817  -0.00233110 -0.03032409 -0.00115675	0.01499902
+int_row3 = -0.00303004  0.00257084  0.98423179 -0.03400528  0.00962431 -0.00441007
+int_row4 = -0.00025681 -0.00300965 -0.00028997 1.00635015 -0.00254780 -0.00022290
+int_row5 =  0.00673467 -0.00101805  0.00368605 0.01565718  1.06267584 -0.00328004
+int_row6 = -0.00409626 -0.00522355  0.00288378 0.00198576  0.00156771 -0.99504188
+
+orient_row1 =  0  1  0  0  0  0
+orient_row2 =  1  0  0  0  0  0
+orient_row3 =  0  0  1  0  0  0
+orient_row4 =  0  0  0  0  1  0
+orient_row5 =  0  0  0  1  0  0
+orient_row6 =  0  0  0  0  0  1
+
+#serial_num = 2011-6
+
+
+[KISTLER]
+# NOT INSTALLED
+Fx1 = 52
+Fy1 = 60
+Fz1 = 68
+Fx2 = 84
+Fy2 = 92
+Fz2 = 100
+Fx3 = 116
+Fy3 = 124
+Fz3 = 132
+Fx4 = 148
+Fy4 = 156
+Fz4 = 164
+
+xdist = 3.0
+ydist = 2.0
+
+gagex = 57.79
+gagey = 0.0
+gagez = -10.23
+
+armx = -5.0
+army = -1.6
+armz = -5.0
+
+weight = -5.5
+
+int_row1 =  1 0 0 0 0 0
+int_row2 =  0 1 0 0 0 0
+int_row3 =  0 0 1 0 0 0 
+int_row4 =  0 0 0 1 0 0 
+int_row5 =  0 0 0 0 1 0 
+int_row6 =  0 0 0 0 0 1 
+
+orient_row1 =  1  0  0  0  0  0
+orient_row2 =  0  1  0  0  0  0
+orient_row3 =  0  0  1  0  0  0
+orient_row4 =  0  0  0  1  0  0
+orient_row5 =  0  0  0  0  1  0
+orient_row6 =  0  0  0  0  0  1
+
+
+[DECK]
+# Deck Kistlers NOT INSTALLED
+# Deck is instrumented with 2 3-button Kistler gauges.  To process this
+# we need to do each gauge independantly and then combine.  
+# Coords follow body system x fwd, z normal, y to starboard
+
+# Forward gauge channels
+Fx1f = 147
+Fy1f = 52
+Fz1f = 76
+Fx2f = 155
+Fy2f = 60
+Fz2f = 84
+Fx3f = 163
+Fy3f = 68
+Fz3f = 92
+
+# Forward gauge geometry
+xdistf = 1.219
+ydistf = 1.712
+
+# Forward gauge Interaction Matrix/Orient Matrix
+# Interaction cal from 18 Oct 2013
+int_row1f =  0.94834932  0.02202192  0.00316495  0.00121966  0.00553286  0.01620981
+int_row2f = -0.00842915  0.96315136  0.00068350 -0.03906042  0.00139986  0.00131320
+int_row3f = -0.00085224  0.00022810  0.99891680 -0.01856109  0.00578266  0.00380392
+int_row4f = -0.00053083 -0.00368777  0.00193511  1.01602879  0.00233782 -0.00013360
+int_row5f =  0.01096879 -0.00081663 -0.00324236 -0.00296404  1.07550835  0.00072754
+int_row6f =  0.00014829  0.00095896  0.00092439 -0.00126277  0.00457627  1.00355739
+
+orient_row1f =  0 -1  0  0  0  0
+orient_row2f = -1  0  0  0  0  0
+orient_row3f =  0  0  1  0  0  0
+orient_row4f =  0  0  0  0 -1  0
+orient_row5f =  0  0  0 -1  0  0
+orient_row6f =  0  0  0  0  0  1
+
+#serial_num = 2011-4
+
+
+# aft gauge channels
+Fx1a = 100
+Fy1a = 124
+Fz1a = 148
+Fx2a = 108
+Fy2a = 132
+Fz2a = 156
+Fx3a = 116
+Fy3a = 140
+Fz3a = 164
+
+# Aft gauge geometry
+xdista = 1.219
+ydista = 1.712
+
+# Aft gauge Interaction Matrix/Orient Matrix
+# Interaction cal from 18 Oct 2013
+int_row1a =  0.95257847  0.00347601  0.00526436  0.00687785  0.00588126  0.02832648
+int_row2a =  0.00825336  0.95927521  0.00004383 -0.03754198 -0.00168015 -0.02029088
+int_row3a =  0.00001535  0.00268673  0.99720033 -0.01763799  0.01079126  0.00311234
+int_row4a = -0.00036529 -0.00383291  0.00019305  1.01536827  0.00089040 -0.00204479
+int_row5a =  0.00726907 -0.00029281  0.00087565  0.00755730  1.06807895 -0.00032953
+int_row6a =  0.00105970 -0.00162750 -0.00000400  0.00047318  0.00418226  1.00626787
+
+orient_row1a =  0 -1  0  0  0  0
+orient_row2a = -1  0  0  0  0  0
+orient_row3a =  0  0  1  0  0  0
+orient_row4a =  0  0  0  0 -1  0
+orient_row5a =  0  0  0  -1  0  0
+orient_row6a =  0  0  0  0  0  1
+
+#serial_num = 2011-5
+
+#Distance from FP and CL to center of two gauges
+gagex = 88.0
+gagey = 0.0
+gagez = 0.0
+
+armx =  1.0
+army =  0.25
+armz = -0.0
+
+weight = 55.37
