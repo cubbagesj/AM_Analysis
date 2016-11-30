@@ -768,11 +768,12 @@ class Rot_Dyno6:
         cosPH = bodyAngles[3]
 
         prop_pos = rawdata[184] - self.PropPosZero
-        if prop_pos < 0:
-            prop_pos = prop_pos + 20000
-        if prop_pos > 20000:
-            prop_pos = prop_pos - 20000
-        rot_angle = (prop_pos * .01800)
+#        if prop_pos < 0:
+#            prop_pos = prop_pos + 20000
+#        if prop_pos > 20000:
+#            prop_pos = prop_pos - 20000
+#        rot_angle = (prop_pos * .01800)
+        rot_angle = prop_pos
 
         sinR = sin(radians(rot_angle))
         cosR = cos(radians(rot_angle))

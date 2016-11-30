@@ -64,8 +64,8 @@ def tdmsToOBC(tdmsfile, obcDirectory):
     
     tdmsDir, tdmsf = os.path.split(tdmsfile_name)
     
-    if os.path.isfile(tdmsDir + '\\tdms_to_obc.txt'):
-        configfile_name = tdmsDir + '\\tdms_to_obc.txt'
+    if os.path.isfile(os.path.join(tdmsDir,'tdms_to_obc.txt')):
+        configfile_name = os.path.join(tdmsDir, 'tdms_to_obc.txt')
     else:
         #simple GUI to prompt user to browse for config file
         app2 = wx.PySimpleApp()
@@ -79,12 +79,12 @@ def tdmsToOBC(tdmsfile, obcDirectory):
     head, tail = os.path.split(tdmsfile_name)
     
     # Write obc and cal file to same directory as tdms file
-    #obcfile_name = head + '\\run-' + run_num + '.obc' #file name for new obc file
-    #calfile_name = head + '\\run-' + run_num + '.cal' #file name for new cal file
+    obcfile_name = head + '/run-' + run_num + '.obc' #file name for new obc file
+    calfile_name = head + '/run-' + run_num + '.cal' #file name for new cal file
     
     # Write obc and cal file to the obc directory
-    obcfile_name = obcDirectory + '\\run-' + run_num + '.obc' #file name for new obc file
-    calfile_name = obcDirectory + '\\run-' + run_num + '.cal' #file name for new cal file
+    #obcfile_name = obcDirectory + '/run-' + run_num + '.obc' #file name for new obc file
+    #calfile_name = obcDirectory + '/run-' + run_num + '.cal' #file name for new cal file
     
     # Open files that will be needed
     tdms_file_obj = TdmsFile(tdmsfile_name)  #open the tdms file using nptdms package
@@ -200,11 +200,11 @@ def tdmsToOBC(tdmsfile, obcDirectory):
     
     # get the cal file header and footer formats from files in the same directory as the config file
     confhead, conftail = os.path.split(configfile_name)
-    cal_head_file = open(confhead + '\\tdms_to_obc_calheader.txt', 'r')
-    cal_foot_file = open(confhead + '\\tdms_to_obc_calfooter.txt', 'r')
+    cal_head_file = open(confhead + '/tdms_to_obc_calheader.txt', 'r')
+    cal_foot_file = open(confhead + '/tdms_to_obc_calfooter.txt', 'r')
     
     #Create new run file with the correct #RUNTYPE and #MOPT2 settings for tdms runtype
-    run_file = open(confhead + '\\tdms_to_obc.run', 'r').read()
+    run_file = open(confhead + '/tdms_to_obc.run', 'r').read()
     mantypes = ['Set Planes',
                 'Controlled Turn',
                 'Plane Jam',
@@ -230,11 +230,14 @@ def tdmsToOBC(tdmsfile, obcDirectory):
                 'Manual Mode',
                 'Shore Test',
                 'Todds Astern 3 turn',
-                'Rudder Perturbation']
+                'Rudder Perturbation',
+                'No Run Type']
      
     run_type = tdms_file_obj.object().property('script_run_type') #get runtype from tdms file object          
-    
-    type_number = mantypes.index(run_type)  #find the correct runtype number to put in the .run file #MOPT2 settings
+    try:
+        type_number = mantypes.index(run_type)  #find the correct runtype number to put in the .run file #MOPT2 settings
+    except:
+        type_number = 26
     
     #insert the runtype string and #MOPT2 number into the run file text
     type_index_beg = run_file.find('#RUNTYPE') + 10
@@ -243,16 +246,16 @@ def tdmsToOBC(tdmsfile, obcDirectory):
     run_file_new = run_file[0:type_index_beg] + run_type + run_file[type_index_end:mopt_index] + str(type_number) + run_file[mopt_index+1:]
     
     #write the new run file with the new text
-    runfile_name = obcDirectory + '\\run-' + run_num + '.run' #file name for new .run file
+    runfile_name = head + '/run-' + run_num + '.run' #file name for new .run file
     newrunfile = open(runfile_name, 'w')
     newrunfile.write(run_file_new)
     newrunfile.close()
     
     #create new .gps and MERGE.INP files in the OBC data directory 
-    gpsfile_name = obcDirectory + '\\run-' + run_num + '.gps' #file name for new gps file
-    INPfile_name = obcDirectory + '\\run-' + run_num + '_MERGE.INP' #file name for new MERGE.INP file
-    copyfile(confhead + '\\tdms_to_obc.gps', gpsfile_name)
-    copyfile(confhead + '\\tdms_to_obc_MERGE.INP', INPfile_name)
+    gpsfile_name = head + '/run-' + run_num + '.gps' #file name for new gps file
+    INPfile_name = head + '/run-' + run_num + '_MERGE.INP' #file name for new MERGE.INP file
+    copyfile(confhead + '/tdms_to_obc.gps', gpsfile_name)
+    copyfile(confhead + '/tdms_to_obc_MERGE.INP', INPfile_name)
     
     cal_head = cal_head_file.read()
     cal_foot = cal_foot_file.read()

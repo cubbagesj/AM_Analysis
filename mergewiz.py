@@ -6,16 +6,18 @@ import os
 import wx.wizard
 import glob
 
+
 from am_merge import MergeRun
+
+from tdms_to_obc import tdmsToOBC #AFP - Initially use Woody's file tdms_to_obc converter to handle the TDMS file
 
 runsToMerge = []
 if os.name == 'posix':
-    obcDir = '/frmg/Autonomous_Model/Test_Data/'
+    obcDir = '/frmg/Autonomous_Model/Test_Data/' #AFP Also TDMS Directory
     mrgDir = ''
 else:
-    obcDir = 'C:/OBC_Data'
+    obcDir = 'C:/OBC_Data' #AFP Also TDMS Directory
     mrgDir = 'C:/STD_Data'
-
 
 class StartPage(wx.wizard.WizardPageSimple):
     def __init__(self, parent):
@@ -40,22 +42,22 @@ class SelectFilesPage(wx.wizard.WizardPageSimple):
             self.dataDir = '/frmg/Autonomous_Model/Test_Data/'
         else:
             self.dataDir = 'C:/OBC_Data'
-        
+
             
         wx.wizard.WizardPageSimple.__init__(self, parent)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
-        titleText = wx.StaticText(self, -1, 'Select OBC Files')
+        titleText = wx.StaticText(self, -1, 'Select OBC or TDMS Files')
         titleText.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
         
         self.dirpick = wx.DirPickerCtrl(self, -1, path=self.dataDir, message="Choose Directory")
         self.dirpick.SetTextCtrlGrowable(grow=True)
         self.dirpick.SetTextCtrlProportion(1)
         self.dirpick.SetPickerCtrlProportion(0)
-        self.fileList = wx.CheckListBox(self, -1, size=(200,200), style=wx.LB_MULTIPLE)
+        self.fileList = wx.CheckListBox(self, -1, size=(200,150), style=wx.LB_MULTIPLE)
 
         self.Bind(wx.EVT_DIRPICKER_CHANGED,  self.OnDirPick, self.dirpick)
-        self.Bind(wx.EVT_CHECKLISTBOX, self.OnCheck, self.fileList)
+        self.Bind(wx.EVT_CHECKLISTBOX, self.OnCheck, self.fileList) #AFP Updated onCheck function
         
         fileSizer = wx.FlexGridSizer(cols=1, hgap=5, vgap=5)
         fileSizer.AddGrowableCol(0)
@@ -69,35 +71,37 @@ class SelectFilesPage(wx.wizard.WizardPageSimple):
         
         self.fileList.Set(self.getFiles())
         
-        
     def getFiles(self):
-        obcfiles = []
-        
+        obctdmsfiles = [] #AFP now also includes TDMS files
         for file in glob.glob(os.path.join(self.dataDir,'*.obc')):
             head, tail = os.path.split(file)
-            name, ext = os.path.splitext(tail)
-            obcfiles.append(name)
-        return obcfiles
-        
+            obctdmsfiles.append(tail)
+        for file in glob.glob(os.path.join(self.dataDir,'*.tdms')): #AFP added search for TDMS files
+            head, tail = os.path.split(file)
+            obctdmsfiles.append(tail) #AFP Display extension since there will now be TDMS files
+        return obctdmsfiles
         
     def OnDirPick(self, evt):
         global obcDir
         self.dataDir = self.dirpick.GetPath()
         obcDir = self.dataDir
-        runsToMerge = []
         self.fileList.Set(self.getFiles())
         
     def OnCheck(self, evt):
         global runsToMerge
         runsToMerge = []
-        for item in range(self.fileList.GetCount()):
-            if self.fileList.IsChecked(item):
+        for item in range(self.fileList.GetCount()):  
+            if self.fileList.IsChecked(item): 
                 try:
                     runsToMerge.index(self.fileList.GetString(item))
                 except:
                     runsToMerge.append(self.fileList.GetString(item))
-
-
+            else: #AFP Remove the item from fileList if it is unchecked
+                try:
+                    runsToMerge.remove(self.fileList.GetString(item))
+                except:
+                    continue
+                    
 class MrgDirPage(wx.wizard.WizardPageSimple):
     def __init__(self, parent):
 
@@ -106,7 +110,8 @@ class MrgDirPage(wx.wizard.WizardPageSimple):
             self.mrgInpDir = '/frmg/Autonomous_Model/Test_Data/Merge_Files/'
         else:
             self.mrgDir = 'C:/STD_Data'
-            self.mrgInpDir = 'C:/'
+            
+            self.mrgInpDir = 'C:/OBC_Data/merge.inp' #AFP Updated to show a file as a default, not just a directory
             
         wx.wizard.WizardPageSimple.__init__(self, parent)
         
@@ -130,19 +135,20 @@ class MrgDirPage(wx.wizard.WizardPageSimple):
         self.mrginpdirpick.SetTextCtrlProportion(1)
         self.mrginpdirpick.SetPickerCtrlProportion(0)
 
+        self.mrgInput = wx.CheckBox(self,-1,'Use Individually Generated TDMS Merge Input Files?',(20,200)) #AFP Defaults to MERGE.INP in directory of OBC file if this is checked and an OBC file is being merged.
+
         inpLabel = wx.StaticText(self, -1, 'Merge Configuration File')
         
         self.Bind(wx.EVT_DIRPICKER_CHANGED, self.OnMrgDirPick, self.mrgdirpick)
         self.Bind(wx.EVT_FILEPICKER_CHANGED, self.OnMrgInpDirPick, self.mrginpdirpick)
-        
+        self.Bind(wx.EVT_CHECKBOX, self.OnInpCheck, self.mrgInput) #AFP Updated onCheck function
 
         self.sizer.Add(titleText, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
         self.sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND | wx.ALL, 5)
         self.sizer.Add(dirLabel, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
         self.sizer.Add(self.mrgdirpick, 0, wx.EXPAND|wx.ALL, 5)
         self.sizer.Add(inpLabel, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
-        self.sizer.Add(self.mrginpdirpick, 0, wx.EXPAND|wx.ALL, 5)
-        
+        self.sizer.Add(self.mrginpdirpick, 0, wx.EXPAND|wx.ALL, 5)   
 
     def OnMrgDirPick(self, evt):
         global mrgDir
@@ -158,6 +164,12 @@ class MrgDirPage(wx.wizard.WizardPageSimple):
         if dlg.ShowModal() == wx.ID_OK:
             inpDir = dlg.GetFilename()
         self.inpBox.SetValue(inpDir)
+
+    def OnInpCheck(self, evt):
+        if self.mrgInput.IsChecked():
+            self.mrginpdirpick.Disable()
+        else:         
+            self.mrginpdirpick.Enable()
 
 class RunMrgPage(wx.wizard.WizardPageSimple):
     def __init__(self, parent):
@@ -180,23 +192,38 @@ class RunMrgPage(wx.wizard.WizardPageSimple):
         self.sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND | wx.ALL, 5)
         self.sizer.Add(text1, 0, wx.ALIGN_CENTER | wx.ALL, 5)
         self.sizer.Add(mrgBtn, 0, wx.ALIGN_CENTER | wx.ALL, 5)  
-        
+
     def OnMerge(self, evt):
         # Here is where we run the actual merge.
         # The obc directory is in the global obcdir.  Run the merge from here
         
-        password = ''
+        self.password = ''
 
         currdir = os.getcwd()
         os.chdir(obcDir)
-        
         keepGoing = True
         count = 0
-        
         for run in runsToMerge:
-            if keepGoing:
-                runnum = run[4:]
-                MergeRun(int(runnum), mrgDir, inpDir, password)
+            if keepGoing:              
+                OrigFileName, FileType = run.split(".") #AFP Split file into name and extension
+                FileName = OrigFileName.replace(" ","") #AFP Remove space after underslash in tdms file, does nothing for OBC file.
+                self.runnum = FileName[4:] #AFP
+                self.FilePath = os.path.join(obcDir,run) #AFP
+                if FileType.lower() == 'tdms':
+                    self.tdmsMerge()
+                else:
+                    MergeRun(int(self.runnum), mrgDir, inpDir, self.password)                     
             count += 1
         os.chdir(currdir)
         
+    def tdmsMerge(self):
+        tdmsToOBC(self.FilePath, obcDir) #Check to see if the the file we are merging is a TDMS file or an OBC file using the IsTDMSFile input. If it
+                                    #is a TDMS file, use Woody's converter to handle it. If it is an OBC file, proceed as normal.
+        tdmsinpDir = os.path.join(obcDir,'run-'+self.runnum+'_MERGE.INP')
+        MergeRun(int(self.runnum), mrgDir, tdmsinpDir, self.password) #AFP Added filepath and filetype inputs to check if TDMS file
+        #AFP Now delete files generated from TDMS conversion, since they are not needed.        
+        os.remove(os.path.join(obcDir,'run-'+self.runnum+'.cal'))
+        os.remove(os.path.join(obcDir,'run-'+self.runnum+'.gps'))
+        os.remove(os.path.join(obcDir,'run-'+self.runnum+'.obc'))               
+        os.remove(os.path.join(obcDir,'run-'+self.runnum+'.run'))                
+        os.remove(os.path.join(obcDir,'run-'+self.runnum+'_MERGE.INP'))

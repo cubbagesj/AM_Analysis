@@ -64,7 +64,6 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
     logfile.write("AM_Merge.py -- Autonomous model merge program\n")
     logfile.write(time.strftime("%a %b %d %H:%M:%S %Y")+" \n")
 
-
     #----------------------------------
     #  Read and process the merge.inp file
     #----------------------------------
@@ -269,7 +268,10 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
             mopts.append(int(mopt))
         except ValueError:
             pass
-    runtype = mantypes[mopts[9]]
+    try:
+        runtype = mantypes[mopts[9]]
+    except:
+        runtype = 'Run Type Not Defined'
 
     logfile.write('Done')
 

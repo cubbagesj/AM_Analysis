@@ -98,7 +98,7 @@ class CalFile:
                                  ('Mz', 'int'),
                                  ('weight', 'float'),
                                  ('arm', 'float'),
-                                 ('position', 'int'),
+                                 ('position', 'float'),
                                  ('int_row1', 'string'),
                                  ('int_row2', 'string'),
                                  ('int_row3', 'string'),
