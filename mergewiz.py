@@ -19,6 +19,7 @@ else:
     obcDir = 'C:/OBC_Data' #AFP Also TDMS Directory
     mrgDir = 'C:/STD_Data'
 
+
 class StartPage(wx.wizard.WizardPageSimple):
     def __init__(self, parent):
         wx.wizard.WizardPageSimple.__init__(self, parent)
@@ -42,7 +43,7 @@ class SelectFilesPage(wx.wizard.WizardPageSimple):
             self.dataDir = '/frmg/Autonomous_Model/Test_Data/'
         else:
             self.dataDir = 'C:/OBC_Data'
-
+            
             
         wx.wizard.WizardPageSimple.__init__(self, parent)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
@@ -50,6 +51,7 @@ class SelectFilesPage(wx.wizard.WizardPageSimple):
         titleText = wx.StaticText(self, -1, 'Select OBC or TDMS Files')
         titleText.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
         
+        print(self.dataDir + "\n")
         self.dirpick = wx.DirPickerCtrl(self, -1, path=self.dataDir, message="Choose Directory")
         self.dirpick.SetTextCtrlGrowable(grow=True)
         self.dirpick.SetTextCtrlProportion(1)

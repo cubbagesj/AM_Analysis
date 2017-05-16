@@ -75,8 +75,11 @@ def tdmsToOBC(tdmsfile, obcDirectory):
             configfile_name = dialog2.GetPath()  #comma delimited setup file containing a column of tdms channel names and a column of thier respective obc column numbers
         dialog2.Destroy()
     
-    run_num = tdmsfile_name[-8:-5]
+
     head, tail = os.path.split(tdmsfile_name)
+    run_name, ext = os.path.splitext(tail)
+    dummy,run_num = run_name.split('_')
+    run_num = run_num.strip()
     
     # Write obc and cal file to same directory as tdms file
     obcfile_name = head + '/run-' + run_num + '.obc' #file name for new obc file
@@ -137,7 +140,7 @@ def tdmsToOBC(tdmsfile, obcDirectory):
                 i = 0
                 while True:
                     try:
-                        scaled.append(tdms_chan_obj.properties['NI_Scale[0]_Table_Scaled_Values[' + str[i] + ']'])
+                        scaled.append(tdms_chan_obj.properties['NI_Scale[0]_Table_Scaled_Values[' + str(i) + ']'])
                     except:
                         break
                     else:
@@ -147,7 +150,7 @@ def tdmsToOBC(tdmsfile, obcDirectory):
                 i = 0
                 while True:
                     try:
-                        prescaled.append(tdms_chan_obj.properties['NI_Scale[0]_Table_Pre_Scaled_Values[' + str[i] + ']'])
+                        prescaled.append(tdms_chan_obj.properties['NI_Scale[0]_Table_Pre_Scaled_Values[' + str(i) + ']'])
                     except:
                         break
                     else:
@@ -162,6 +165,7 @@ def tdmsToOBC(tdmsfile, obcDirectory):
                 cal_zero[obc_col] = offset #set the zero to the offset from the config file for the cal file
                 obc_data[obc_col] = tdms_chan_obj.data  #get tdms raw data for obc file
         except:
+            raise
             cal_gain[obc_col] = scale #set the gain to 1.0 for the cal file
             cal_zero[obc_col] = offset #set the zero to 0.0 for the cal file
             obc_data[obc_col] = tdms_chan_obj.data  #get tdms raw data for obc file 

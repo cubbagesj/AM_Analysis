@@ -514,7 +514,7 @@ class TDMSFile:
             #import or create the time channel
             try:
                 self.time = self.tdms_file_obj.channel_data('DATA', 'sys_time') #import absolute time channel
-                #self.time = self.time - self.time[0] # make the time channel relative to the start of the file
+                self.time = self.time - self.time[0] # make the time channel relative to the start of the file
             except:
                 # There is no time channel, so make one
                 self.time = arange(0, self.tdm_length, dtype=float)

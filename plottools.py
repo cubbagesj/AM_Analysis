@@ -34,7 +34,7 @@
     
 """
 import matplotlib
-matplotlib.use('WXAgg')
+#matplotlib.use('WXAgg')
 from filetypes import OBCFile, STDFile, TDMSFile
 from pylab import *
 import re, cfgparse, sys, os

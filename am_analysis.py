@@ -248,7 +248,10 @@ class BrowserFrame(wx.Frame):
         if os.path.exists(stdDir):
             self.TreeBuilder(stdDir, self.stdroot)
         if os.path.exists(fstDir):
-            self.TreeBuilder(fstDir, self.fstroot)
+            try:
+                self.TreeBuilder(fstDir, self.fstroot)
+            except:
+                pass
 
     def TreeBuilder(self, currdir, branch):
         for file in os.listdir(currdir):
@@ -418,7 +421,8 @@ class BrowserFrame(wx.Frame):
         self.Destroy()
 
     def OnMerge(self, event):
-        wizard = wx.wizard.Wizard(self, -1, "Merge Wizard", images.getWizTest1Bitmap())
+#        wizard = wx.wizard.Wizard(self, -1, "Merge Wizard", images.getWizTest1Bitmap())
+        wizard = wx.wizard.Wizard(self, -1, "Merge Wizard")
         page1 = mergewiz.StartPage(wizard)
         page2 = mergewiz.SelectFilesPage(wizard)
         page3 = mergewiz.MrgDirPage(wizard)

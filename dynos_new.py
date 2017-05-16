@@ -121,7 +121,7 @@ class Kistler6:
         # Finally we set the channel zeros to zero
         self.zeros = array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), float)
 
-    def compute(self, rawdata, gains, bodyAngles):
+    def compute(self, rawdata, gains, bodyAngles,cb_id=10):
         """ Compute the corrected forces for the current timestep by combining the
         forces from each of the individual gauges and then applying
         the interaction and orientation matricies.  Finally, the sail weight
@@ -270,7 +270,7 @@ class Kistler3:
         # Finally we set the channel zeros to zero
         self.zeros = array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), float)
 
-    def compute(self, rawdata, gains, bodyAngles):
+    def compute(self, rawdata, gains, bodyAngles,cb_id=10):
         """ Compute the corrected forces for the current timestep by combining the
         forces from each of the individual gauges and then applying
         the interaction and orientation matricies.  Finally, the sail weight
@@ -437,7 +437,7 @@ class Deck:
         # Finally we set the channel zeros to zero
         self.zeros = array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), float)
 
-    def compute(self, rawdata, gains, bodyAngles):
+    def compute(self, rawdata, gains, bodyAngles,cb_id=10):
         """ Compute the corrected forces for the current timestep by combining the
         forces from each of the individual gauges and then applying
         the interaction and orientation matricies.  Finally, the sail weight
@@ -646,7 +646,7 @@ class Dyno6:
         # Finally we set the channel zeros to zero
         self.zeros = array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), float)
 
-    def compute(self, rawdata, gains, bodyAngles):
+    def compute(self, rawdata, gains, bodyAngles, cb_id=10):
         """ Compute the corrected forces for the current timestep using
         the interaction and orientation matricies"""
 
@@ -753,7 +753,7 @@ class Rot_Dyno6:
         # Finally we set the channel zeros to zero
         self.zeros = array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), float)
 
-    def compute(self, rawdata, gains, bodyAngles):
+    def compute(self, rawdata, gains, bodyAngles, cb_id=10):
         """ Compute the corrected forces for the current timestep using
         the interaction and orientation matricies
 
@@ -767,13 +767,16 @@ class Rot_Dyno6:
         sinPH = bodyAngles[2]
         cosPH = bodyAngles[3]
 
+        # Prop position depends on which centerbody it is
         prop_pos = rawdata[184] - self.PropPosZero
-#        if prop_pos < 0:
-#            prop_pos = prop_pos + 20000
-#        if prop_pos > 20000:
-#            prop_pos = prop_pos - 20000
-#        rot_angle = (prop_pos * .01800)
-        rot_angle = prop_pos
+        if cb_id < 12:
+            if prop_pos < 0:
+                prop_pos = prop_pos + 20000
+            if prop_pos > 20000:
+                prop_pos = prop_pos - 20000
+            rot_angle = (prop_pos * .01800)
+        else:
+            rot_angle = prop_pos
 
         sinR = sin(radians(rot_angle))
         cosR = cos(radians(rot_angle))

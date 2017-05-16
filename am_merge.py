@@ -55,6 +55,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
 
     # LOG File - Open up a file to write diagnostic info to
     #
+    print(std_dir+"\n")
     try:
         logfile = open('merge.log','w')
     except:
@@ -390,10 +391,12 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
         EUdata.append(0.0)
 
     Uprev = Vprev = Wprev = 0.0
+    POSprev = 0.0
     uoffset = voffset =  woffset = 0.0
     invjump = inujump = inwjump = 0
     update = 0
     bytecount = 0
+    direction = 1
 
     
     # loop for each line in the obc file
@@ -466,7 +469,8 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
         # Now look for actual run
         # 11/30/07 - Change to only put the data between standby and execute in merge file
         elif rawdata[mode_chan] >= 0x0F23 and rawdata[mode_chan] <= 0x0F43:
-        # if rawdata[mode_chan] >= 0x0013 :
+#        elif rawdata[mode_chan] <= 0x0F43:
+#        if rawdata[mode_chan] >= 0x0013 :
 
             # This is the actual run data - First we handle the normal channels
             # and then get to the computed ones
@@ -506,7 +510,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
 
             # And now to process the 6DOF dynos
             for gauge in sp_gauges.keys():
-                sp_gauges[gauge].compute(rawdata, cal.gains, bodyAngles)
+                sp_gauges[gauge].compute(rawdata, cal.gains, bodyAngles, cb_id)
 
             # Now loop for the special channels
             for i in range(len(mrg_names)):
@@ -682,10 +686,17 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     EUdata[i] /= 1.6878
 
                 elif mrg_chans[i] == 825:    # RPM flip from obs_rpm and rpm cmd
+                # Update this since CB 12 only has pos RPM
                     EUdata[i] = EUdata[27]
-                    if rawdata[183] < 0:
-                        if rawdata[217] < 0:
-                            EUdata[i] *= -1
+#                    if rawdata[217] < 0:
+#                        if rawdata[217] < 0:
+                    if abs(rawdata[183] - POSprev) < 300:
+                        if (rawdata[183] - POSprev) < 0:
+                            direction = -1
+                        else:
+                            direction = 1
+                    EUdata[i] *= direction
+                    POSprev = rawdata[183]
 
                 elif mrg_chans[i] == 830 and 'SOF1' in sp_gauges:         # Computed SOF1 Fx
                     EUdata[i] = sp_gauges['SOF1'].CFx
