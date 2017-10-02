@@ -28,7 +28,7 @@ class TableFrame(wx.Frame):
         self.v=[[]*500 for x in xrange(500)]
         self.stats_all = [[]*500 for x in xrange(500)]
         wx.Frame.__init__(self, None, -1, 'Input Runs for Table',size=(540,150), pos=(100,400))
-        self.SetBackgroundColour(wx.NamedColor("LIGHTGREY"))
+        self.SetBackgroundColour(wx.NamedColour("LIGHTGREY"))
 
         self.runBtn = wx.Button(self, -1, "Load Runs", pos = (10,10))
         self.Bind(wx.EVT_BUTTON, self.OnFileClick, self.runBtn)

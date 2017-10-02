@@ -33,7 +33,7 @@ class OverPlotFrame(wx.Frame):
         '''Initializes the frame and all the widgets.  There are a number of run
         fields in the window equal to the numruns variable.'''
         wx.Frame.__init__(self, None, -1, 'Overplot', style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
-        self.SetBackgroundColour(wx.NamedColor("LIGHTGREY"))
+        self.SetBackgroundColour(wx.NamedColour("LIGHTGREY"))
         
         # decorate the frame with the widgets
         topLbl = wx.StaticText(self, -1, "Overplot Runs")

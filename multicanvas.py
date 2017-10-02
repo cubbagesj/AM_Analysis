@@ -24,7 +24,7 @@ class MultiCanvasFrame(wx.Frame):
     def __init__(self, plotData, titles, pgpntr, title = 'Over Plot  '):
         wx.Frame.__init__(self,None,-1, title)
 
-        self.SetBackgroundColour(wx.NamedColor("WHITE"))
+        self.SetBackgroundColour(wx.NamedColour("WHITE"))
 
         self.figure = Figure(figsize=(9,10))
         self.plotData = plotData

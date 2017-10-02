@@ -25,7 +25,7 @@ class PatchFrame(wx.Frame):
 
     def __init__(self):
         wx.Frame.__init__(self, None, title="Cal Patch", size=(650,700))
-        self.SetBackgroundColour(wx.NamedColor("LIGHTGREY"))
+        self.SetBackgroundColour(wx.NamedColour("LIGHTGREY"))
 
         self.dataDir = '/frmg/Autonomous_Model/Test_Data/'
 

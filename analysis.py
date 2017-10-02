@@ -28,7 +28,7 @@ class AnalysisFrame(wx.Frame):
     
     def __init__(self):
         wx.Frame.__init__(self, None, -1, 'AM Analysis',size=(600,700))
-        self.SetBackgroundColour(wx.NamedColor("LIGHTGREY"))
+        self.SetBackgroundColour(wx.NamedColour("LIGHTGREY"))
 
         self.dataList = [['U pw', 6],
                     ['U adcp', 0],

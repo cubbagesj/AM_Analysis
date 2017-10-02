@@ -32,7 +32,7 @@ class TableFrame(wx.Frame):
         
 
         wx.Frame.__init__(self, None, -1, 'Input Runs for Plotting',size=(540,150), pos=(150,600))
-        self.SetBackgroundColour(wx.NamedColor("LIGHTGREY"))
+        self.SetBackgroundColour(wx.NamedColour("LIGHTGREY"))
 
         self.runBtn = wx.Button(self, -1, "Load Runs", pos = (10,10))
         self.Bind(wx.EVT_BUTTON, self.OnFileClick, self.runBtn)

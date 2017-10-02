@@ -468,7 +468,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
 
         # Now look for actual run
         # 11/30/07 - Change to only put the data between standby and execute in merge file
-        elif rawdata[mode_chan] >= 0x0F23 and rawdata[mode_chan] <= 0x0F43:
+        elif (rawdata[mode_chan] >= 0x0F23 and rawdata[mode_chan] <= 0x0F43) or rawdata[mode_chan] == 1:
 #        elif rawdata[mode_chan] <= 0x0F43:
 #        if rawdata[mode_chan] >= 0x0013 :
 
