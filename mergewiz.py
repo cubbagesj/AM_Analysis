@@ -108,7 +108,7 @@ class MrgDirPage(wx.wizard.WizardPageSimple):
     def __init__(self, parent):
 
         if os.name == 'posix':
-            self.mrgDir = '/disk2/home/'+os.environ['USER']+'/rcmdata'
+            self.mrgDir = '/dsk2/home/'+os.environ['USER']+'/rcmdata'
             self.mrgInpDir = '/frmg/Autonomous_Model/Test_Data/Merge_Files/'
         else:
             self.mrgDir = 'C:/STD_Data'
