@@ -147,7 +147,7 @@ def get_runs_overplot( run_list, title_list, obc_path='', std_path=''): #made a 
     #obc_path = '/disk2/home/'+os.environ['USERNAME']+'/AM_data'
 
     #obc path needs to be called out specifically since there are multiple rns with same number 
-    obc_path = '/frmg/Autonomous_Model/test_data/SSN_23/SSN23-Starboard-Tray/'
+    obc_path = '/frmg/Autonomous_Model/test_data/SSN_688/SSN_750_CCBOW_PASSIVE/'
 
     # search pattern for std filenames - Assumes that a file with a '-' in the
     # name is an STD file.  All others are considered OBC files
