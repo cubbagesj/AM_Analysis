@@ -47,7 +47,7 @@ def diff(x, y):
     for i in range(len(x)-1):
         ans.append((x[i+1]-x[i])/(y[i+1]-y[i]))
     ans.append(ans[-1])
-    print array(ans)
+    print(array(ans))
     return array(ans)
     
 def integrate(x, y):

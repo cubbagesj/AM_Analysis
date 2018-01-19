@@ -3,7 +3,7 @@
 import wx
 import wx.lib.filebrowsebutton as filebrowse
 import os
-import wx.wizard
+import wx.adv
 import glob
 
 
@@ -20,9 +20,9 @@ else:
     mrgDir = 'C:/STD_Data'
 
 
-class StartPage(wx.wizard.WizardPageSimple):
+class StartPage(wx.adv.WizardPageSimple):
     def __init__(self, parent):
-        wx.wizard.WizardPageSimple.__init__(self, parent)
+        wx.adv.WizardPageSimple.__init__(self, parent)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
         titleText = wx.StaticText(self, -1, 'Merge Wizard')
@@ -37,7 +37,7 @@ class StartPage(wx.wizard.WizardPageSimple):
             and handles all of the computed channels such as the prop dyno."""))
         
             
-class SelectFilesPage(wx.wizard.WizardPageSimple):
+class SelectFilesPage(wx.adv.WizardPageSimple):
     def __init__(self, parent):
         if os.name == 'posix':
             self.dataDir = '/frmg/Autonomous_Model/Test_Data/'
@@ -45,7 +45,7 @@ class SelectFilesPage(wx.wizard.WizardPageSimple):
             self.dataDir = 'C:/OBC_Data'
             
             
-        wx.wizard.WizardPageSimple.__init__(self, parent)
+        wx.adv.WizardPageSimple.__init__(self, parent)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
         titleText = wx.StaticText(self, -1, 'Select OBC or TDMS Files')
@@ -104,7 +104,7 @@ class SelectFilesPage(wx.wizard.WizardPageSimple):
                 except:
                     continue
                     
-class MrgDirPage(wx.wizard.WizardPageSimple):
+class MrgDirPage(wx.adv.WizardPageSimple):
     def __init__(self, parent):
 
         if os.name == 'posix':
@@ -115,7 +115,7 @@ class MrgDirPage(wx.wizard.WizardPageSimple):
             
             self.mrgInpDir = 'C:/OBC_Data/merge.inp' #AFP Updated to show a file as a default, not just a directory
             
-        wx.wizard.WizardPageSimple.__init__(self, parent)
+        wx.adv.WizardPageSimple.__init__(self, parent)
         
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
@@ -173,9 +173,9 @@ class MrgDirPage(wx.wizard.WizardPageSimple):
         else:         
             self.mrginpdirpick.Enable()
 
-class RunMrgPage(wx.wizard.WizardPageSimple):
+class RunMrgPage(wx.adv.WizardPageSimple):
     def __init__(self, parent):
-        wx.wizard.WizardPageSimple.__init__(self, parent)
+        wx.adv.WizardPageSimple.__init__(self, parent)
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)

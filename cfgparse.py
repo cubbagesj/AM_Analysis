@@ -49,8 +49,8 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import ConfigParser as _ConfigParser
-import cStringIO
+import configparser as _ConfigParser
+from io import StringIO
 import os
 import re
 import sys
@@ -140,10 +140,12 @@ class HelpFormatter:
         self.level -= 1
 
     def format_usage(self, usage):
-        raise NotImplementedError, "subclasses must implement"
+        raise NotImplementedError("subclasses must implement")
+        
+    
 
     def format_heading(self, heading):
-        raise NotImplementedError, "subclasses must implement"
+        raise NotImplementedError("subclasses must implement")
 
     def format_description(self, description):
         if not description:
@@ -985,7 +987,7 @@ class ConfigFilePy(ConfigFile):
             cfgfile = os.path.join(self.path,self.filename)
             execfile(cfgfile,options)
         else:
-            exec self.get_as_str() in options
+            exec(self.get_as_str() in options)
 
         # Update the keys.  "KEYS_VARIABLE" option used to specify the
         # environment variable that holds additional default keys, if

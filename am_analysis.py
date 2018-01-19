@@ -170,7 +170,7 @@ class BrowserFrame(wx.Frame):
         self.tree = wx.TreeCtrl(parent, -1,
                                 style=wx.TR_HAS_BUTTONS)
 
-        sizer=wx.GridSizer()
+        sizer=wx.GridSizer(1,0,0)
         sizer.Add(self.tree, flag = wx.GROW)
         parent.SetSizer(sizer)
         parent.Fit()
@@ -236,10 +236,10 @@ class BrowserFrame(wx.Frame):
             fstDir = os.path.join(rootDir,'fstdata')
         else:       
             # For windows, everything sits on C:
-            obcDir = 'C:/OBC_Data'
-            tdmsDir = 'C:/TDMS_Data'
-            stdDir = 'C:/STD_Data'
-            fstDir = 'C:/FST_Data'
+            obcDir = 'z:/RCM/Autonomous_Model/test_data'
+            tdmsDir = 'z:/RCM/Autonomous_Model/test_data'
+            stdDir = 'y:/rcmdata'
+            fstDir = 'y:/fstdata'
             
         if os.path.exists(obcDir):
             self.TreeBuilder(obcDir, self.obcroot)

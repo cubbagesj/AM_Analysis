@@ -548,7 +548,7 @@ class PlotPage(PlotPageWrapped):
    
 if __name__ == "__main__":
     runlist = get_run(r's:\autonomous_model\test_data\ssgn\03132007\run-2337.obc')
-    print runlist.nchans
+    print(runlist.nchans)
 
 #    runlist = get_runs(["7-16595", "7-16596"])
 #    xy_plt(runlist, 21,  ymin=2000, scale=2)

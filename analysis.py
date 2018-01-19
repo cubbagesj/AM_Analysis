@@ -250,13 +250,13 @@ class AnalysisFrame(wx.Frame):
             for label in self.ManeuverDict[self.maneuverBtn.GetStringSelection()]:
                 if i == 1:
                     f.write(label+'\n')
-                if i > 1 and self.ManeuverTitles[label] <> ' ':
+                if i > 1 and self.ManeuverTitles[label] != ' ':
                     f.write(self.ManeuverTitles[label]+',')
                 i = i + 1
             i = 0
             f.write('\n')
             for label in self.ManeuverDict[self.maneuverBtn.GetStringSelection()]:
-                if i > 1 and self.ManeuverTitles[label] <> ' ':
+                if i > 1 and self.ManeuverTitles[label] != ' ':
                     f.write(self.extracalc[label]+',')
                 i = i + 1
             i = 0

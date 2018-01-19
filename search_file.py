@@ -50,5 +50,5 @@ if __name__ == '__main__':
     
     # Just a little test code
     f = search_file_walk('run-2287.obc', r"\\skipjack\share1\autonomous_model\test_data")
-    print f
+    print(f)
 

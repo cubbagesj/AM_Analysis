@@ -93,10 +93,10 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
             continue
         elif line[0] == '#':
             continue
-        elif line.find('[END_INPUTS]') <> -1:
+        elif line.find('[END_INPUTS]') != -1:
             logfile.write('END_INPUTS found\n')
             input_flag = 0
-        elif line.find('[END_CHANS]') <> -1:
+        elif line.find('[END_CHANS]') != -1:
             logfile.write('END_CHANS found\n')
             chan_flag = 0
 
@@ -105,13 +105,13 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
         elif input_flag == 1:
             input_sec.append(line)
 
-        if line.find('[BEGIN_INPUTS]') <> -1:
+        if line.find('[BEGIN_INPUTS]') != -1:
             logfile.write('BEGIN_INPUTS found\n')
             input_flag = 1
-        elif line.find('[BEGIN_CHANS]') <> -1:
+        elif line.find('[BEGIN_CHANS]') != -1:
             logfile.write('BEGIN_CHANS found\n')
             chan_flag = 1
-        elif line.find('[END_CHANS]') <> -1:
+        elif line.find('[END_CHANS]') != -1:
             logfile.write('END_CHANS found\n')
             chan_flag = 0   
 
@@ -251,7 +251,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
 
     # Start with a dummy title - This is how I used to do it for old AM runs
     for line in lines:
-        if line.find('#RUNTYPE:') <> -1:
+        if line.find('#RUNTYPE:') != -1:
             runtype = line[line.find('#RUNTYPE:')+9:]
             break
         else:
@@ -259,7 +259,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
     # Now lets get the MOPT 30 value
     lcount = 0
     for line in lines:
-        if line.find('#MOPT2') <> -1:
+        if line.find('#MOPT2') != -1:
             break
         else:
             lcount += 1

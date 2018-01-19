@@ -435,7 +435,7 @@ class ViewFrame(wx.Frame):
                 text = self.TextGen()
                 self.textbox.SetValue(text)
             except:
-                print "Error somewhere in OnOpen"
+                print("Error somewhere in OnOpen")
             
 if __name__ == '__main__':
     app = App(False)    

@@ -118,7 +118,7 @@ class MultiCanvasFrame(wx.Frame):
             self.canvas.print_figure(path,dpi=300)
             if (path.find(thisdir) ==  0):
                 path = path[len(thisdir)+1:]
-            print 'Saved plot to %s' % path
+            print('Saved plot to %s' % path)
 
     def onExit(self,event=None):
         self.Destroy()

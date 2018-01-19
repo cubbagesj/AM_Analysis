@@ -3,7 +3,7 @@
 import wx
 import wx.lib.filebrowsebutton as filebrowse
 import os
-import wx.wizard
+import wx.adv
 import glob
 from tdms_to_obc import tdmsToOBC
 
@@ -16,9 +16,9 @@ else:
     obcDir = 'C:/OBC_Data'
 
 
-class StartPage(wx.wizard.WizardPageSimple):
+class StartPage(wx.adv.WizardPageSimple):
     def __init__(self, parent):
-        wx.wizard.WizardPageSimple.__init__(self, parent)
+        wx.adv.WizardPageSimple.__init__(self, parent)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
         titleText = wx.StaticText(self, -1, 'TDMS to OBC Wizard')
@@ -47,14 +47,14 @@ class StartPage(wx.wizard.WizardPageSimple):
                 """))
         
             
-class SelectFilesPage(wx.wizard.WizardPageSimple):
+class SelectFilesPage(wx.adv.WizardPageSimple):
     def __init__(self, parent):
         if os.name == 'posix':
             self.dataDir = '/frmg/Autonomous_Model/Test_Data/'
         else:
             self.dataDir = 'C:/TDMS_Data'
             
-        wx.wizard.WizardPageSimple.__init__(self, parent)
+        wx.adv.WizardPageSimple.__init__(self, parent)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
         titleText = wx.StaticText(self, -1, 'Select TDMS Files')
@@ -109,9 +109,9 @@ class SelectFilesPage(wx.wizard.WizardPageSimple):
                 except:
                     runsToConvert.append(self.fileList.GetString(item))
                     
-class RunConvPage(wx.wizard.WizardPageSimple):
+class RunConvPage(wx.adv.WizardPageSimple):
     def __init__(self, parent):
-        wx.wizard.WizardPageSimple.__init__(self, parent)
+        wx.adv.WizardPageSimple.__init__(self, parent)
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)

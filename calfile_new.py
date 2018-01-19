@@ -51,7 +51,7 @@ class CalFile:
 
         fullpath = os.path.join(dirname, fname)
         if not os.path.isfile(fullpath):
-            print "ERROR - Could not find calibration file: %s" % fullpath
+            print("ERROR - Could not find calibration file: %s" % fullpath)
         self.c = cfgparse.ConfigParser()
         self.c.add_file(fullpath)
 
@@ -387,10 +387,10 @@ class CalFile:
 if __name__ == '__main__':
     cfile = CalFile('cal.ini', '.')
     cfile.ParseAll()
-    print "Channels:", cfile.channels
-    print "Gains:", cfile.gains
-    print "Rotor Fx:", cfile.rotor['Fx']
-    print "Deck:", cfile.deck['Orient_Mata']
-    print "Deck:", cfile.deck['Int_Mata']
-    print "Deck:", cfile.deck['Orient_Matf']
-    print "Deck:", cfile.deck['Int_Matf']
+    print("Channels:", cfile.channels)
+    print("Gains:", cfile.gains)
+    print("Rotor Fx:", cfile.rotor['Fx'])
+    print("Deck:", cfile.deck['Orient_Mata'])
+    print("Deck:", cfile.deck['Int_Mata'])
+    print("Deck:", cfile.deck['Orient_Matf'])
+    print("Deck:", cfile.deck['Int_Matf'])

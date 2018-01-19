@@ -3,7 +3,7 @@
 #
 from wx import ImageFromStream, BitmapFromImage
 from wx import EmptyIcon
-import cStringIO
+from io import StringIO
 
 
 def getMondrianData():
@@ -20,7 +20,7 @@ def getMondrianBitmap():
     return BitmapFromImage(getMondrianImage())
 
 def getMondrianImage():
-    stream = cStringIO.StringIO(getMondrianData())
+    stream = StringIO(getMondrianData())
     return ImageFromStream(stream)
 
 def getMondrianIcon():
@@ -1391,7 +1391,7 @@ def getBackgroundBitmap():
     return BitmapFromImage(getBackgroundImage())
 
 def getBackgroundImage():
-    stream = cStringIO.StringIO(getBackgroundData())
+    stream = StringIO(getBackgroundData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -1507,7 +1507,7 @@ def getTestStarBitmap():
     return BitmapFromImage(getTestStarImage())
 
 def getTestStarImage():
-    stream = cStringIO.StringIO(getTestStarData())
+    stream = StringIO(getTestStarData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -1611,7 +1611,7 @@ def getTestStar2Bitmap():
     return BitmapFromImage(getTestStar2Image())
 
 def getTestStar2Image():
-    stream = cStringIO.StringIO(getTestStar2Data())
+    stream = StringIO(getTestStar2Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -1660,7 +1660,7 @@ def getTestMaskBitmap():
     return BitmapFromImage(getTestMaskImage())
 
 def getTestMaskImage():
-    stream = cStringIO.StringIO(getTestMaskData())
+    stream = StringIO(getTestMaskData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -1762,7 +1762,7 @@ def getTest2Bitmap():
     return BitmapFromImage(getTest2Image())
 
 def getTest2Image():
-    stream = cStringIO.StringIO(getTest2Data())
+    stream = StringIO(getTest2Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -1870,7 +1870,7 @@ def getTest2mBitmap():
     return BitmapFromImage(getTest2mImage())
 
 def getTest2mImage():
-    stream = cStringIO.StringIO(getTest2mData())
+    stream = StringIO(getTest2mData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -2806,7 +2806,7 @@ def getRobinBitmap():
     return BitmapFromImage(getRobinImage())
 
 def getRobinImage():
-    stream = cStringIO.StringIO(getRobinData())
+    stream = StringIO(getRobinData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -2827,7 +2827,7 @@ def getBulb1Bitmap():
     return BitmapFromImage(getBulb1Image())
 
 def getBulb1Image():
-    stream = cStringIO.StringIO(getBulb1Data())
+    stream = StringIO(getBulb1Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -2856,7 +2856,7 @@ def getBulb2Bitmap():
     return BitmapFromImage(getBulb2Image())
 
 def getBulb2Image():
-    stream = cStringIO.StringIO(getBulb2Data())
+    stream = StringIO(getBulb2Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -2875,7 +2875,7 @@ def getDbDecBitmap():
     return BitmapFromImage(getDbDecImage())
 
 def getDbDecImage():
-    stream = cStringIO.StringIO(getDbDecData())
+    stream = StringIO(getDbDecData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -2894,7 +2894,7 @@ def getDecBitmap():
     return BitmapFromImage(getDecImage())
 
 def getDecImage():
-    stream = cStringIO.StringIO(getDecData())
+    stream = StringIO(getDecData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -2911,7 +2911,7 @@ def getPtBitmap():
     return BitmapFromImage(getPtImage())
 
 def getPtImage():
-    stream = cStringIO.StringIO(getPtData())
+    stream = StringIO(getPtData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -2930,7 +2930,7 @@ def getDbIncBitmap():
     return BitmapFromImage(getDbIncImage())
 
 def getDbIncImage():
-    stream = cStringIO.StringIO(getDbIncData())
+    stream = StringIO(getDbIncData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -2948,7 +2948,7 @@ def getIncBitmap():
     return BitmapFromImage(getIncImage())
 
 def getIncImage():
-    stream = cStringIO.StringIO(getIncData())
+    stream = StringIO(getIncData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -2965,7 +2965,7 @@ def getTog1Bitmap():
     return BitmapFromImage(getTog1Image())
 
 def getTog1Image():
-    stream = cStringIO.StringIO(getTog1Data())
+    stream = StringIO(getTog1Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -2982,7 +2982,7 @@ def getTog2Bitmap():
     return BitmapFromImage(getTog2Image())
 
 def getTog2Image():
-    stream = cStringIO.StringIO(getTog2Data())
+    stream = StringIO(getTog2Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -3022,7 +3022,7 @@ def getSmilesBitmap():
     return BitmapFromImage(getSmilesImage())
 
 def getSmilesImage():
-    stream = cStringIO.StringIO(getSmilesData())
+    stream = StringIO(getSmilesData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -3051,7 +3051,7 @@ def getGridBGBitmap():
     return BitmapFromImage(getGridBGImage())
 
 def getGridBGImage():
-    stream = cStringIO.StringIO(getGridBGData())
+    stream = StringIO(getGridBGData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -3068,7 +3068,7 @@ def getSmallUpArrowBitmap():
     return BitmapFromImage(getSmallUpArrowImage())
 
 def getSmallUpArrowImage():
-    stream = cStringIO.StringIO(getSmallUpArrowData())
+    stream = StringIO(getSmallUpArrowData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -3085,7 +3085,7 @@ def getSmallDnArrowBitmap():
     return BitmapFromImage(getSmallDnArrowImage())
 
 def getSmallDnArrowImage():
-    stream = cStringIO.StringIO(getSmallDnArrowData())
+    stream = StringIO(getSmallDnArrowData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -3105,7 +3105,7 @@ def getNoIconBitmap():
     return BitmapFromImage(getNoIconImage())
 
 def getNoIconImage():
-    stream = cStringIO.StringIO(getNoIconData())
+    stream = StringIO(getNoIconData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -3179,7 +3179,7 @@ def getWizTest1Bitmap():
     return BitmapFromImage(getWizTest1Image())
 
 def getWizTest1Image():
-    stream = cStringIO.StringIO(getWizTest1Data())
+    stream = StringIO(getWizTest1Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -3489,7 +3489,7 @@ def getWizTest2Bitmap():
     return BitmapFromImage(getWizTest2Image())
 
 def getWizTest2Image():
-    stream = cStringIO.StringIO(getWizTest2Data())
+    stream = StringIO(getWizTest2Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -4906,7 +4906,7 @@ def getVippiBitmap():
     return BitmapFromImage(getVippiImage())
 
 def getVippiImage():
-    stream = cStringIO.StringIO(getVippiData())
+    stream = StringIO(getVippiData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -4947,7 +4947,7 @@ def getLB01Bitmap():
     return BitmapFromImage(getLB01Image())
 
 def getLB01Image():
-    stream = cStringIO.StringIO(getLB01Data())
+    stream = StringIO(getLB01Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -5001,7 +5001,7 @@ def getLB02Bitmap():
     return BitmapFromImage(getLB02Image())
 
 def getLB02Image():
-    stream = cStringIO.StringIO(getLB02Data())
+    stream = StringIO(getLB02Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -5054,7 +5054,7 @@ def getLB03Bitmap():
     return BitmapFromImage(getLB03Image())
 
 def getLB03Image():
-    stream = cStringIO.StringIO(getLB03Data())
+    stream = StringIO(getLB03Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -5092,7 +5092,7 @@ def getLB04Bitmap():
     return BitmapFromImage(getLB04Image())
 
 def getLB04Image():
-    stream = cStringIO.StringIO(getLB04Data())
+    stream = StringIO(getLB04Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -5132,7 +5132,7 @@ def getLB05Bitmap():
     return BitmapFromImage(getLB05Image())
 
 def getLB05Image():
-    stream = cStringIO.StringIO(getLB05Data())
+    stream = StringIO(getLB05Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -5184,7 +5184,7 @@ def getLB06Bitmap():
     return BitmapFromImage(getLB06Image())
 
 def getLB06Image():
-    stream = cStringIO.StringIO(getLB06Data())
+    stream = StringIO(getLB06Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -5236,7 +5236,7 @@ def getLB07Bitmap():
     return BitmapFromImage(getLB07Image())
 
 def getLB07Image():
-    stream = cStringIO.StringIO(getLB07Data())
+    stream = StringIO(getLB07Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -5284,7 +5284,7 @@ def getLB08Bitmap():
     return BitmapFromImage(getLB08Image())
 
 def getLB08Image():
-    stream = cStringIO.StringIO(getLB08Data())
+    stream = StringIO(getLB08Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -5334,7 +5334,7 @@ def getLB09Bitmap():
     return BitmapFromImage(getLB09Image())
 
 def getLB09Image():
-    stream = cStringIO.StringIO(getLB09Data())
+    stream = StringIO(getLB09Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -5370,7 +5370,7 @@ def getLB10Bitmap():
     return BitmapFromImage(getLB10Image())
 
 def getLB10Image():
-    stream = cStringIO.StringIO(getLB10Data())
+    stream = StringIO(getLB10Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -5416,7 +5416,7 @@ def getLB11Bitmap():
     return BitmapFromImage(getLB11Image())
 
 def getLB11Image():
-    stream = cStringIO.StringIO(getLB11Data())
+    stream = StringIO(getLB11Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -5483,7 +5483,7 @@ def getLB12Bitmap():
     return BitmapFromImage(getLB12Image())
 
 def getLB12Image():
-    stream = cStringIO.StringIO(getLB12Data())
+    stream = StringIO(getLB12Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -7150,7 +7150,7 @@ def getFloatCanvasBitmap():
     return BitmapFromImage(getFloatCanvasImage())
 
 def getFloatCanvasImage():
-    stream = cStringIO.StringIO(getFloatCanvasData())
+    stream = StringIO(getFloatCanvasData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -9997,7 +9997,7 @@ def getTheKidBitmap():
     return BitmapFromImage(getTheKidImage())
 
 def getTheKidImage():
-    stream = cStringIO.StringIO(getTheKidData())
+    stream = StringIO(getTheKidData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10031,7 +10031,7 @@ def getCarrotBitmap():
     return BitmapFromImage(getCarrotImage())
 
 def getCarrotImage():
-    stream = cStringIO.StringIO(getCarrotData())
+    stream = StringIO(getCarrotData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10062,7 +10062,7 @@ def getPointyBitmap():
     return BitmapFromImage(getPointyImage())
 
 def getPointyImage():
-    stream = cStringIO.StringIO(getPointyData())
+    stream = StringIO(getPointyData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10103,7 +10103,7 @@ def getPencilBitmap():
     return BitmapFromImage(getPencilImage())
 
 def getPencilImage():
-    stream = cStringIO.StringIO(getPencilData())
+    stream = StringIO(getPencilData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10133,7 +10133,7 @@ def getWXPdemoBitmap():
     return BitmapFromImage(getWXPdemoImage())
 
 def getWXPdemoImage():
-    stream = cStringIO.StringIO(getWXPdemoData())
+    stream = StringIO(getWXPdemoData())
     return ImageFromStream(stream)
 
 def getWXPdemoIcon():
@@ -10155,7 +10155,7 @@ def get_rt_alignleftBitmap():
     return BitmapFromImage(get_rt_alignleftImage())
 
 def get_rt_alignleftImage():
-    stream = cStringIO.StringIO(get_rt_alignleftData())
+    stream = StringIO(get_rt_alignleftData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10171,7 +10171,7 @@ def get_rt_alignrightBitmap():
     return BitmapFromImage(get_rt_alignrightImage())
 
 def get_rt_alignrightImage():
-    stream = cStringIO.StringIO(get_rt_alignrightData())
+    stream = StringIO(get_rt_alignrightData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10188,7 +10188,7 @@ def get_rt_boldBitmap():
     return BitmapFromImage(get_rt_boldImage())
 
 def get_rt_boldImage():
-    stream = cStringIO.StringIO(get_rt_boldData())
+    stream = StringIO(get_rt_boldData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10205,7 +10205,7 @@ def get_rt_centreBitmap():
     return BitmapFromImage(get_rt_centreImage())
 
 def get_rt_centreImage():
-    stream = cStringIO.StringIO(get_rt_centreData())
+    stream = StringIO(get_rt_centreData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10229,7 +10229,7 @@ def get_rt_colourBitmap():
     return BitmapFromImage(get_rt_colourImage())
 
 def get_rt_colourImage():
-    stream = cStringIO.StringIO(get_rt_colourData())
+    stream = StringIO(get_rt_colourData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10255,7 +10255,7 @@ def get_rt_copyBitmap():
     return BitmapFromImage(get_rt_copyImage())
 
 def get_rt_copyImage():
-    stream = cStringIO.StringIO(get_rt_copyData())
+    stream = StringIO(get_rt_copyData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10286,7 +10286,7 @@ def get_rt_cutBitmap():
     return BitmapFromImage(get_rt_cutImage())
 
 def get_rt_cutImage():
-    stream = cStringIO.StringIO(get_rt_cutData())
+    stream = StringIO(get_rt_cutData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10306,7 +10306,7 @@ def get_rt_fontBitmap():
     return BitmapFromImage(get_rt_fontImage())
 
 def get_rt_fontImage():
-    stream = cStringIO.StringIO(get_rt_fontData())
+    stream = StringIO(get_rt_fontData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10333,7 +10333,7 @@ def get_rt_ideaBitmap():
     return BitmapFromImage(get_rt_ideaImage())
 
 def get_rt_ideaImage():
-    stream = cStringIO.StringIO(get_rt_ideaData())
+    stream = StringIO(get_rt_ideaData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10352,7 +10352,7 @@ def get_rt_indentlessBitmap():
     return BitmapFromImage(get_rt_indentlessImage())
 
 def get_rt_indentlessImage():
-    stream = cStringIO.StringIO(get_rt_indentlessData())
+    stream = StringIO(get_rt_indentlessData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10371,7 +10371,7 @@ def get_rt_indentmoreBitmap():
     return BitmapFromImage(get_rt_indentmoreImage())
 
 def get_rt_indentmoreImage():
-    stream = cStringIO.StringIO(get_rt_indentmoreData())
+    stream = StringIO(get_rt_indentmoreData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10389,7 +10389,7 @@ def get_rt_italicBitmap():
     return BitmapFromImage(get_rt_italicImage())
 
 def get_rt_italicImage():
-    stream = cStringIO.StringIO(get_rt_italicData())
+    stream = StringIO(get_rt_italicData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10421,7 +10421,7 @@ def get_rt_openBitmap():
     return BitmapFromImage(get_rt_openImage())
 
 def get_rt_openImage():
-    stream = cStringIO.StringIO(get_rt_openData())
+    stream = StringIO(get_rt_openData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10449,7 +10449,7 @@ def get_rt_pasteBitmap():
     return BitmapFromImage(get_rt_pasteImage())
 
 def get_rt_pasteImage():
-    stream = cStringIO.StringIO(get_rt_pasteData())
+    stream = StringIO(get_rt_pasteData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10483,7 +10483,7 @@ def get_rt_redoBitmap():
     return BitmapFromImage(get_rt_redoImage())
 
 def get_rt_redoImage():
-    stream = cStringIO.StringIO(get_rt_redoData())
+    stream = StringIO(get_rt_redoData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10505,7 +10505,7 @@ def get_rt_sampleBitmap():
     return BitmapFromImage(get_rt_sampleImage())
 
 def get_rt_sampleImage():
-    stream = cStringIO.StringIO(get_rt_sampleData())
+    stream = StringIO(get_rt_sampleData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10530,7 +10530,7 @@ def get_rt_saveBitmap():
     return BitmapFromImage(get_rt_saveImage())
 
 def get_rt_saveImage():
-    stream = cStringIO.StringIO(get_rt_saveData())
+    stream = StringIO(get_rt_saveData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10556,7 +10556,7 @@ def get_rt_smileyBitmap():
     return BitmapFromImage(get_rt_smileyImage())
 
 def get_rt_smileyImage():
-    stream = cStringIO.StringIO(get_rt_smileyData())
+    stream = StringIO(get_rt_smileyData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10574,7 +10574,7 @@ def get_rt_underlineBitmap():
     return BitmapFromImage(get_rt_underlineImage())
 
 def get_rt_underlineImage():
-    stream = cStringIO.StringIO(get_rt_underlineData())
+    stream = StringIO(get_rt_underlineData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -10608,7 +10608,7 @@ def get_rt_undoBitmap():
     return BitmapFromImage(get_rt_undoImage())
 
 def get_rt_undoImage():
-    stream = cStringIO.StringIO(get_rt_undoData())
+    stream = StringIO(get_rt_undoData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -12929,7 +12929,7 @@ def get_rt_zebraBitmap():
     return BitmapFromImage(get_rt_zebraImage())
 
 def get_rt_zebraImage():
-    stream = cStringIO.StringIO(get_rt_zebraData())
+    stream = StringIO(get_rt_zebraData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -12990,7 +12990,7 @@ def get_bp_btn1Bitmap():
     return BitmapFromImage(get_bp_btn1Image())
 
 def get_bp_btn1Image():
-    stream = cStringIO.StringIO(get_bp_btn1Data())
+    stream = StringIO(get_bp_btn1Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -13051,7 +13051,7 @@ def get_bp_btn2Bitmap():
     return BitmapFromImage(get_bp_btn2Image())
 
 def get_bp_btn2Image():
-    stream = cStringIO.StringIO(get_bp_btn2Data())
+    stream = StringIO(get_bp_btn2Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -13108,7 +13108,7 @@ def get_bp_btn3Bitmap():
     return BitmapFromImage(get_bp_btn3Image())
 
 def get_bp_btn3Image():
-    stream = cStringIO.StringIO(get_bp_btn3Data())
+    stream = StringIO(get_bp_btn3Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -13169,7 +13169,7 @@ def get_bp_btn4Bitmap():
     return BitmapFromImage(get_bp_btn4Image())
 
 def get_bp_btn4Image():
-    stream = cStringIO.StringIO(get_bp_btn4Data())
+    stream = StringIO(get_bp_btn4Data())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -13208,7 +13208,7 @@ def get_book_redBitmap():
     return BitmapFromImage(get_book_redImage())
 
 def get_book_redImage():
-    stream = cStringIO.StringIO(get_book_redData())
+    stream = StringIO(get_book_redData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -13247,7 +13247,7 @@ def get_book_greenBitmap():
     return BitmapFromImage(get_book_greenImage())
 
 def get_book_greenImage():
-    stream = cStringIO.StringIO(get_book_greenData())
+    stream = StringIO(get_book_greenData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -13286,6 +13286,6 @@ def get_book_blueBitmap():
     return BitmapFromImage(get_book_blueImage())
 
 def get_book_blueImage():
-    stream = cStringIO.StringIO(get_book_blueData())
+    stream = StringIO(get_book_blueData())
     return ImageFromStream(stream)
 

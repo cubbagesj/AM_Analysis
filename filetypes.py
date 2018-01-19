@@ -192,19 +192,19 @@ class STDFile:
     def info(self):
         """ Prints information on the run"""
 
-        print "Filename: %s" % self.filename
+        print("Filename: %s" % self.filename)
         try:
-            print "Filetype: %s" % self.filetype
-            print "Title: %s" % self.title
-            print "Timestamp: %s" % self.timestamp
-            print "# of channels: %d" % self.nchans
-            print "DT: %f" % self.dt
-            print "Channel Names: "
+            print("Filetype: %s" % self.filetype)
+            print("Title: %s" % self.title)
+            print("Timestamp: %s" % self.timestamp)
+            print("# of channels: %d" % self.nchans)
+            print("DT: %f" % self.dt)
+            print("Channel Names: ")
             for name in self.chan_names:
-                print name,
-            print
-            print "Standby at record: %d  time: %f" % (self.stdbyrec, self.stdbytime)
-            print "Execute at record: %d  time: %f" % (self.execrec, self.exectime)
+                print(name,)
+            print()
+            print("Standby at record: %d  time: %f" % (self.stdbyrec, self.stdbytime))
+            print("Execute at record: %d  time: %f" % (self.execrec, self.exectime))
 
         except:
             pass
@@ -607,18 +607,18 @@ class TDMSFile:
     def info(self):
         """ Prints information on the run"""
         
-        print "Filename: %s" % self.filename
+        print("Filename: %s" % self.filename)
         try:
-            print "Filetype: %s" % self.filetype
-            print "Title: %s" % self.title
-            print "Timestamp: %s" % self.timestamp
-            print "# of channels: %d" % self.nchans
-            print "DT: %f" % self.dt
-            print "Channel Names: "
+            print("Filetype: %s" % self.filetype)
+            print("Title: %s" % self.title)
+            print("Timestamp: %s" % self.timestamp)
+            print("# of channels: %d" % self.nchans)
+            print("DT: %f" % self.dt)
+            print("Channel Names: ")
             for name in self.chan_names:
-                print name,
-            print
-            print "Execute at record: %d  time: %f" % (self.execrec, self.exectime)
+                print(name,)
+            print()
+            print("Execute at record: %d  time: %f" % (self.execrec, self.exectime))
         except:
             pass
         
@@ -681,13 +681,13 @@ class TDMSFile:
         """
         
 	# First build a header with the channel titles in one line
-	headerstr = ', '.join(self.chan_names)
+        headerstr = ', '.join(self.chan_names)
         # now build a numpy array with all the EU data
         alldata = self.cals[chan_names[0]](self.tdms_file_obj.channel_data('DATA', self.chan_names[0]))
         for i in range(1, self.nchans):
             alldata = np.column_stack((alldata, self.gains[i]*(self.tdms_file_obj.channel_data('DATA', self.chan_names[i]))+self.zeros[i]))
 	# Now output to the EU file
-	np.savetxt(os.path.join(self.dirname, self.basename+'.eu'), alldata, fmt = '%10.9f', delimiter=', ', header=headerstr)
+        np.savetxt(os.path.join(self.dirname, self.basename+'.eu'), alldata, fmt = '%10.9f', delimiter=', ', header=headerstr)
 
 class OBCFile:
     """ Run file class for manipulation of AM OBC data:
@@ -710,7 +710,7 @@ class OBCFile:
         # Attempt to find the run on the path, return NONE if not found
         fullname = search_file_walk(str('run-'+run_number+'.obc'), search_path)
         fname = (str('run-'+run_number+'.obc'), search_path)
-        print fname
+        print(fname)
 
         if not fullname:
             if not search_path == 'c:\AM_data':
@@ -764,7 +764,7 @@ class OBCFile:
             try:
                 lines = open(runfile).read().splitlines()
                 for line in lines:
-                    if line.find('#RUNTYPE:') <> -1:
+                    if line.find('#RUNTYPE:') != -1:
                         runtype = line[line.find('#RUNTYPE:') +9:]
                         self.title = "AM:run-%s: %s" % (run_number, runtype)
                         break
@@ -814,18 +814,18 @@ class OBCFile:
     def info(self):
         """ Prints information on the run"""
 
-        print "Filename: %s" % self.filename
+        print("Filename: %s" % self.filename)
         try:
-            print "Filetype: %s" % self.filetype
-            print "Title: %s" % self.title
-            print "Timestamp: %s" % self.timestamp
-            print "# of channels: %d" % self.nchans
-            print "DT: %f" % self.dt
-            print "Channel Names: "
+            print("Filetype: %s" % self.filetype)
+            print("Title: %s" % self.title)
+            print("Timestamp: %s" % self.timestamp)
+            print("# of channels: %d" % self.nchans)
+            print("DT: %f" % self.dt)
+            print("Channel Names: ")
             for name in self.chan_names:
-                print name,
-            print
-            print "Execute at record: %d  time: %f" % (self.execrec, self.exectime)
+                print(name,)
+            print()
+            print("Execute at record: %d  time: %f" % (self.execrec, self.exectime))
         except:
             pass
 

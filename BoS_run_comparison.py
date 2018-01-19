@@ -53,7 +53,7 @@ class CorrelateFrame(wx.Frame):
             Make the message a dialog box at some point.
         """
         if not self.STDCompare(self.runNo1.GetValue(), self.runNo2.GetValue()):
-            print "One of those runs doesn't exist"
+            print("One of those runs doesn't exist")
             
     def OnChangeExcluded(self, evt):
         """

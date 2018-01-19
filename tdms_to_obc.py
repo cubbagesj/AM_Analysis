@@ -6,7 +6,7 @@ from nptdms import TdmsFile  #package for importing tdms file data into python u
 import math as m
 import os.path, time
 import numpy as np
-import ConfigParser
+import configparser as ConfigParser
 from scipy.interpolate import interp1d
 import wx
 import os
