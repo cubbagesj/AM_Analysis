@@ -236,10 +236,10 @@ class BrowserFrame(wx.Frame):
             fstDir = os.path.join(rootDir,'fstdata')
         else:       
             # For windows, everything sits on C:
-            obcDir = 'z:/RCM/Autonomous_Model/test_data'
-            tdmsDir = 'z:/RCM/Autonomous_Model/test_data'
-            stdDir = 'y:/rcmdata'
-            fstDir = 'y:/fstdata'
+            obcDir = 'c:/Users/CubbageSJ/Documents/test_data'
+            tdmsDir = 'c:/Users/CubbageSJ/Documents/test_data'
+            stdDir = 'c:/Users/CubbageSJ/Documents/rcmdata'
+            fstDir = 'c:/Users/CubbageSJ/Documents/fstdata'
             
         if os.path.exists(obcDir):
             self.TreeBuilder(obcDir, self.obcroot)

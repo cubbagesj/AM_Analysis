@@ -1,10 +1,10 @@
 # FileTypes.py
 #
-# Copyright (C) 2006-2007 - Samuel J. Cubbage
+# Copyright (C) 2006-2018 - Samuel J. Cubbage
 #
 # This program is part of the Autonomous Model Software Tools Package
 #
-# A Class library for the various filetypes used for RCM and AM data.
+# A Class library for the various filetypes used for FRMM and AM data.
 # These classes provide an interface to the different types of
 # model data
 
@@ -14,14 +14,18 @@
 
 # Updated 3/10/2016 to add .tdms data file support by Woody Pfitsch
 
-from search_file import *
-import math as m
-from pylab import *
-import cfgparse
-import os.path, time
+# sjc - 1/2018 - Updates to convert to using pandas for the data struture
+
+# Imports - Standard Libraries
 import numpy as np
-from scipy.interpolate import interp1d
+import pandas as pd
 from nptdms import TdmsFile  #package for importing tdms file data into python using numpy arrays
+import os.path, time
+from scipy.interpolate import interp1d
+
+# Imports - Locale Packages
+from search_file import search_file_walk
+
 
 class STDFile:
     """ Run file class for manipulation of standard merge data:
@@ -36,39 +40,33 @@ class STDFile:
             getRawData  : Returns a column of raw data
     """
 
-    # Set up the boat geometry info based on ship length
-    # Format is len: [radius, xnose, xsail, hsail]
-    GeoTable = {'688/751':[16.50, 164.4, 66.21, 16.19],
-                'S21':[20.0, 160.04, 66.21, 17.0],
-                'TB':[16.25, 130.0, 53.80, 13.813],
-                'S23':[20.0, 209.93, 116.10, 17.0],
-                'VA':[17.0, 172.27, 89.25, 19.58],
-                'SSGN':[21.0, 257.42, 154.96, 26.6],
-                'OR':[21.67, 253.67, 157.3, 33.2],
-                'VPM97':[17.0, 221.62, 138.61, 19.58],
-                'VPM62':[17.0, 172.27, 89.25, 19.58]}
-
     def __init__(self, run_number='0', search_path='.'):
-        """ Initialize the run, find and read in the data.
-        The search_path defaults to the local directory.  The files must
-        conform to the DELIMTXT format for now.  In the future maybe handle
-        other formats."""
+        """ Initializes the run, finds and reads in the data. and
+        sets up various variables
+        The search_path defaults to the local directory. 
+        
+        If the run is not found it returns an empty structure
+        """
 
         # Check if we know the path already
         if search_path == 'known':
+            # In this case we are passing the full pathname
             fullname = run_number
         else:
-            # Attempt to find the run on the path, return empty structure if not found
-            fullname = find_file(run_number+'.std', search_path)
+            # Attempt to find the run on the path
+            fullname = search_file_walk(run_number+'.std', search_path)
+            fname = (run_number+'.std', search_path)
+            print(fname)
 
         if not fullname:
             if not search_path == 'c:\AM_merge_data':
                 if not os.path.exists(search_path):
-                    #if the file does not exist and the search path does not exist
-                    #check the default local directory
+                    # if the file does not exist and the search path does not exist
+                    # check the default local directory as a last resort
                     fullname = search_file_walk(run_number+'.std', 'c:\AM_merge_data')
 
         if not fullname:
+            # Populate empty structure if no file found
             self.filename = ''
             self.dirname = ''
             self.filetype = ''
@@ -76,6 +74,7 @@ class STDFile:
             self.timestamp = ''
             self.nchans = 0
             self.data = []
+            self.dataEU=[]
             self.time = []
             self.dt = 0
             self.len = 0.0
@@ -88,13 +87,17 @@ class STDFile:
             self.filename = filename
             self.dirname = dirname
             self.filetype = f.readline().strip()
-            # STD files come in two flavors, DELIMTXT and Block.  Check
-            # for the file type so we know how to read.
+            # STD files come in two flavors, DELIMTXT and Block. 
+            # First line contains the type flag
+            # Check for the file type so we know how to read.
             if self.filetype.find("DELIMTXT") != -1:
                 # Delimtxt format
+                
+                # Next two lines are title and timestamp
                 self.title = f.readline().strip()
                 self.timestamp = f.readline().strip()
 
+                # Next line contains number of channels, DT and length
                 line1 = f.readline().strip()
                 line1 = line1.replace(',', ' ')
                 self.nchans = int(line1.split()[0])
@@ -102,39 +105,20 @@ class STDFile:
                 try:
                     self.length = float(line1.split()[2])
                 except:
-                    self.length = 377.33
+                    # Set default length to 1.0
+                    self.length = 1.0
 
-                # get the geometry info from the table based on boat length
-                if abs(self.length - 362) < 0.8 :
-                    self.boat = '688/751'
-                elif abs(self.length - 361) < 1:
-                    self.boat = 'S21'
-                elif abs(self.length - 461.63) < 1:
-                    self.boat = 'S23'
-                elif abs(self.length - 377.33) < 1 :
-                    self.boat = 'VA'
-                elif abs(self.length - 560 ) < 1:
-                    self.boat = 'SSGN'
-                elif abs(self.length - 299.25) < 1:
-                    self.boat = 'TB'
-                elif abs(self.length - 555.08) < 1:
-                    self.boat = 'OR'
-                elif abs(self.length - 474.33) < 1:
-                    self.boat = 'VPM97'
-                elif abs(self.length - 439.33) < 1:
-                    self.boat = 'VPM62'
-                else:
-                    self.boat = '688/751'
+                # Set boat flag to default. This gets updated by user at runtime
+                self.boat = 'default'
 
-
-                line1 = f.readline().strip()
-                line1 = line1.replace("' '", "'  '")
-                self.chan_names = line1.split("'  '")
                 f.close()
-                # Now use the matplotlib load method to get the data
-                self.data = np.loadtxt(fullname, skiprows=5)
+
+                # Now use pandas to get the data and channel names
+                self.data = pd.read_table(fullname, sep='\s+', skiprows=4)
+                self.chan_names = self.data.columns
+
                 # Time is found in column 26
-                self.time = self.data[:,26]
+                self.time = self.data["'time'"]
             else:
                 # Block
                 self.title = self.filetype
@@ -176,15 +160,17 @@ class STDFile:
                         datalist.append(rowdata)
                         rowdata = []
                         colcnt = 0
-                self.data = array(datalist, dtype=float)
+                self.data = np.array(datalist, dtype=float)
                 # There is no time channel, so make one
-                self.time = arange(0, len(self.data), dtype=float)
+                self.time = np.arange(0, len(self.data), dtype=float)
                 self.time = self.time * self.dt
 
 
             # For STD files, the gains are 1 and zeros are zero
-            self.gains = ones((self.nchans), dtype = float)
-            self.zeros = zeros((self.nchans), dtype=float)
+            self.gains = np.ones((self.nchans), dtype = float)
+            self.zeros = np.zeros((self.nchans), dtype = float)
+            
+            self.dataEU = (self.data - self.zeros) * self.gains
 
             # Compute the run stats
             self.run_stats()
@@ -212,23 +198,24 @@ class STDFile:
     def getEUData(self, channel):
         """ Returns an array containing the request channel of data
             in engineering units - Full scale values
+            
+            channel is a number
         """
 
         if channel < 0 or channel > self.nchans:
             return None
         else:
-            return (self.data[:,channel]-self.zeros[channel])* self.gains[channel]
+            return self.dataEU.ix[:,channel]
 
     def getRAWData(self, channel):
         """ Returns an array containing the request channel of data
             in raw units (no conversion)
         """
-        # For STD filesm there are no RAW units so return EU instead
-
+        
         if channel < 0 or channel > self.nchans:
             return None
         else:
-            return self.data[:,channel]
+            return self.data.ix[:,channel]
 
     def run_stats(self):
         """ Calculate important run stats like time of execute"""
@@ -237,7 +224,7 @@ class STDFile:
 
         try:
             # Find where the status goes to 5, this is execute time
-            status = list(self.data[:,25])
+            status = list(self.data.ix[:,25])
             self.execrec = status.index(5)
             self.exectime = self.time[self.execrec]
             self.stdbyrec = status.index(2)
@@ -260,7 +247,7 @@ class STDFile:
             chan_avg = 0.0
             count = 0
             for x in range(self.execrec-10, self.execrec):
-                chan_avg += self.data[x,channel]
+                chan_avg += self.data.ix[x,channel]
                 count += 1
             self.init_values.append(chan_avg/count)
 
@@ -272,7 +259,7 @@ class STDFile:
             chan_avg = 0.0
             count = 0
             for x in range(self.stdbyrec, self.execrec):
-                chan_avg += self.data[x,channel]
+                chan_avg += self.data.ix[x,channel]
                 count += 1
             try:
                 self.appr_values.append(chan_avg/count)
@@ -284,82 +271,15 @@ class STDFile:
         between start and end times.  The values are stored in 4 seperate lists
         that can be used by the analysis routines
         """
-        # the first thing to do is to create a subset of the run data to search over
-        # This defaults to the data from execute to the end of the run
-        if start == None:
-            start = self.execrec
-        if end == None:
-            rundata = self.data[start:,:]
-        else:
-            rundata = self.data[start:end,:]
-
-        # Compute the nose and sail depths
-        self.compZnosesail(STDFile.GeoTable[self.boat], rundata)
-
-        # Now to get the max and mins for the normal channels
-        self.maxValues = []
-        self.minValues = []
-        self.maxTimes = []
-        self.minTimes = []
-        # set up a filter to eliminate spikes
-        tau = 1.0
-        tfact = (1 - m.exp(-self.dt/tau))
-        for channel in range(self.nchans):
-            # filter data first
-            data = rundata[:,channel].tolist()
-            for i in range(len(data)):
-                if i > 0:
-                    data[i] = data[i-1] + (data[i] - data[i-1])*tfact
-            # Then get values
-            chanmax = max(data)
-            maxrec = data.index(chanmax)
-            chanmin = min(data)
-            minrec = data.index(chanmin)
-            self.maxValues.append(chanmax)            
-            self.minValues.append(chanmin)
-            self.maxTimes.append(self.ntime[self.execrec+maxrec])
-            self.minTimes.append(self.ntime[self.execrec+minrec])
-
-        # Compute the maxes and mins of the nose and sail depth channels
-        # Filter the data first
-        for i in range(len(self.Znose)):
-            if i > 0:
-                self.Znose[i] = self.Znose[i-1] + (self.Znose[i] - self.Znose[i-1]) * tfact
-                self.Zsail[i] = self.Zsail[i-1] + (self.Zsail[i] - self.Zsail[i-1]) * tfact
-        self.maxZnose = max(self.Znose)
-        self.maxZnosetime = self.ntime[self.execrec+self.Znose.index(self.maxZnose)]
-        self.minZnose = min(self.Znose)
-        self.minZnosetime = self.ntime[self.execrec+self.Znose.index(self.minZnose)]
-        self.maxZsail = max(self.Zsail)
-        self.maxZsailtime = self.ntime[self.execrec+self.Zsail.index(self.maxZsail)]
-        self.minZsail = min(self.Zsail)
-        self.minZsailtime = self.ntime[self.execrec+self.Zsail.index(self.minZsail)]
-
-
+        # Removed for now until I can work out with new structure
+        pass
 
     def compZnosesail(self, geometry, data):
         """ Computes the nose and sail depth based on the geometry info
         Assumes that ZGA is at 22, pitch at 8, and roll at 7
         """
-        radius, xnose, xsail, hsail = geometry
-        zsail = -(hsail+radius)
-        # Get the approach value based on appr pitch/roll
-        self.Znoseappr = self.appr_values[22] + (-xnose * m.sin(m.radians(self.appr_values[8])))
-        self.Zsailappr = self.appr_values[22] + (-xsail * m.sin(m.radians(self.appr_values[8]))+
-                                                 zsail * m.cos(m.radians(self.appr_values[8]))*
-                                                 m.cos(m.radians(self.appr_values[7])))
-
-        self.Znose = []
-        self.Zsail = []
-        for tstep in range(len(data)):
-            sinTH = m.sin(m.radians(data[tstep,8]))
-            cosTH = m.cos(m.radians(data[tstep,8]))
-            cosPH = m.cos(m.radians(data[tstep,7]))
-            nosedepth = data[tstep,22] + (-xnose * sinTH)
-            saildepth = data[tstep,22] + (-xsail * sinTH + zsail * cosTH * cosPH)
-            self.Znose.append(nosedepth)
-            self.Zsail.append(saildepth)
-
+        # Removed for now until I can work out with new structure
+        pass
 
     def turnstats(self):
         """
@@ -367,87 +287,8 @@ class STDFile:
             for a turn maneuver
         """
 
-
-        # extract the yaw data 
-        yaw180 = self.getEUData(9)
-        yawrate = self.getEUData(5)
-
-        #compute the approach yaw
-        yawappr = yaw180[self.stdbyrec:self.execrec].mean()
-
-        # Now for advance/xfer  - where yaw has changed by 90
-        # Need to look for both positive and negative yaw change
-
-        yawpos90 = yawappr + 90
-        if yawpos90 > 180:
-            yawpos90 -= 360
-
-        yawneg90 = yawappr - 90
-        if yawneg90 < -180:
-            yawneg90 += 360
-
-        # Now look for this value in the data
-        # need to look in both directions and see which comes first
-
-        try:
-            posIndex90 = np.where(abs(yaw180-yawpos90)<0.1)[0][0]
-        except IndexError:
-            posIndex90 = 0
-        try:
-            negIndex90 = np.where(abs(yaw180-yawneg90)<0.1)[0][0]
-        except IndexError:
-            negIndex90 = 0
-
-
-        if posIndex90 != 0 and yawrate[posIndex90] > 0:
-            self.index90 = posIndex90
-        else:
-            self.index90 = negIndex90
-
-        self.advance = abs(self.getEUData(20)[self.index90])
-        self.transfer = abs(self.getEUData(21)[self.index90])
-
-        self.time90 = self.ntime[self.index90]
-
-        # Now for tactical Diam  - where yaw has changed by 180
-        # Need to look for both positive and negative yaw change
-        yawpos180 = yawappr + 180
-        if yawpos180 > 180:
-            yawpos180 -= 360
-
-        yawneg180 = yawappr - 180
-        if yawneg180 < -180:
-            yawneg180 += 360
-
-        # Now look for this value in the data
-        # need to look in both directions and see which comes first
-
-        if yawpos180 > 0:
-            try:
-                posIndex180 = np.where(abs(yaw180-yawpos180)< 0.1)[0][0]
-            except IndexError:
-                posIndex180 = 0
-        else:
-            posIndex180 = 0
-
-        if yawneg180 < 0:
-            try:
-                negIndex180 = np.where(abs(yaw180-yawneg180)<0.1)[0][0]
-            except IndexError:
-                negIndex180 = 0
-        else:
-            negIndex180 = 0
-
-        # The advance occurs at the lowest non zero index
-
-        self.index180 = min(posIndex180, negIndex180)
-
-        if self.index180 == 0:
-            self.index180 = max(posIndex180, negIndex180)
-
-
-        self.tactdiam = abs(self.getEUData(21)[self.index180])
-        self.time180 = self.ntime[self.index180]
+        # Removed for now until I can work out with new structure
+        pass
 
 class TDMSFile:
     """ Run file class for manipulation of AM TDMS data:
