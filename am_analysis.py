@@ -561,12 +561,12 @@ class CalFrame(wx.Frame):
 
         #lines = []
         for item in range(runData.nchans):
-            index = self.list.InsertStringItem(item, str(item))
-            self.list.SetStringItem(index, 1, runData.chan_names[index])
-            self.list.SetStringItem(index, 2, runData.alt_names[index])
-            self.list.SetStringItem(index, 3, str(runData.gains[index]))
-            self.list.SetStringItem(index, 4, str(runData.zeros[index]))
-            self.list.SetStringItem(index, 5, str(runData.eng_units[index]))
+            index = self.list.InsertItem(item, str(item))
+            self.list.SetItem(index, 1, runData.chan_names[index])
+            self.list.SetItem(index, 2, runData.alt_names[index])
+            self.list.SetItem(index, 3, str(runData.gains[index]))
+            self.list.SetItem(index, 4, str(runData.zeros[index]))
+            self.list.SetItem(index, 5, str(runData.eng_units[index]))
             #lines.append(str(index)+' - '+runData.chan_names[index]+'\n')
         #file.writelines(lines)
 
@@ -577,9 +577,9 @@ class CalFrame(wx.Frame):
         self.list.SetColumnWidth(4, wx.LIST_AUTOSIZE)
         self.list.SetColumnWidth(5, wx.LIST_AUTOSIZE)
 
-class DataTable(wx.grid.PyGridTableBase):
+class DataTable(wx.grid.GridTableBase):
     def __init__(self, runData, EU=False):
-        wx.grid.PyGridTableBase.__init__(self)
+        wx.grid.GridTableBase.__init__(self)
         self.runData = runData
         self.EU = EU
 
@@ -591,9 +591,9 @@ class DataTable(wx.grid.PyGridTableBase):
 
     def GetValue(self, row, col):
         if self.EU:
-            value = self.runData.dataEU[row][col]
+            value = self.runData.dataEU.iloc[row, col]
         else:
-            value = self.runData.data[row][col]
+            value = self.runData.data.iloc[row, col]
         return value
 
     def IsEmptyCell(self, row, col):

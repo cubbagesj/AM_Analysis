@@ -618,14 +618,23 @@ class OBCFile:
             self.chan_names = chan_names
 
             # Now get the gains
-            gains = []
-            zeros = []
-            for channel in range(self.nchans):
-                gains.append(calFile.getfloat('CHAN%d' % channel, 'gain'))
-                zeros.append(calFile.getfloat('CHAN%d' % channel, 'zero'))
+            self.gains = []
+            self.zeros = []
+            self.alt_names = []
+            self.eng_units = []
+            self.data_pkt_locs = []
+            self.cal_dates = []
 
-            gainss = pd.Series(gains, index=chan_names)
-            zeross = pd.Series(zeros, index=chan_names)
+            for channel in range(self.nchans):
+                self.gains.append(calFile.getfloat('CHAN%d' % channel, 'gain'))
+                self.zeros.append(calFile.getfloat('CHAN%d' % channel, 'zero'))
+                self.alt_names.append(calFile.get('CHAN%d' % channel, 'alt_name'))
+                self.eng_units.append(calFile.get('CHAN%d' % channel, 'eng_units'))
+                self.cal_dates.append(calFile.get('CHAN%d' % channel, 'cal_date'))
+                self.data_pkt_locs.append(calFile.getint('CHAN%d' % channel, 'data_pkt_loc'))                
+
+            gainss = pd.Series(self.gains, index=chan_names)
+            zeross = pd.Series(self.zeros, index=chan_names)
 
             # Finally read in raw data and convert to EU
             data = pd.read_table(obcfile, sep='\s+', header=None, names=chan_names)
