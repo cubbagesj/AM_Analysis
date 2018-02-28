@@ -11,13 +11,16 @@
 # Updated 8/13/2010 by C.Michael Pietras
 
 # Updated 3/10/2016 to add .tdms data file support by Woody Pfitsch
+# sjc - 1/2018 - Updates to convert to using pandas for the data struture
 
+#Imports - Standard Libraries
 import wx
 import wx.grid, wx.html
 import os
 import fnmatch
+
+# Imports - Local Packages
 from plotcanvas import CanvasFrame
-#from multicanvas import MultiCanvasFrame
 import plottools as plottools
 import images
 import mergewiz
@@ -34,6 +37,8 @@ class BrowserFrame(wx.Frame):
         # Some of the functions differ between windows and linux
         # So check here for the system and set a flag
         self.osname = os.name
+        
+        self.readFilePaths()
  
         # Set up the status bar
         self.statusbar = self.CreateStatusBar()
@@ -218,6 +223,29 @@ class BrowserFrame(wx.Frame):
         self.tree.Expand(root)
 
         self.buildFileTree()
+        
+    def readFilePaths(self):
+        """
+            Reads in the default paths from the 'defaultPaths.txt' file
+            and sets the class properties to the paths defined
+        """
+        
+        f = open('defaultPaths.txt', 'r')
+        path_lines = f.read().splitlines()
+        
+        default_Paths = {}
+        # Loop through the file to get the paths
+        for line in path_lines:
+            if line == '':
+                continue
+            elif line[0] == '#':
+                continue
+            else:
+                entry = line.split()
+                default_Paths[entry[0]] = entry[1]
+        
+        self.defaultPaths = default_Paths
+             
 
     def buildFileTree(self):
         """
@@ -225,21 +253,11 @@ class BrowserFrame(wx.Frame):
             the file tree after it's been cleared
         """
 
-        # Paths depend on platforms so check and setup
-        if self.osname == 'posix':
-            # OBC data is on system share
-            obcDir = '/frmg/Autonomous_Model/test_data'
-            tdmsDir = '/frmg/Autonomous_Model/test_data'
-            # For rcmdata and fstdata, rely on symlink in user directory
-            rootDir = os.path.expanduser('~')
-            stdDir = os.path.join(rootDir, 'rcmdata')
-            fstDir = os.path.join(rootDir,'fstdata')
-        else:       
-            # For windows, everything sits on C:
-            obcDir = 'c:/Users/CubbageSJ/Documents/test_data'
-            tdmsDir = 'c:/Users/CubbageSJ/Documents/test_data'
-            stdDir = 'c:/Users/CubbageSJ/Documents/rcmdata'
-            fstDir = 'c:/Users/CubbageSJ/Documents/fstdata'
+        # Pull the paths from the default path dictionary
+        obcDir = self.defaultPaths['obcDir']
+        tdmsDir = self.defaultPaths['tdmsDir']
+        stdDir = self.defaultPaths['stdDir']
+        fstDir = self.defaultPaths['fstDir']
             
         if os.path.exists(obcDir):
             self.TreeBuilder(obcDir, self.obcroot)
@@ -261,7 +279,7 @@ class BrowserFrame(wx.Frame):
                 if fnmatch.fnmatch(tail, '*.obc') or fnmatch.fnmatch(tail, '*.std') or fnmatch.fnmatch(tail, '*.tdms'):
                     fileItem = self.tree.AppendItem(branch, tail)
                     self.tree.SetItemImage(fileItem, self.fileidx, wx.TreeItemIcon_Normal)
-                    self.tree.SetItemPyData(fileItem, path)
+                    self.tree.SetItemData(fileItem, path)
                 self.tree.SortChildren(branch)
             else:
                 head, tail = os.path.split(path)
@@ -269,7 +287,7 @@ class BrowserFrame(wx.Frame):
                 self.tree.SetItemImage(newbranch, self.fldridx, wx.TreeItemIcon_Normal)
                 self.tree.SetItemImage(newbranch, self.fldropenidx, wx.TreeItemIcon_Expanded)
 
-                self.tree.SetItemPyData(newbranch, path)
+                self.tree.SetItemData(newbranch, path)
                 self.tree.SortChildren(branch)
 
     def menuData(self):
@@ -324,22 +342,22 @@ class BrowserFrame(wx.Frame):
 
     def OnSelChanged(self, evt):
         try:
-            self.statusbar.SetStatusText(self.tree.GetItemPyData(evt.GetItem()))
+            self.statusbar.SetStatusText(self.tree.GetItemData(evt.GetItem()))
         except:
             pass
-        wx.SetCursor(wx.StockCursor(wx.CURSOR_ARROWWAIT))
+        wx.SetCursor(wx.Cursor(wx.CURSOR_ARROWWAIT))
 
         if not self.tree.ItemHasChildren(evt.GetItem()):
-            if os.path.isdir(self.tree.GetItemPyData(evt.GetItem())):
-                self.TreeBuilder(self.tree.GetItemPyData(evt.GetItem()), evt.GetItem())
+            if os.path.isdir(self.tree.GetItemData(evt.GetItem())):
+                self.TreeBuilder(self.tree.GetItemData(evt.GetItem()), evt.GetItem())
 
-        wx.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
+        wx.SetCursor(wx.Cursor(wx.CURSOR_ARROW))
 
     def OnActivated(self, evt):
-        wx.SetCursor(wx.StockCursor(wx.CURSOR_ARROWWAIT))
+        wx.SetCursor(wx.Cursor(wx.CURSOR_ARROWWAIT))
 
         try:
-            runName = self.tree.GetItemPyData(evt.GetItem())
+            runName = self.tree.GetItemData(evt.GetItem())
         except:
             runName = ""
         if os.path.isfile(runName):
@@ -376,7 +394,7 @@ class BrowserFrame(wx.Frame):
             self.graphBtn.Enable(True)
             self.graphBtnRaw.Enable(True)
 
-        wx.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
+        wx.SetCursor(wx.Cursor(wx.CURSOR_ARROW))
 
     def OnCalClick(self, evt):
         if self.runObj.nchans != 0:

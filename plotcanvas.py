@@ -24,7 +24,7 @@ class CanvasFrame(wx.Frame):
         wx.Frame.__init__(self,None,-1,
                           'Plot  '+runData.filename)
 
-        self.SetBackgroundColour(wx.NamedColour("WHITE"))
+        self.SetBackgroundColour(wx.Colour("WHITE"))
 
         self.figure = Figure(figsize=(12,6))
         self.axes = self.figure.add_subplot(111)
@@ -82,8 +82,8 @@ class CanvasFrame(wx.Frame):
     def add_toolbar(self):
         self.toolbar = NavigationToolbar2Wx(self.canvas)
         self.toolbar.Realize()
-        tw, th = self.toolbar.GetSizeTuple()
-        fw, fh = self.canvas.GetSizeTuple()
+        tw, th = self.toolbar.GetSize()
+        fw, fh = self.canvas.GetSize()
         # By adding toolbar in sizer, we are able to put it at the bottom
         # of the frame - so appearance is closer to GTK version.
         # As noted above, doesn't work for Mac.

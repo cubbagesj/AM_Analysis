@@ -22,8 +22,9 @@ import pandas as pd
 from nptdms import TdmsFile  #package for importing tdms file data into python using numpy arrays
 import os.path, time
 from scipy.interpolate import interp1d
+import configparser
 
-# Imports - Locale Packages
+# Imports - Local Packages
 from search_file import search_file_walk
 
 
@@ -55,8 +56,6 @@ class STDFile:
         else:
             # Attempt to find the run on the path
             fullname = search_file_walk(run_number+'.std', search_path)
-            fname = (run_number+'.std', search_path)
-            print(fname)
 
         if not fullname:
             if not search_path == 'c:\AM_merge_data':
@@ -67,6 +66,7 @@ class STDFile:
 
         if not fullname:
             # Populate empty structure if no file found
+            # This is to keep various othr parts of code from breaking if no file
             self.filename = ''
             self.dirname = ''
             self.filetype = ''
@@ -199,23 +199,30 @@ class STDFile:
         """ Returns an array containing the request channel of data
             in engineering units - Full scale values
             
-            channel is a number
+            channel is a column number or column name
         """
-
-        if channel < 0 or channel > self.nchans:
-            return None
+        if type(channel) is int:
+            if channel < 0 or channel > self.nchans:
+                return None
+            else:
+                return self.dataEU.iloc[:,channel]
         else:
-            return self.dataEU.ix[:,channel]
+            return self.dataEU.loc[:,channel]
 
     def getRAWData(self, channel):
         """ Returns an array containing the request channel of data
             in raw units (no conversion)
+            For STD files this is same as EUData
+            
+            channel is a column number or column name
         """
-        
-        if channel < 0 or channel > self.nchans:
-            return None
-        else:
-            return self.data.ix[:,channel]
+        if type(channel) is int:
+            if channel < 0 or channel > self.nchans:
+                return None
+            else:
+                return self.data.iloc[:,channel]
+        else: 
+            return self.data.loc[:,channel]
 
     def run_stats(self):
         """ Calculate important run stats like time of execute"""
@@ -224,7 +231,7 @@ class STDFile:
 
         try:
             # Find where the status goes to 5, this is execute time
-            status = list(self.data.ix[:,25])
+            status = list(self.data.iloc[:,25])
             self.execrec = status.index(5)
             self.exectime = self.time[self.execrec]
             self.stdbyrec = status.index(2)
@@ -247,7 +254,7 @@ class STDFile:
             chan_avg = 0.0
             count = 0
             for x in range(self.execrec-10, self.execrec):
-                chan_avg += self.data.ix[x,channel]
+                chan_avg += self.data.iloc[x,channel]
                 count += 1
             self.init_values.append(chan_avg/count)
 
@@ -259,7 +266,7 @@ class STDFile:
             chan_avg = 0.0
             count = 0
             for x in range(self.stdbyrec, self.execrec):
-                chan_avg += self.data.ix[x,channel]
+                chan_avg += self.data.iloc[x,channel]
                 count += 1
             try:
                 self.appr_values.append(chan_avg/count)
@@ -358,7 +365,7 @@ class TDMSFile:
                 self.time = self.time - self.time[0] # make the time channel relative to the start of the file
             except:
                 # There is no time channel, so make one
-                self.time = arange(0, self.tdm_length, dtype=float)
+                self.time = np.arange(0, self.tdm_length, dtype=float)
                 self.time = self.time * .01
             
             # Get the run type out of the tdms file properties
@@ -514,7 +521,7 @@ class TDMSFile:
          
         # For obc, we don't want to do the initial values for all 364
         # channels, so just set these to zeros
-        self.init_values = zeros((self.nchans), dtype=float)
+        self.init_values = np.zeros((self.nchans), dtype=float)
 
     def EU_file(self):
         """ Create a csv data file with the EU data
@@ -547,12 +554,14 @@ class OBCFile:
         """ Initialize the run, find and read in the data.
             The search_path defults to only the local directory.
         """
-
-        # Attempt to find the run on the path, return NONE if not found
-        fullname = search_file_walk(str('run-'+run_number+'.obc'), search_path)
-        fname = (str('run-'+run_number+'.obc'), search_path)
-        print(fname)
-
+        
+        # Check if we know the path already
+        if search_path == 'known':
+            fullname = run_number
+        else:
+            # Attempt to find the run on the path, return NONE if not found
+            fullname = search_file_walk(str('run-'+run_number+'.obc'), search_path)
+            
         if not fullname:
             if not search_path == 'c:\AM_data':
                 if not os.path.exists(search_path):
@@ -586,19 +595,46 @@ class OBCFile:
             self.nchans = 0
             self.dt = 0.01
 
-            # Because the obc files are large (>10Mb), using the load()
-            # call takes 30-40s.  For faster access, keep the values as strings
-            # until we need them
 
             self.data = []
             obcfile = open(fullname, 'r')
-            for record in obcfile:
-                record = record.rstrip()
-                row = record.split()
-                self.data.append(row)
+            
+            # Setup a config file parser
+            calFile = configparser.ConfigParser()
+            calFile.read(calfile)
+
+            # extract the # chans
+            self.nchans = calFile.getint('DEFAULT', 'obc_channels')
+
+            # Now build the list of channel names
+
+            chan_names = []
+            for channel in range(self.nchans):
+                name = calFile.get('CHAN%d' % channel, 'sys_name')
+                if chan_names.count(name) == 0:
+                    chan_names.append(name)
+                else:
+                    chan_names.append(name+str(channel))
+            self.chan_names = chan_names
+
+            # Now get the gains
+            gains = []
+            zeros = []
+            for channel in range(self.nchans):
+                gains.append(calFile.getfloat('CHAN%d' % channel, 'gain'))
+                zeros.append(calFile.getfloat('CHAN%d' % channel, 'zero'))
+
+            gainss = pd.Series(gains, index=chan_names)
+            zeross = pd.Series(zeros, index=chan_names)
+
+            # Finally read in raw data and convert to EU
+            data = pd.read_table(obcfile, sep='\s+', header=None, names=chan_names)
+            self.data = data
+            
+            self.dataEU = (self.data - zeross) * gainss
 
             # There is no time channel, so make one
-            self.time = arange(0, len(self.data), dtype=float)
+            self.time = np.arange(0, len(self.data), dtype=float)
             self.time = self.time * .01
 
             # try to get the run info from runfile
@@ -614,43 +650,8 @@ class OBCFile:
             except:
                 self.title = ''
 
-            # try to get the cals and channel names from cal file    
-            c = cfgparse.ConfigParser()
-            try:
-                c.add_file(str(calfile))
-                #  Set up some variables to hold the values
-                self.nchans = c.add_option('obc_channels', type='int').get()
-                self.gains = []
-                self.zeros = []
-                self.chan_names = []
-                self.alt_names = []
-                self.data_pkt_locs = []
-                self.eng_units = []
-                self.cal_dates = []
-
-                # Then read the ini file for the channel cals
-                for channel in range(self.nchans):
-                    self.gains.append(c.add_option('gain', type='float', keys='CHAN%d' % channel).get())
-                    self.zeros.append(c.add_option('zero', type='float', keys='CHAN%d' % channel).get())
-                    self.chan_names.append(c.add_option('sys_name', keys='CHAN%d' % channel).get().strip())
-                    self.alt_names.append(c.add_option('alt_name', keys='CHAN%d' % channel).get().strip())
-                    self.data_pkt_locs.append(c.add_option('data_pkt_loc', type='int', keys='CHAN%d' % channel).get())
-                    self.eng_units.append(c.add_option('eng_units', keys='CHAN%d' % channel).get().strip())
-                    self.cal_dates.append(c.add_option('cal_date', keys='CHAN%d' % channel).get())
-
-                self.run_stats()
-            except:
-                self.nchans = 0
-                self.gains = ones((self.nchans), dtype=float)
-                self.zeros = zeros((self.nchans), dtype=float)
-                raise
-            
-            self.dataEU = []  
-            for row in range(len(self.data)):
-                datarow = []
-                for column in range(self.nchans):
-                    datarow.append((float(self.data[row][column])-self.zeros[column]) * self.gains[column])
-                self.dataEU.append(datarow)
+            # Compute the run stats
+            self.run_stats()
 
     def info(self):
         """ Prints information on the run"""
@@ -673,32 +674,28 @@ class OBCFile:
     def getEUData(self, channel):
         """ Returns an array containing the request channel of data
             in engineering units - Model Scale Units
+            channel is a column number or column name
         """
-
-        if channel < 0 or channel > self.nchans:
-            return None
+        if type(channel) is int:
+            if channel < 0 or channel > self.nchans:
+                return None
+            else:
+                return self.dataEU.iloc[:,channel]
         else:
-            column = []
-            for x in range(len(self.data)):
-                column.append(float(self.data[x][channel]))
-
-            col_array = array((column), dtype=float)
-            return (col_array-self.zeros[channel])* self.gains[channel]
+            return self.dataEU.loc[:,channel]
 
     def getRAWData(self, channel):
         """ Returns an array containing the request channel of data
             in raw units (no conversion)
+            channel is a column number or column name
         """
-
-        if channel < 0 or channel > self.nchans:
-            return None
-        else:
-            column = []
-            for x in range(len(self.data)):
-                column.append(float(self.data[x][channel]))
-
-            col_array = array((column), dtype=float)
-            return col_array
+        if type(channel) is int:
+            if channel < 0 or channel > self.nchans:
+                return None
+            else:
+                return self.data.iloc[:,channel]
+        else: 
+            return self.data.loc[:,channel]
 
     def run_stats(self):
         """ Calculate important run stats.
@@ -710,9 +707,7 @@ class OBCFile:
 
 
         # First we need to extract the mode channel
-        status = []
-        for x in range(len(self.data)):
-            status.append(int(float(self.data[x][325])))
+        status = list(self.data.iloc[:,325])
         try: 
             self.stdbyrec = status.index(0x0F33)
             self.stdbytime = self.time[self.stdbyrec]
@@ -728,38 +723,16 @@ class OBCFile:
 
         # For obc, we don't want to do the initial values for all 364
         # channels, so just set these to zeros
-        self.init_values = zeros((self.nchans), dtype=float)
-
-    def EU_file(self):
-        """ Create a csv data file with the EU data
-            Created in same dir as obc file with .eu extension
-        """
-
-        # First open the output file using the filename
-        eufile = open(os.path.join(self.dirname, self.basename+'.eu'), 'w')
-
-        # First ouput the titles in one line
-        for name in self.chan_names:
-            eufile.write(name+',  ')
-        eufile.write('\n')
-
-        # Now output the EU data line by line
-        for row in range(len(self.data)):
-            for column in range(self.nchans):
-                value = (float(self.data[row][column])-self.zeros[column]) * self.gains[column]
-                eufile.write(str(value)+', ')
-            eufile.write('\n')
-
-        eufile.close()
+        self.init_values = np.zeros((self.nchans), dtype=float)
 
 
-#if __name__ == "__main__":
 
-    #test = OBCFile('1409')
-    #test = STDFile('9-4104.std', 'known')
-    #test.info()
+if __name__ == "__main__":
+
+    #test = OBCFile('11024')
+    test = STDFile('10-1242.std', 'known')
+    test.info()
     #test.run_stats()
     #dummy = test.getEUData(12)
-    #print test.stdbytime
-    #print test.exectime
+    
     #test.EU_file()
