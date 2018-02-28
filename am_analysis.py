@@ -272,6 +272,11 @@ class BrowserFrame(wx.Frame):
                 pass
 
     def TreeBuilder(self, currdir, branch):
+        """ 
+            Populates the tree with files of the known data types
+            Types are: .std, .obc, .tdms
+        """
+        
         for file in os.listdir(currdir):
             path = os.path.join(currdir, file)
             if not os.path.isdir(path):
@@ -509,7 +514,7 @@ class PathFrame(wx.Frame):
                           size=(600, 500))
         self.pathCtrl = wx.TextCtrl(self, -1, "",style=wx.TE_MULTILINE )  
 
-        self.pathlist = open("./lib/std_default.pth").read()
+        self.pathlist = open("defaultPaths.txt").read()
         self.pathCtrl.ChangeValue(self.pathlist)
         updateBtn = wx.Button(self, -1, "Update Paths")
 
@@ -523,7 +528,7 @@ class PathFrame(wx.Frame):
 
     def OnPathWrite(self,event):
         self.pathlist = self.pathCtrl.GetValue()
-        outfile = open("./lib/std_default.pth", "w")
+        outfile = open("defaultPaths.txt", "w")
         outfile.write(self.pathlist)
         outfile.close()
         self.Destroy()
