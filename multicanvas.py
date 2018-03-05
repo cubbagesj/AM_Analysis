@@ -12,7 +12,7 @@ import matplotlib
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wx import NavigationToolbar2Wx
 
-from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
 
 from numpy import ceil
 
@@ -24,9 +24,9 @@ class MultiCanvasFrame(wx.Frame):
     def __init__(self, plotData, titles, pgpntr, title = 'Over Plot  '):
         wx.Frame.__init__(self,None,-1, title)
 
-        self.SetBackgroundColour(wx.NamedColour("WHITE"))
+        self.SetBackgroundColour(wx.Colour("WHITE"))
 
-        self.figure = Figure(figsize=(9,10))
+        self.figure = plt.figure(figsize=(9,10))
         self.plotData = plotData
         self.Build_Menus()
         self.titles = titles
@@ -172,7 +172,7 @@ class MultiCanvasFrame(wx.Frame):
                         ydata = xfrm(ydata, runobj.dt, scale, offset, 11)
                     else:
                         ydata = xfrm(ydata, runobj.dt, scale, offset, xform)
-                line = self.ax.plot(xdata, ydata)
+                line = self.ax.plot(xdata, ydata, label = self.titles[lcnt])
                 lines.append(line)
                 self.ax.grid(True)
                 if i == self.plotData.perpage - 1:
@@ -185,6 +185,8 @@ class MultiCanvasFrame(wx.Frame):
                 except:
                     pass
                 
+                lcnt += 1
+                
             yrange = (self.plotData.ymins[self.plotData.pgpntr + i],
                       self.plotData.ymaxs[self.plotData.pgpntr + i])
             if self.plotData.xmin or self.plotData.xmax:
@@ -195,10 +197,9 @@ class MultiCanvasFrame(wx.Frame):
             
             # Set up the legend
             if i == 0:
-#                leg = ax0.legend(lines, self.titles, (.5, .5))
-                leg = self.figure.legend(lines, self.titles, (.3, .901), ncol = int(ceil(len(self.titles)/4.0)))
+                leg = self.figure.legend(loc = (.3, .901), ncol = int(ceil(len(self.titles)/4.0)))
                 ltext = leg.get_texts()
-                setp(ltext, fontsize='small')
+                matplotlib.pyplot.setp(ltext, fontsize='small')
                 
     def kpress(self, event):
         if event.key == 'n':
@@ -222,8 +223,8 @@ class MultiCanvasFrame(wx.Frame):
     def add_toolbar(self):
         self.toolbar = NavigationToolbar2Wx(self.canvas)
         self.toolbar.Realize()
-        tw, th = self.toolbar.GetSizeTuple()
-        fw, fh = self.canvas.GetSizeTuple()
+        tw, th = self.toolbar.GetSize()
+        fw, fh = self.canvas.GetSize()
         # By adding toolbar in sizer, we are able to put it at the bottom
         # of the frame - so appearance is closer to GTK version.
         # As noted above, doesn't work for Mac.

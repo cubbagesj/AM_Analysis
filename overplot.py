@@ -17,24 +17,24 @@ along with the x-range and an optional title.
 
 import wx
 import wx.grid, wx.html
-import os
-
 
 # The actual plotting routines are found in plottools and the actual plot
 # page frame comes from multicanvas
 
-from plottools import *
+from plottools import get_runs_overplot, PlotPage
 from multicanvas import MultiCanvasFrame
 from trackplot import TrackPlot
 
 class OverPlotFrame(wx.Frame):
     
-    def __init__(self, numruns = 4):
+    def __init__(self, paths, numruns = 4):
         '''Initializes the frame and all the widgets.  There are a number of run
         fields in the window equal to the numruns variable.'''
         wx.Frame.__init__(self, None, -1, 'Overplot', style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
-        self.SetBackgroundColour(wx.NamedColour("LIGHTGREY"))
+        self.SetBackgroundColour(wx.Colour("LIGHTGREY"))
         
+        # Map default paths
+        self.defaultPaths = paths
         # decorate the frame with the widgets
         topLbl = wx.StaticText(self, -1, "Overplot Runs")
         topLbl.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
@@ -128,7 +128,7 @@ class OverPlotFrame(wx.Frame):
     def OnFileClick(self, evt):
         dlg = wx.FileDialog(self, "Open plot config file...",
                                 defaultDir="./plotfiles", wildcard="*.ini",
-                                style=wx.OPEN)
+                                style=wx.FD_OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             self.PlotCfg = dlg.GetPath()
             self.fileText.SetValue(dlg.GetFilename())
@@ -182,7 +182,9 @@ class OverPlotFrame(wx.Frame):
             params = (float(self.xMin.GetValue()), float(self.xMax.GetValue()), 
                        int(self.perPage.GetValue()))
                     
-            runobjs,new_titles = get_runs_overplot(runlist,titles)
+            runobjs,new_titles = get_runs_overplot(runlist,titles, 
+                                                   obc_path = self.defaultPaths['obcOvrpltDir'],
+                                                   std_path = self.defaultPaths['stdDir'] )
             
             i = 0
             for title in titles:
@@ -402,7 +404,7 @@ class editGrid(wx.grid.Grid):
 
 class DataTable(wx.grid.PyGridTableBase):
     def __init__(self, cfgData):
-        wx.grid.PyGridTableBase.__init__(self)
+        wx.grid.GridTableBase.__init__(self)
         self.data = cfgData
         self.colLabels = ["Channel", "Ymin", "Ymax", "Scale", "Offset", "Xform", "Function", "YLabel"]
         self._rows = self.GetNumberRows()

@@ -15,6 +15,8 @@ from matplotlib.figure import Figure
 
 import wx
 from plottools import *
+import numpy as np
+
 
 class CanvasFrame(wx.Frame):
 
@@ -110,7 +112,7 @@ class CanvasFrame(wx.Frame):
         yrange = self.ydata[yminindex:ymaxindex]
         ymax = float(max(yrange))
         ymin = float(min(yrange))
-        ymean = float(average(yrange))
+        ymean = float(np.average(yrange))
 
         self.statusbar.SetStatusText('Max = %.3f' %ymax, 1)
         self.statusbar.SetStatusText('Min = %.3f' %ymin, 2)

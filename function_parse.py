@@ -12,6 +12,7 @@ from numpy import *
 
 
 def doFunction(function, chans, ydata):
+    d = locals()
     for chan in chans:
         old = '$'+str(chan)
         new = 'ydata['+str(chan)+']'
@@ -19,7 +20,7 @@ def doFunction(function, chans, ydata):
     if not function.find('$') == -1:
         return None
     exec('ydata'+function)
-    return ydata
+    return d['ydata']
     
 def makeLabel(function, chans, chan_names):
     for chan in chans:

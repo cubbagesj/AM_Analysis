@@ -685,7 +685,7 @@ class OBCFile:
             in engineering units - Model Scale Units
             channel is a column number or column name
         """
-        if type(channel) is int:
+        if type(channel) != str:
             if channel < 0 or channel > self.nchans:
                 return None
             else:
@@ -694,11 +694,11 @@ class OBCFile:
             return self.dataEU.loc[:,channel]
 
     def getRAWData(self, channel):
-        """ Returns an array containing the request channel of data
+        """ Returns an array containitestng the request channel of data
             in raw units (no conversion)
             channel is a column number or column name
         """
-        if type(channel) is int:
+        if type(channel) != str:
             if channel < 0 or channel > self.nchans:
                 return None
             else:
@@ -738,8 +738,8 @@ class OBCFile:
 
 if __name__ == "__main__":
 
-    #test = OBCFile('11024')
-    test = STDFile('10-1242.std', 'known')
+    test = OBCFile('11024')
+    #test = STDFile('10-1242.std', 'known')
     test.info()
     #test.run_stats()
     #dummy = test.getEUData(12)

@@ -33,12 +33,12 @@
     
     
 """
-import matplotlib
+import matplotlib.pyplot as plt
 #matplotlib.use('WXAgg')
 from filetypes import OBCFile, STDFile, TDMSFile
-from pylab import *
-import re, cfgparse, sys, os
-import wx
+import os, re
+import numpy as np
+
 
 
 def get_runs( run_list, obc_path='', std_path=''):
@@ -49,33 +49,15 @@ def get_runs( run_list, obc_path='', std_path=''):
         and return a list of objects found.  If no runs are found, return None
     """
     
-    # First setup the paths if none specifed
-#    if not obc_path:
-#        obc_path = ""
-#        try:
-#            for line in open("./lib/obc_default.pth"):
-#                obc_path = obc_path + line.strip() + ";"
-#        except:
-#            obc_path = "."
-#    if not std_path:
-#        std_path = ""
-#        try:
-#            for line in open("./lib/std_default.pth"):
-#                std_path = std_path + line.strip() + ";"
-#        except:
-#            std_path = "."
-    
     # Now parse the run_list
     runs = []
     
     std_path = os.path.expanduser('~')
-#    std_path = '/disk2/home/'+os.environ['USERNAME'].lower()
-#    obc_path = '/disk2/home/'+os.environ['USERNAME']+'/obcdata'
     obc_path = r'\\ATIS21\MODEL\RCM\Autonomous_Model\test_data'
+
     # search pattern for std filenames - Assumes that a file with a '-' in the
     # name is an STD file.  If the file ends in 'obc' it is an OBC file, all
-    # others are considered TDMS files.
-    
+    # others are considered TDMS files.   
     stdm = re.compile(r'^\w+-\w+$')
     
     for runnum in run_list:
@@ -113,7 +95,6 @@ def get_run(run_list):
     
     return runobj
 
-#new function created in order to not accidentaly break anything else using get_runs
 def get_runs_overplot( run_list, title_list, obc_path='', std_path=''): #made a new 
     """  Return a list of FileType objects for each run found
     
@@ -122,45 +103,25 @@ def get_runs_overplot( run_list, title_list, obc_path='', std_path=''): #made a 
         and return a list of objects found and a list of the index of each 
         object.  If no runs are found, return None
     """
-    
-    # First setup the paths if none specifed
-#    if not obc_path:
-#        obc_path = ""
-#        try:
-#            for line in open("./lib/obc_default.pth"):
-#                obc_path = obc_path + line.strip() + ";"
-#        except:
-#            obc_path = "."
-#    if not std_path:
-#        std_path = ""
-#        try:
-#            for line in open("./lib/std_default.pth"):
-#                std_path = std_path + line.strip() + ";"
-#        except:
-#            std_path = "."
-    
+      
     # Now parse the run_list
     runs,titles,i = [], [],0
     
-    std_path = os.path.expanduser('~')
-    #std_path = '/disk2/home/'+os.environ['USER']
-    #obc_path = '/disk2/home/'+os.environ['USERNAME']+'/AM_data'
-
-    #obc path needs to be called out specifically since there are multiple rns with same number 
-    obc_path = '/frmg/Autonomous_Model/test_data/SSN_688/SSN_750_CCBOW_PASSIVE/'
+    # in case the paths are undefined
+    if std_path == '':
+        std_path = os.path.expanduser('~')
 
     # search pattern for std filenames - Assumes that a file with a '-' in the
     # name is an STD file.  All others are considered OBC files
     
     stdm = re.compile(r'^\w+-\w+$')
     
+    
     for runnum in run_list:
         if stdm.match(runnum.strip()):
             runobj = STDFile(runnum, search_path=std_path)
-        elif runnum[-3:] == 'obc':
-            runobj = OBCFile(runnum, search_path=obc_path)
         else:
-            runobj = TDMSFile(runnum, search_path=obc_path)
+            runobj = OBCFile(runnum, search_path=obc_path)
     
         # If we found a run, add it to the list of run objects
         if runobj.filename:
@@ -178,8 +139,7 @@ def get_xy(runobj, ychan=0, xchan=-1, EU=True):
         Returns a tuple of the x,y data.  Default x is
         normalized time(-1), default y is channel 0
     """
-    import types
-    
+
     # Now we need to get the data. Start with x
     if xchan == -2:
         xdata = runobj.time
@@ -187,20 +147,20 @@ def get_xy(runobj, ychan=0, xchan=-1, EU=True):
         xdata = runobj.ntime
     elif xchan >= 0 and xchan < runobj.nchans:
         if EU:
-            xdata = runobj.getEUData(xchan)
+            xdata = runobj.getEUData(xchan).values
         else:
-            xdata = runobj.getRAWData(xchan)
+            xdata = runobj.getRAWData(xchan).values
     else:
         xdata = runobj.ntime
         
     if ychan >= 0 and ychan < runobj.nchans:
         if EU:
-            ydata = runobj.getEUData(ychan)
+            ydata = runobj.getEUData(ychan).values
         else:
-            ydata = runobj.getRAWData(ychan)
+            ydata = runobj.getRAWData(ychan).values
     else:
-        ydata = runobj.getEUData(0)
-        
+        ydata = runobj.getEUData(0).values
+          
     return xdata,ydata
 
 def xy_plt(run_list, ychan=0, xchan=-1, **kargs):
@@ -226,31 +186,31 @@ def xy_plt(run_list, ychan=0, xchan=-1, **kargs):
         if scale or offset or xform:
             ydata = xfrm(ydata, runobj.dt, scale, offset, xform)
              
-        plot(xdata, ydata, label=runobj.filename)
-        hold(True)
+        plt.plot(xdata, ydata, label=runobj.filename)
+        plt.hold(True)
     
     # Now decorate it with labels
     if xchan == -1:
-        xlabel('nTime (s)')
+        plt.xlabel('nTime (s)')
     elif xchan == -2:
-        xlabel('Time (s)')
+        plt.xlabel('Time (s)')
     else:
-        xlabel(run_list[0].chan_names[xchan])
+        plt.xlabel(run_list[0].chan_names[xchan])
     
-    ylabel(run_list[0].chan_names[ychan])
+    plt.ylabel(run_list[0].chan_names[ychan])
 
     # Turn on the Grid
-    grid(True)
+    plt.grid(True)
     
     # scale the axis if needed
-    axis(**kargs)
+    plt.axis(**kargs)
     
     #resize
 
-    legend()
-    show()
+    plt.legend()
+    plt.show()
     
-    return gca()
+    return plt.gca()
     
 def y_plt(run_list, ychan=0, **kargs):
     """

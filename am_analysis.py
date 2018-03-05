@@ -15,9 +15,10 @@
 
 #Imports - Standard Libraries
 import wx
-import wx.grid, wx.html
+import wx.grid, wx.html, wx.adv
 import os
 import fnmatch
+
 
 # Imports - Local Packages
 from plotcanvas import CanvasFrame
@@ -58,6 +59,11 @@ class BrowserFrame(wx.Frame):
         self.sp.SplitVertically(self.p1, self.p2, 300)
 
     def createInfoView(self, panel):
+        """
+            This routine creates the layout for the right side of the
+            display with the run information
+        """
+        
         # The display components
         topLbl = wx.StaticText(panel, -1, "File Information")
         topLbl.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
@@ -172,6 +178,11 @@ class BrowserFrame(wx.Frame):
 
 
     def createFileTree(self, parent):
+        """
+            This routine creates the file tree on the
+            left side of the main window
+        """
+        
         self.tree = wx.TreeCtrl(parent, -1,
                                 style=wx.TR_HAS_BUTTONS)
 
@@ -245,7 +256,7 @@ class BrowserFrame(wx.Frame):
                 default_Paths[entry[0]] = entry[1]
         
         self.defaultPaths = default_Paths
-             
+
 
     def buildFileTree(self):
         """
@@ -296,6 +307,10 @@ class BrowserFrame(wx.Frame):
                 self.tree.SortChildren(branch)
 
     def menuData(self):
+        """
+            These are the entries for the main menu
+        """
+        
         return (("&File",
                  ("&Update Tree", "Update Tree",self.OnTreeUpdate),
                  ("Update Paths", "Update Paths",self.OnPathUpdate),
@@ -310,8 +325,8 @@ class BrowserFrame(wx.Frame):
                  ("Analyze Run...", "Analyze Run", self.OnAnalyze),
                  ("Beginning of Shift Runs", "Compare Beginning of Shift Runs", self.OnCompareBoS),
                  ("Extrema", "Extrema", self.OnExtrema)),
-                ("&Data",
-                 ("Extract Data...", "Extract Data", self.OnData)),
+#                ("&Data",
+#                ("Extract Data...", "Extract Data", self.OnData)),
                 ("&Help",
                  ("&About", "About Program", self.OnAbout)))
 
@@ -415,6 +430,8 @@ class BrowserFrame(wx.Frame):
         self.tree.DeleteChildren(self.obcroot)
         self.tree.DeleteChildren(self.tdmsroot)
         self.tree.DeleteChildren(self.stdroot)
+        self.readFilePaths()
+
         if self.fstroot:
             self.tree.DeleteChildren(self.fstroot)
         self.buildFileTree()
@@ -444,16 +461,21 @@ class BrowserFrame(wx.Frame):
         self.Destroy()
 
     def OnMerge(self, event):
+        """
+            This is triggered when 'Merge' is selected from 
+            the main menu
+        """
+        
 #        wizard = wx.wizard.Wizard(self, -1, "Merge Wizard", images.getWizTest1Bitmap())
-        wizard = wx.wizard.Wizard(self, -1, "Merge Wizard")
+        wizard = wx.adv.Wizard(self, -1, "Merge Wizard")
         page1 = mergewiz.StartPage(wizard)
         page2 = mergewiz.SelectFilesPage(wizard)
         page3 = mergewiz.MrgDirPage(wizard)
         page4 = mergewiz.RunMrgPage(wizard)
 
-        wx.wizard.WizardPageSimple_Chain(page1, page2)
-        wx.wizard.WizardPageSimple_Chain(page2, page3)
-        wx.wizard.WizardPageSimple_Chain(page3, page4)
+        wx.adv.WizardPageSimple.Chain(page1, page2)
+        wx.adv.WizardPageSimple.Chain(page2, page3)
+        wx.adv.WizardPageSimple.Chain(page3, page4)
 
         wizard.FitToPage(page1)
 
@@ -475,11 +497,20 @@ class BrowserFrame(wx.Frame):
         wx.MessageBox("Conversion completed successfully", "That's all folks!")
 
     def OnPlot(self, event):
-        frame = overplot.OverPlotFrame()
+        """
+            This creates an overplot window with the default
+            4 run entries
+        """
+        frame = overplot.OverPlotFrame(paths = self.defaultPaths)
         frame.Show()
 
     def OnPlotMore(self, event):
-        frame = overplot.OverPlotFrame(15)
+        """
+            Same as OnPlot but creates a window
+            with 15 run entries
+        """
+        
+        frame = overplot.OverPlotFrame(paths = self.defaultPaths, numruns = 15)
         frame.Show()
 
 
@@ -490,9 +521,14 @@ class BrowserFrame(wx.Frame):
     def OnData(self, event): 
         pass 
 
-    def OnPathUpdate(self,event):         
+    def OnPathUpdate(self,event):
+        """ 
+            Method to update the default search paths
+            in the defaultPaths.txt file
+        """
         frame = PathFrame()
         frame.Show()
+        
 
     def OnCompareBoS(self, event):
         frame = CorrelateFrame()
@@ -508,6 +544,10 @@ class BrowserFrame(wx.Frame):
         frame.Show()
 
 class PathFrame(wx.Frame):
+    """
+        This creates a window to display and edit 
+        the defaultPaths.txt file for the search paths
+    """
     def __init__(self):
         wx.Frame.__init__(self, None,
                           title="Update Search Paths",
@@ -527,14 +567,20 @@ class PathFrame(wx.Frame):
         self.Layout()
 
     def OnPathWrite(self,event):
+
         self.pathlist = self.pathCtrl.GetValue()
         outfile = open("defaultPaths.txt", "w")
         outfile.write(self.pathlist)
         outfile.close()
+               
         self.Destroy()
 
 
 class DataFrame(wx.Frame):
+    """
+        Creates a window to display the numerical data
+        from the run file
+    """
     def __init__(self, runData, EU=False):
         wx.Frame.__init__(self, None,
                           title="Run Data  "+runData.filename,
@@ -545,39 +591,13 @@ class DataFrame(wx.Frame):
         grid.SetTable(table, True)
         grid.AutoSizeColumns(True)
         #grid.SetDefaultColSize(80)
-
-class CalFrame(wx.Frame):
-    def __init__(self, runData):
-        #file = open(r'.\lib\obc_channel_table.txt','w')
-
-        wx.Frame.__init__(self, None,
-                          title="Cal File Viewer   "+runData.filename,
-                          size=(600, 500))
-
-        columns = ['Ch. #', 'Name', 'Alt Name', 'Gain', 'Zero', 'Eng. Units']
-        self.list = wx.ListCtrl(self, -1, style=wx.LC_REPORT|wx.LC_HRULES)
-        for col, text in enumerate(columns):
-            self.list.InsertColumn(col, text)
-
-        #lines = []
-        for item in range(runData.nchans):
-            index = self.list.InsertItem(item, str(item))
-            self.list.SetItem(index, 1, runData.chan_names[index])
-            self.list.SetItem(index, 2, runData.alt_names[index])
-            self.list.SetItem(index, 3, str(runData.gains[index]))
-            self.list.SetItem(index, 4, str(runData.zeros[index]))
-            self.list.SetItem(index, 5, str(runData.eng_units[index]))
-            #lines.append(str(index)+' - '+runData.chan_names[index]+'\n')
-        #file.writelines(lines)
-
-        self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE_USEHEADER)
-        self.list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
-        self.list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
-        self.list.SetColumnWidth(3, wx.LIST_AUTOSIZE)
-        self.list.SetColumnWidth(4, wx.LIST_AUTOSIZE)
-        self.list.SetColumnWidth(5, wx.LIST_AUTOSIZE)
-
+        
 class DataTable(wx.grid.GridTableBase):
+    """
+        This is a helper class for the DataFrame
+        It provides the methods to actually display
+        the data
+    """
     def __init__(self, runData, EU=False):
         wx.grid.GridTableBase.__init__(self)
         self.runData = runData
@@ -605,7 +625,45 @@ class DataTable(wx.grid.GridTableBase):
     def GetColLabelValue(self, col):
         return self.runData.chan_names[col]
 
+class CalFrame(wx.Frame):
+    """ 
+        Creates a window to display the calibration
+        file for an OBC filetype
+    """
+    def __init__(self, runData):
+        #file = open(r'.\lib\obc_channel_table.txt','w')
+
+        wx.Frame.__init__(self, None,
+                          title="Cal File Viewer   "+runData.filename,
+                          size=(600, 500))
+
+        columns = ['Ch. #', 'Name', 'Alt Name', 'Gain', 'Zero', 'Eng. Units']
+        self.list = wx.ListCtrl(self, -1, style=wx.LC_REPORT|wx.LC_HRULES)
+        for col, text in enumerate(columns):
+            self.list.InsertColumn(col, text)
+
+        for item in range(runData.nchans):
+            index = self.list.InsertItem(item, str(item))
+            self.list.SetItem(index, 1, runData.chan_names[index])
+            self.list.SetItem(index, 2, runData.alt_names[index])
+            self.list.SetItem(index, 3, str(runData.gains[index]))
+            self.list.SetItem(index, 4, str(runData.zeros[index]))
+            self.list.SetItem(index, 5, str(runData.eng_units[index]))
+
+        self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE_USEHEADER)
+        self.list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
+        self.list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
+        self.list.SetColumnWidth(3, wx.LIST_AUTOSIZE)
+        self.list.SetColumnWidth(4, wx.LIST_AUTOSIZE)
+        self.list.SetColumnWidth(5, wx.LIST_AUTOSIZE)
+
+
 class ToolsAbout(wx.Dialog):
+    """
+        Creates the About dialog box to give information
+        about the program
+    """
+    
     text = '''
     <html>
     <body bgcolor="ACAA60">

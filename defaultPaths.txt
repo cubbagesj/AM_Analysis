@@ -7,3 +7,6 @@ obcDir c:/Users/CubbageSJ/Documents/test_data
 tdmsDir c:/Users/CubbageSJ/Documents/test_data
 stdDir c:/Users/CubbageSJ/Documents/rcmdata
 fstDir c:/Users/CubbageSJ/Documents/fstdata
+#
+# This entry is for overplots of OBC files and is root of current test data tree
+obcOvrpltDir  c:/Users/CubbageSJ/Documents/test_data/VIRGINIA
