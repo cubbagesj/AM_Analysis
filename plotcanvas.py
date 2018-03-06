@@ -63,7 +63,7 @@ class CanvasFrame(wx.Frame):
                 handles.append(matplotlib.lines.Line2D([], [], color=lines[i][0].get_color(), marker=None))
             leg = self.axes.legend(handles, names, loc='lower left')
             ltext = leg.get_texts()
-            setp(ltext, fontsize='small')
+            matplotlib.pyplot.setp(ltext, fontsize='small')
         else:
             self.axes.set_ylabel(names[0])
 
