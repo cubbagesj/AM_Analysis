@@ -300,7 +300,7 @@ def xfrm(data, dt = 1.0, scale=None, offset=None, xform=None):
         data = data - offset
     if xform >= 10 and xform < 20:
         tau = xform - 10.0
-        tfact = (1 - exp(-dt/tau))
+        tfact = (1 - np.exp(-dt/tau))
         for i in range(len(data)):
             if i > 0:
                 data[i] = data[i-1] + (data[i] - data[i-1])*tfact

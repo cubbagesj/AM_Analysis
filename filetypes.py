@@ -201,7 +201,7 @@ class STDFile:
             
             channel is a column number or column name
         """
-        if type(channel) is int:
+        if type(channel) != str:
             if channel < 0 or channel > self.nchans:
                 return None
             else:
@@ -216,7 +216,7 @@ class STDFile:
             
             channel is a column number or column name
         """
-        if type(channel) is int:
+        if type(channel) != str:
             if channel < 0 or channel > self.nchans:
                 return None
             else:
