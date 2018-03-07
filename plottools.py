@@ -232,24 +232,24 @@ def y_plt(run_list, ychan=0, **kargs):
         xform = kargs.pop('xform', None)
         if scale or offset or xform:
             ydata = xfrm(ydata, runobj.dt, scale, offset, xform)
-        plot(xdata, ydata, label=runobj.filename)
-        hold(True)
+        plt.plot(xdata, ydata, label=runobj.filename)
+        plt.hold(True)
         
     
     # Now decorate it with labels
-    xlabel('nTime (s)')
+    plt.xlabel('nTime (s)')
     
-    ylabel(run_list[0].chan_names[ychan])
+    plt.ylabel(run_list[0].chan_names[ychan])
 
     # Turn on the Grid
-    grid(True)
+    plt.grid(True)
     
     # scale the axis if needed
-    axis(**kargs)
-    legend()
-    show()
+    plt.axis(**kargs)
+    plt.legend()
+    plt.show()
     
-    return gca()
+    return plt.gca()
 
 def my_plt(ax, run_list, ychan=0, **kargs):
     """
@@ -263,8 +263,8 @@ def my_plt(ax, run_list, ychan=0, **kargs):
     """
     # For each run get the data and plot
     
-    axes(ax)
-    cla()
+    plt.axes(ax)
+    plt.cla()
     scale = kargs.pop('scale', None)
     offset = kargs.pop('offset', None)
     xform = kargs.pop('xform', None)
@@ -274,22 +274,22 @@ def my_plt(ax, run_list, ychan=0, **kargs):
         if scale or offset or xform:
             ydata = xfrm(ydata, runobj.dt, scale, offset, xform)
             
-        plot(xdata, ydata, label=runobj.filename[:-4])
-        hold(True)
+        plt.plot(xdata, ydata, label=runobj.filename[:-4])
+        plt.hold(True)
         
    
     # Now decorate it with labels
-    xlabel('nTime (s)')
+    plt.xlabel('nTime (s)')
     
-    ylabel(run_list[0].chan_names[ychan])
+    plt.ylabel(run_list[0].chan_names[ychan])
 
     # Turn on the Grid
-    grid(True)
+    plt.grid(True)
     
     # scale the axis if needed
-    axis(**kargs)
+    plt.axis(**kargs)
     
-    return gca()
+    return plt.gca()
     
 def xfrm(data, dt = 1.0, scale=None, offset=None, xform=None):
     """ Perform transforms on data """
@@ -356,9 +356,9 @@ class PlotPageWrapped:
             This must be called before nxtpage or prevpage
         """
         
-        figure(figsize=(10,12))
-        connect('key_press_event', self.kpress)
-        ioff()
+        plt.figure(figsize=(10,12))
+        plt.connect('key_press_event', self.kpress)
+        plt.ioff()
         self.pltpage()
         
     def nxtpage(self):
@@ -370,7 +370,7 @@ class PlotPageWrapped:
         self.pgpntr += self.perpage
         if (self.pgpntr+self.perpage) > self.numchans:
             self.pgpntr = 0
-        ioff()
+        plt.ioff()
         self.pltpage()
 
     def prevpage(self):
@@ -382,7 +382,7 @@ class PlotPageWrapped:
         self.pgpntr -= self.perpage
         if self.pgpntr < 0:
             self.pgpntr = 0
-        ioff()
+        plt.ioff()
         self.pltpage()
  
     def kpress(self, event):
@@ -394,7 +394,7 @@ class PlotPageWrapped:
         if event.key == 'p':
             self.prevpage()
         if event.key == 'q':
-            close('all')
+            plt.close('all')
             self.Destroy()
     
     def pltpage(self):
@@ -403,10 +403,10 @@ class PlotPageWrapped:
         """
         for i in range(self.perpage):
             if i == 0:
-                ax = subplot(self.perpage, 1, i+1)
+                ax = plt.subplot(self.perpage, 1, i+1)
                 ax0 = ax
             else:
-                ax = subplot(self.perpage, 1, i+1, sharex=ax0)
+                ax = plt.subplot(self.perpage, 1, i+1, sharex=ax0)
             try:
                 # Plot the data
                 ychan = self.ychans[self.pgpntr + i]
@@ -419,32 +419,32 @@ class PlotPageWrapped:
                 
                 # Setup legend
                 if i ==0:
-                    legend(loc='best')
-                    leg = gca().get_legend()
+                    plt.legend(loc='best')
+                    leg = plt.gca().get_legend()
                     ltext = leg.get_texts()
-                    setp(ltext, fontsize='small')
+                    plt.setp(ltext, fontsize='small')
                 
                 # Set the limits
                 if self.xmax or self.xmin:
-                    xlim(self.xmin, self.xmax)
+                    plt.xlim(self.xmin, self.xmax)
                 if yrange[0] or yrange[1]:
-                    ylim(yrange)
+                    plt.ylim(yrange)
                 if self.ychanlabels[self.pgpntr + i] != '':
-                    ylabel(self.ychanlabels[self.pgpntr + i])
+                    plt.ylabel(self.ychanlabels[self.pgpntr + i])
                     
                 # Put the plot.ini filename on the graph
-                figtext(0.03, 0.03, self.plot_title, rotation=90)
+                plt.figtext(0.03, 0.03, self.plot_title, rotation=90)
                 
                 # put run titles
                 yloc = 0.0
                 for run in self.run_list:
-                    figtext(0.15, 0.97-yloc, run.title)
+                    plt.figtext(0.15, 0.97-yloc, run.title)
                     yloc += .015
             except:
-                close('all')
+                plt.close('all')
                 raise
         try:
-            show()
+            plt.show()
         except:
             pass    
     

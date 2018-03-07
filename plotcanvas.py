@@ -14,7 +14,7 @@ from matplotlib.backends.backend_wx import NavigationToolbar2Wx
 from matplotlib.figure import Figure
 
 import wx
-from plottools import *
+from plottools import get_xy
 import numpy as np
 
 
