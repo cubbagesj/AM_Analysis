@@ -22,10 +22,11 @@ import pandas as pd
 from nptdms import TdmsFile  #package for importing tdms file data into python using numpy arrays
 import os.path, time
 from scipy.interpolate import interp1d
-import configparser
 
 # Imports - Local Packages
 from search_file import search_file_walk
+from calfile_new import CalFile
+import dynos_array as dynos
 
 
 class STDFile:
@@ -272,6 +273,33 @@ class STDFile:
                 self.appr_values.append(chan_avg/count)
             except:
                 self.appr_values.append(0.0)
+
+    def mapNavInfo(self):
+        """ Maps the navigation information to standard
+        names for use in calculations
+        """
+        try:
+            self.theta = self.dataEU["'Pitch'"]
+            self.phi = self.dataEU["'Roll'"]
+            self.psi = self.dataEU["'Yaw'"]
+
+            self.p = self.dataEU["'p'"]
+            self.q = self.dataEU["'q'"]
+            self.r = self.dataEU["'r'"]
+
+            # These are the pre-processed adcp data
+            self.u_adcp = self.dataEU["'u_ft/s'"]
+            self.v_adcp = self.dataEU["'v_ft/s'"]
+            self.w_adcp = self.dataEU["'w_ft/s'"]
+
+            # These are the raw adcp data
+            self.u_adcp_raw = self.dataEU["'raw_u_ft/s'"]
+            self.v_adcp_raw = self.dataEU["'raw_v_ft/s'"]
+            self.w_adcp_raw = self.dataEU["'raw_w_ft/s'"]
+
+            self.depth = self.dataEU["'Zsensor'"]
+        except:
+            raise
 
     def compStats(self, start=None, end=None):
         """ This routine will compute the max/min for each data channel
@@ -584,7 +612,7 @@ class OBCFile:
         else:      
             dirname, filename = os.path.split(fullname)
             runfile = os.path.join(dirname, 'run-'+run_number+'.run')
-            calfile = os.path.join(dirname, 'run-'+run_number+'.cal')
+            calfilename = os.path.join(dirname, 'run-'+run_number+'.cal')
 
             self.filename = filename
             self.dirname = dirname
@@ -600,17 +628,19 @@ class OBCFile:
             obcfile = open(fullname, 'r')
             
             # Setup a config file parser
-            calFile = configparser.ConfigParser()
-            calFile.read(calfile)
+            cal = CalFile(calfilename)
+            
+            # Now parse the calfile
+            cal.ParseAll()
 
             # extract the # chans
-            self.nchans = calFile.getint('DEFAULT', 'obc_channels')
+            self.nchans = cal.channels
 
-            # Now build the list of channel names
-
+            # And the list of channel names.  Need to modify the list to avoid duplicates
+            
             chan_names = []
             for channel in range(self.nchans):
-                name = calFile.get('CHAN%d' % channel, 'sys_name')
+                name = cal.sys_names[channel]
                 if chan_names.count(name) == 0:
                     chan_names.append(name)
                 else:
@@ -618,23 +648,49 @@ class OBCFile:
             self.chan_names = chan_names
 
             # Now get the gains
-            self.gains = []
-            self.zeros = []
-            self.alt_names = []
-            self.eng_units = []
-            self.data_pkt_locs = []
-            self.cal_dates = []
-
-            for channel in range(self.nchans):
-                self.gains.append(calFile.getfloat('CHAN%d' % channel, 'gain'))
-                self.zeros.append(calFile.getfloat('CHAN%d' % channel, 'zero'))
-                self.alt_names.append(calFile.get('CHAN%d' % channel, 'alt_name'))
-                self.eng_units.append(calFile.get('CHAN%d' % channel, 'eng_units'))
-                self.cal_dates.append(calFile.get('CHAN%d' % channel, 'cal_date'))
-                self.data_pkt_locs.append(calFile.getint('CHAN%d' % channel, 'data_pkt_loc'))                
+            self.gains = cal.gains
+            self.zeros = cal.zeros
+            self.alt_names = cal.alt_names
+            self.eng_units = cal.eng_units
+            self.data_pkt_locs = cal.data_pkt_locs
+            self.cal_dates = cal.cal_dates
 
             gainss = pd.Series(self.gains, index=chan_names)
             zeross = pd.Series(self.zeros, index=chan_names)
+            
+            # Set up the special gauges
+            self.sp_gauges = {}
+            # Rotor 
+            if cal.hasRotor == 'TRUE':
+                self.sp_gauges['Rotor'] = dynos.Rot_Dyno6(cal.rotor)
+        
+            # Stator
+            if cal.hasStator == 'TRUE':
+                self.sp_gauges['Stator'] = dynos.Dyno6(cal.stator)
+        
+            # SOF1
+            if cal.hasSOF1 == 'TRUE':
+                self.sp_gauges['SOF1'] = dynos.Dyno6(cal.SOF1)
+        
+            # SOF2
+            if cal.hasSOF2 == 'TRUE':
+                self.sp_gauges['SOF2'] = dynos.Dyno6(cal.SOF2)
+        
+            # Kistler - Can only have 1 Kistler gauge at a time
+            if cal.hasKistler == 'TRUE':
+                self.sp_gauges['Kistler'] = dynos.Kistler6(cal.kistler)
+        
+            if cal.hasKistler3 == "TRUE":
+                self.sp_gauges['Kistler'] = dynos.Kistler3(cal.kistler3)
+        
+            if cal.hasDeck == "TRUE":
+                self.sp_gauges['Deck'] = dynos.Deck(cal.deck)
+        
+            # And finally the 6DOF appendage gauges
+            if cal.has6DOF == "TRUE":
+                for i in range(1,cal.num_6DOF+1):
+                    self.sp_gauges['6DOF%d' %i] = dynos.Dyno6(cal.sixDOF[i-1])
+                   
 
             # Finally read in raw data and convert to EU
             data = pd.read_table(obcfile, sep='\s+', header=None, names=chan_names)
@@ -661,6 +717,10 @@ class OBCFile:
 
             # Compute the run stats
             self.run_stats()
+            
+            self.mapNavInfo()
+            
+            self.computeSpecials()
 
     def info(self):
         """ Prints information on the run"""
@@ -712,6 +772,8 @@ class OBCFile:
                 time of standby
                 time of execute
                 normalized time (from exe)
+                
+                Also the values during zeros and the approach values
         """
 
 
@@ -730,18 +792,92 @@ class OBCFile:
         # Create a normalized time i.e. time since execute
         self.ntime = self.time - self.exectime
 
-        # For obc, we don't want to do the initial values for all 364
-        # channels, so just set these to zeros
-        self.init_values = np.zeros((self.nchans), dtype=float)
+        
+        # Get the values during zeros
+        self.avgEUzeros = self.dataEU.query('mode325 == 0x0F13').mean()
+        self.avgRawzeros = self.data.query('mode325 == 0x0F13').mean()
+        # And approach
+        self.avgappr = self.dataEU.query('mode325 == 0x0F33').mean()
+        # Initial values - Legacy
+        self.init_values = self.avgappr.values
+        
 
+    def mapNavInfo(self):
+        """ Maps the navigation information to standard
+        names for use in calculations
+        
+        Change this section to define source of nav data that is used
+        """
+        try:
+            self.theta = self.dataEU.ln200_pitch.values
+            self.phi = self.dataEU.ln200_roll.values
+            self.psi = self.dataEU.ln200_heading.values
+
+            self.p = self.dataEU.ln200_x_ang_rate.values
+            self.q = self.dataEU.ln200_y_ang_rate.values
+            self.r = self.dataEU.ln200_z_ang_rate.values
+
+            self.u_adcp = self.dataEU.adcp_x_vel_btm.values
+            self.v_adcp = self.dataEU.adcp_y_vel_btm.values
+            self.w_adcp = self.dataEU.adcp_z_vel_btm.values
+
+            self.u_adcp_raw = self.dataEU.adcp_x_vel_btm.values
+            self.v_adcp_raw = self.dataEU.adcp_y_vel_btm.values
+            self.w_adcp_raw = self.dataEU.adcp_z_vel_btm.values
+
+            self.depth = self.dataEU.obs_depth2.values
+        except:
+            pass
+    
+    def computeSpecials(self):
+        """
+            This section does the computations for the special gauges
+            like the 6DOF Dynos.  The computed channels are added to the data
+            structure as additional columns
+        """
+        # Pitch
+        sinTH = np.sin(np.radians(self.theta))
+        cosTH = np.cos(np.radians(self.theta))
+
+        #Pitch Zero
+        sinTHZ = np.sin(np.radians(self.avgEUzeros['ln200_pitch']))
+        cosTHZ = np.cos(np.radians(self.avgEUzeros['ln200_pitch']))
+
+        #Roll
+        sinPH = np.sin(np.radians(self.phi))
+        cosPH = np.cos(np.radians(self.phi))
+
+        # Roll zero 
+        sinPHZ = np.sin(np.radians(self.avgEUzeros['ln200_roll']))
+        cosPHZ = np.cos(np.radians(self.avgEUzeros['ln200_roll']))
+
+        bodyAngles = [sinTH, cosTH, sinPH, cosPH, sinTHZ, cosTHZ, sinPHZ, cosPHZ]
+
+        for gauge in self.sp_gauges.keys():
+            if gauge == 'Stator':
+                # Compute the special gauges
+                self.sp_gauges[gauge].compute(self.data, self.gains, bodyAngles, self.avgRawzeros, 10 )
+                # Then append to the EU dataframe
+                self.dataEU[gauge+'_CFx'] = self.sp_gauges[gauge].CFx
+                self.dataEU[gauge+'_CFy'] = self.sp_gauges[gauge].CFy
+                self.dataEU[gauge+'_CFz'] = self.sp_gauges[gauge].CFz
+                self.dataEU[gauge+'_CMx'] = self.sp_gauges[gauge].CMx
+                self.dataEU[gauge+'_CMy'] = self.sp_gauges[gauge].CMy
+                self.dataEU[gauge+'_CMZ'] = self.sp_gauges[gauge].CMz
+            # Update the channel names and number
+            self.chan_names = self.dataEU.columns.values.tolist()
+            self.nchans = len(self.chan_names)
+                            
+                          
 
 
 if __name__ == "__main__":
 
-    test = OBCFile('11024')
+    test = OBCFile('11097')
     #test = STDFile('10-1242.std', 'known')
-    test.info()
-    #test.run_stats()
-    #dummy = test.getEUData(12)
+#    test.info()
+#    test.run_stats()
+#    print(test.getEUData(12))
+    #print(test.theta)
     
     #test.EU_file()

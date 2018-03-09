@@ -40,13 +40,12 @@
 #----------------------------------------------------
 
 import os, sys, time
-import cfgparse
 from calfile_new import CalFile
-from dynos_new import *
+import dynos_new as dynos
 import wx
 import utm
 
-from math import * 
+import math  
 
 from filetypes import STDFile
 
@@ -175,34 +174,34 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
     sp_gauges = {}
     # Rotor 
     if cal.hasRotor == 'TRUE':
-        sp_gauges['Rotor'] = Rot_Dyno6(cal.rotor)
+        sp_gauges['Rotor'] = dynos.Rot_Dyno6(cal.rotor)
 
     # Stator
     if cal.hasStator == 'TRUE':
-        sp_gauges['Stator'] = Dyno6(cal.stator)
+        sp_gauges['Stator'] = dynos.Dyno6(cal.stator)
 
     # SOF1
     if cal.hasSOF1 == 'TRUE':
-        sp_gauges['SOF1'] = Dyno6(cal.SOF1)
+        sp_gauges['SOF1'] = dynos.Dyno6(cal.SOF1)
 
     # SOF2
     if cal.hasSOF2 == 'TRUE':
-        sp_gauges['SOF2'] = Dyno6(cal.SOF2)
+        sp_gauges['SOF2'] = dynos.Dyno6(cal.SOF2)
 
     # Kistler - Can only have 1 Kistler gauge at a time
     if cal.hasKistler == 'TRUE':
-        sp_gauges['Kistler'] = Kistler6(cal.kistler)
+        sp_gauges['Kistler'] = dynos.Kistler6(cal.kistler)
 
     if cal.hasKistler3 == "TRUE":
-        sp_gauges['Kistler'] = Kistler3(cal.kistler3)
+        sp_gauges['Kistler'] = dynos.Kistler3(cal.kistler3)
 
     if cal.hasDeck == "TRUE":
-        sp_gauges['Deck'] = Deck(cal.deck)
+        sp_gauges['Deck'] = dynos.Deck(cal.deck)
 
     # And finally the 6DOF appendage gauges
     if cal.has6DOF == "TRUE":
         for i in range(1,cal.num_6DOF+1):
-            sp_gauges['6DOF%d' %i] = Dyno6(cal.sixDOF[i-1])
+            sp_gauges['6DOF%d' %i] = dynos.Dyno6(cal.sixDOF[i-1])
 
     logfile.write('\nSpecial Gages:')
     for gage in sp_gauges.keys():
@@ -491,20 +490,20 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
             # the calculated channels
 
             # Pitch
-            sinTH = sin(radians(EUdata[8]))
-            cosTH = cos(radians(EUdata[8]))
+            sinTH = math.sin(math.radians(EUdata[8]))
+            cosTH = math.cos(math.radians(EUdata[8]))
 
             #Pitch Zero
-            sinTHZ = sin(radians(EUzero[8]))
-            cosTHZ = cos(radians(EUzero[8]))
+            sinTHZ = math.sin(math.radians(EUzero[8]))
+            cosTHZ = math.cos(math.radians(EUzero[8]))
 
             #Roll
-            sinPH = sin(radians(EUdata[7]))
-            cosPH = cos(radians(EUdata[7]))
+            sinPH = math.sin(math.radians(EUdata[7]))
+            cosPH = math.cos(math.radians(EUdata[7]))
 
             # Roll zero 
-            sinPHZ = sin(radians(EUzero[7]))
-            cosPHZ = cos(radians(EUzero[7]))
+            sinPHZ = math.sin(math.radians(EUzero[7]))
+            cosPHZ = math.cos(math.radians(EUzero[7]))
 
             bodyAngles = [sinTH, cosTH, sinPH, cosPH, sinTHZ, cosTHZ, sinPHZ, cosPHZ]
 
@@ -672,17 +671,17 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     EUdata[i] *= .083333
 
                 elif mrg_chans[i] == 821:           # Alpha
-                    EUdata[i] = degrees(atan2(EUdata[2],EUdata[0]))
+                    EUdata[i] = math.degrees(math.atan2(EUdata[2],EUdata[0]))
                 elif mrg_chans[i] == 822:           # Beta
                     try:
-                        EUdata[i] = -degrees(asin(EUdata[1]/EUdata[big_u_chan]))
+                        EUdata[i] = -math.degrees(math.asin(EUdata[1]/EUdata[big_u_chan]))
                     except:
                         EUdata[i] = 0
                 elif mrg_chans[i] == 823:           # Big U from ADCP
-                    EUdata[i] = sqrt(EUdata[0]**2 + EUdata[1]**2 + EUdata[2]**2)
+                    EUdata[i] = math.sqrt(EUdata[0]**2 + EUdata[1]**2 + EUdata[2]**2)
 
                 elif mrg_chans[i] == 824:           # Big U from ADCP in knots
-                    EUdata[i] = sqrt(EUdata[0]**2 + EUdata[1]**2 + EUdata[2]**2)
+                    EUdata[i] = math.sqrt(EUdata[0]**2 + EUdata[1]**2 + EUdata[2]**2)
                     EUdata[i] /= 1.6878
 
                 elif mrg_chans[i] == 825:    # RPM flip from obs_rpm and rpm cmd
@@ -1104,17 +1103,17 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
         t4 = stdrunxpos[stdrun.execrec-50]
         if t3 - t4 != 0:
             test = (stdrunypos[stdrun.execrec]-stdrunypos[stdrun.execrec-50])/(stdrunxpos[stdrun.execrec] - stdrunxpos[stdrun.execrec-50])
-            stdruntrack = arctan(test)
+            stdruntrack = math.arctan(test)
         else:
             stdruntrack = 0
        
         if stdruntrack <=0:
-            stdruntrack = stdruntrack + 2*pi
+            stdruntrack = stdruntrack + 2*math.pi
         else:
-            stdruntrack = stdruntrack + pi
+            stdruntrack = stdruntrack + math.pi
     
-        stdrunxposzero = stdrunxpos[stdrun.execrec]*cos(stdruntrack) + stdrunypos[stdrun.execrec]*sin(stdruntrack)
-        stdrunyposzero = -stdrunxpos[stdrun.execrec]*sin(stdruntrack) + stdrunypos[stdrun.execrec]*cos(stdruntrack)
+        stdrunxposzero = stdrunxpos[stdrun.execrec]*math.cos(stdruntrack) + stdrunypos[stdrun.execrec]*math.sin(stdruntrack)
+        stdrunyposzero = -stdrunxpos[stdrun.execrec]*math.sin(stdruntrack) + stdrunypos[stdrun.execrec]*math.cos(stdruntrack)
         
         # Got needed info, now process
     
@@ -1134,8 +1133,8 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
             for channel in line.split():
                 data.append(float(channel))
     
-            rot_x = data[20]*cos(stdruntrack) + data[21]*sin(stdruntrack)
-            rot_y = -data[20]*sin(stdruntrack) + data[21]*cos(stdruntrack)
+            rot_x = data[20]*math.cos(stdruntrack) + data[21]*math.sin(stdruntrack)
+            rot_y = -data[20]*math.sin(stdruntrack) + data[21]*math.cos(stdruntrack)
     
             data[20] = rot_x - stdrunxposzero
             data[21] = rot_y - stdrunyposzero
@@ -1156,7 +1155,4 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
 
 if __name__ == "__main__":
     # Test for merge
-    import wx
-    app=wx.PySimpleApp()
-    MergeRun(1126, 'foobar')
-    #MergeRun(2520, 'foobar')
+    pass

@@ -1,6 +1,6 @@
 # calfile_new.py
 #
-# Copyright (C) 2006-2007 - Samuel J. Cubbage
+# Copyright (C) 2006-20018 - Samuel J. Cubbage
 #
 #  This program is part of the Autonomous Model Software Tools Package
 #
@@ -30,7 +30,8 @@ This class makes use of the cfgparse module and the Numeric module
 """
 
 import cfgparse, os
-from numpy import *
+import numpy as np
+
 
 class CalFile:
     """ This class implements a calibration file object that is used to
@@ -118,6 +119,8 @@ class CalFile:
                                  ('Mx', 'int'),
                                  ('My', 'int'),
                                  ('Mz', 'int'),
+                                 ('weight', 'float'),
+                                 ('arm', 'float'),
                                  ('angle', 'float'),
                                  ('int_row1', 'string'),
                                  ('int_row2', 'string'),
@@ -326,7 +329,7 @@ class CalFile:
                 for col in cols:
                     row.append(float(col))
                 rows.append(row)
-            gauge['Int_Matf'] = array(rows, dtype=float)
+            gauge['Int_Matf'] = np.array(rows, dtype=float)
 
             rows = []        
             for i in range(1,7):
@@ -337,7 +340,7 @@ class CalFile:
                     row.append(float(col))
                 rows.append(row)
 
-            gauge['Orient_Matf'] = array(rows, dtype=float)
+            gauge['Orient_Matf'] = np.array(rows, dtype=float)
 
             rows= []
             for i in range(1,7):
@@ -347,7 +350,7 @@ class CalFile:
                 for col in cols:
                     row.append(float(col))
                 rows.append(row)
-            gauge['Int_Mata'] = array(rows, dtype=float)
+            gauge['Int_Mata'] = np.array(rows, dtype=float)
 
             rows = []        
             for i in range(1,7):
@@ -358,7 +361,7 @@ class CalFile:
                     row.append(float(col))
                 rows.append(row)
 
-            gauge['Orient_Mata'] = array(rows, dtype=float)
+            gauge['Orient_Mata'] = np.array(rows, dtype=float)
 
         else:
             for i in range(1,7):
@@ -369,7 +372,7 @@ class CalFile:
                     row.append(float(col))
                 rows.append(row)
 
-            gauge['Int_Mat'] = array(rows, dtype=float)
+            gauge['Int_Mat'] = np.array(rows, dtype=float)
 
             rows = []
             for i in range(1,7):
@@ -380,7 +383,7 @@ class CalFile:
                     row.append(float(col))
                 rows.append(row)
 
-            gauge['Orient_Mat'] = array(rows, dtype=float)
+            gauge['Orient_Mat'] = np.array(rows, dtype=float)
 
         return gauge    
 
@@ -390,7 +393,5 @@ if __name__ == '__main__':
     print("Channels:", cfile.channels)
     print("Gains:", cfile.gains)
     print("Rotor Fx:", cfile.rotor['Fx'])
-    print("Deck:", cfile.deck['Orient_Mata'])
-    print("Deck:", cfile.deck['Int_Mata'])
-    print("Deck:", cfile.deck['Orient_Matf'])
-    print("Deck:", cfile.deck['Int_Matf'])
+    print("Rotor:", cfile.rotor['Orient_Mat'])
+    print("Rotor:", cfile.rotor['Int_Mat'])
