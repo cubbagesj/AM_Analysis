@@ -854,19 +854,20 @@ class OBCFile:
         bodyAngles = [sinTH, cosTH, sinPH, cosPH, sinTHZ, cosTHZ, sinPHZ, cosPHZ]
 
         for gauge in self.sp_gauges.keys():
-            # Compute the special gauges
-            self.sp_gauges[gauge].compute(self.data, self.gains, bodyAngles, self.avgRawzeros, 10 )
-            # Then append to the EU dataframe
-            self.dataEU[gauge+'_CFx'] = self.sp_gauges[gauge].CFx
-            self.dataEU[gauge+'_CFy'] = self.sp_gauges[gauge].CFy
-            self.dataEU[gauge+'_CFz'] = self.sp_gauges[gauge].CFz
-            self.dataEU[gauge+'_CMx'] = self.sp_gauges[gauge].CMx
-            self.dataEU[gauge+'_CMy'] = self.sp_gauges[gauge].CMy
-            self.dataEU[gauge+'_CMZ'] = self.sp_gauges[gauge].CMz
-            # Update the channel names and number
-            self.chan_names = self.dataEU.columns.values.tolist()
-            self.nchans = len(self.chan_names)
-                            
+            # Compute the special gauges - For now just rotor/stator
+            if (gauge == 'Stator') or (gauge == 'Rotor'):
+                self.sp_gauges[gauge].compute(self.data, self.gains, bodyAngles, self.avgRawzeros, 10 )
+                # Then append to the EU dataframe
+                self.dataEU[gauge+'_CFx'] = self.sp_gauges[gauge].CFx
+                self.dataEU[gauge+'_CFy'] = self.sp_gauges[gauge].CFy
+                self.dataEU[gauge+'_CFz'] = self.sp_gauges[gauge].CFz
+                self.dataEU[gauge+'_CMx'] = self.sp_gauges[gauge].CMx
+                self.dataEU[gauge+'_CMy'] = self.sp_gauges[gauge].CMy
+                self.dataEU[gauge+'_CMZ'] = self.sp_gauges[gauge].CMz
+                # Update the channel names and number
+                self.chan_names = self.dataEU.columns.values.tolist()
+                self.nchans = len(self.chan_names)
+                                
                           
 
 
