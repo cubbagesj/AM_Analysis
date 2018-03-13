@@ -681,7 +681,7 @@ class OBCFile:
                 self.sp_gauges['Kistler'] = dynos.Kistler6(cal.kistler)
         
             if cal.hasKistler3 == "TRUE":
-                self.sp_gauges['Kistler'] = dynos.Kistler3(cal.kistler3)
+                self.sp_gauges['Kistler3'] = dynos.Kistler3(cal.kistler3)
         
             if cal.hasDeck == "TRUE":
                 self.sp_gauges['Deck'] = dynos.Deck(cal.deck)
@@ -855,7 +855,7 @@ class OBCFile:
 
         for gauge in self.sp_gauges.keys():
             # Compute the special gauges - For now just rotor/stator
-            if (gauge == 'Stator') or (gauge == 'Rotor'):
+            if (gauge != 'Deck'):
                 self.sp_gauges[gauge].compute(self.data, self.gains, bodyAngles, self.avgRawzeros, 10 )
                 # Then append to the EU dataframe
                 self.dataEU[gauge+'_CFx'] = self.sp_gauges[gauge].CFx
@@ -873,7 +873,7 @@ class OBCFile:
 
 if __name__ == "__main__":
 
-    test = OBCFile('11097')
+    test = OBCFile('12994')
     #test = STDFile('10-1242.std', 'known')
 #    test.info()
 #    test.run_stats()
