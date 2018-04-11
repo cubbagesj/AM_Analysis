@@ -644,11 +644,14 @@ class CalFrame(wx.Frame):
 
         for item in range(runData.nchans):
             index = self.list.InsertItem(item, str(item))
-            self.list.SetItem(index, 1, runData.chan_names[index])
-            self.list.SetItem(index, 2, runData.alt_names[index])
-            self.list.SetItem(index, 3, str(runData.gains[index]))
-            self.list.SetItem(index, 4, str(runData.zeros[index]))
-            self.list.SetItem(index, 5, str(runData.eng_units[index]))
+            try:
+                self.list.SetItem(index, 1, runData.chan_names[index])
+                self.list.SetItem(index, 2, runData.alt_names[index])
+                self.list.SetItem(index, 3, str(runData.gains[index]))
+                self.list.SetItem(index, 4, str(runData.zeros[index]))
+                self.list.SetItem(index, 5, str(runData.eng_units[index]))
+            except:
+                pass
 
         self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE_USEHEADER)
         self.list.SetColumnWidth(1, wx.LIST_AUTOSIZE)

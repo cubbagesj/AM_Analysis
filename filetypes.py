@@ -111,11 +111,15 @@ class STDFile:
 
                 # Set boat flag to default. This gets updated by user at runtime
                 self.boat = 'default'
+                
+                # Need to clean up names before reading in
+                rawnames = f.readline().strip()
+                channames = rawnames.lower().replace("' '", "''").replace(" ","_").replace("''","' '").split()
 
                 f.close()
 
                 # Now use pandas to get the data and channel names
-                self.data = pd.read_table(fullname, sep='\s+', skiprows=4)
+                self.data = pd.read_table(fullname, sep='\s+', skiprows=5, names=channames)
                 self.chan_names = self.data.columns
 
                 # Time is found in column 26
