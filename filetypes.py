@@ -123,7 +123,7 @@ class STDFile:
                 self.chan_names = self.data.columns
 
                 # Time is found in column 26
-                self.time = self.data["'time'"]
+                self.time = self.data.iloc[:,26]
             else:
                 # Block
                 self.title = self.filetype
