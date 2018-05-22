@@ -3,7 +3,7 @@
 # These are the deafult search paths used by the program.
 # They can be changed from the menu in the program
 #
-obcDir c:/Users/CubbageSJ/Documents/test_data
+obcDir /home/pi/Documents/OBC_Data
 tdmsDir c:/Users/CubbageSJ/Documents/test_data
 stdDir c:/Users/CubbageSJ/Documents/rcmdata
 fstDir c:/Users/CubbageSJ/Documents/fstdata
