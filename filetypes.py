@@ -350,19 +350,20 @@ class TDMSFile:
         """ Initialize the run, find and read in the data.
             The search_path defults to only the local directory.
         """
-
-        # Attempt to find the run on the path, return NONE if not found
-        fullname = search_file_walk('run-'+run_number+'.tdms', search_path)
         
-        if not fullname:
-            fullname = search_file_walk('run_'+run_number+'.tdms', search_path)
-
+        # Check if we know the path already
+        if search_path == 'known':
+            fullname = run_number
+        else:
+            # Attempt to find the run on the path, return NONE if not found
+            fullname = search_file_walk(str('run-'+run_number+'.tdms'), search_path)
+        
         if not fullname:
             if not search_path == 'c:\AM_data':
                 if not os.path.exists(search_path):
                     #if the file does not exist and the search path does not exist
                     #check the default local directory
-                    fullname = search_file_walk('run-'+run_number+'.obc', 'c:\AM_data')
+                    fullname = search_file_walk('run-'+run_number+'.tdms', 'c:\AM_data')
         
         if not fullname:
             self.filename = ''
@@ -408,13 +409,11 @@ class TDMSFile:
             except:
                 self.title = 'No Run Type Property Defined' 
                 
-            # Cals and channel names are all stored in the tdm_file_obj channel objects   
+            # Cals and channel names are all stored in the tdms_file_obj channel objects   
             try:
                 #  Set up some variables to hold the values
                 self.nchans = len(self.tdms_file_obj.group_channels('DATA'))
                 self.cals = {}  #Dictionary to hold calibration info for each channel
-                #self.gains = []
-                #self.zeros = []
                 self.alt_names = []
                 for i in range(self.nchans):
                     self.alt_names.append(str(self.tdms_file_obj.group_channels('DATA')[i].path.split("'")[3]))
@@ -473,17 +472,19 @@ class TDMSFile:
             except:
                 self.nchans = 0
                 self.cals = {}
-                #self.gains = ones((self.nchans), dtype=float)
-                #self.zeros = zeros((self.nchans), dtype=float)
                 print('we got an error')
                 raise
             
             #read in all the data from the tmds file    
-            self.data = self.tdms_file_obj.channel_data('DATA', self.chan_names[0])
-            self.dataEU = self.cals[self.chan_names[0]](self.tdms_file_obj.channel_data('DATA', self.chan_names[0]))
+            data = self.tdms_file_obj.channel_data('DATA', self.chan_names[0])
+            dataEU = self.cals[self.chan_names[0]](self.tdms_file_obj.channel_data('DATA', self.chan_names[0]))
             for i in range(1, self.nchans):
-                self.data = np.column_stack((self.data, self.tdms_file_obj.channel_data('DATA', self.chan_names[i])))
-                self.dataEU = np.column_stack((self.dataEU, self.cals[self.chan_names[i]](self.tdms_file_obj.channel_data('DATA', self.chan_names[i]))))
+                data = np.column_stack((data, self.tdms_file_obj.channel_data('DATA', self.chan_names[i])))
+                dataEU = np.column_stack((dataEU, self.cals[self.chan_names[i]](self.tdms_file_obj.channel_data('DATA', self.chan_names[i]))))
+            
+            self.data = pd.DataFrame(data, columns=self.chan_names)
+            self.dataEU = pd.DataFrame(dataEU, columns=self.chan_names)
+            
 
     def info(self):
         """ Prints information on the run"""
@@ -508,24 +509,28 @@ class TDMSFile:
             in engineering units - Model Scale Units
         """
         
-        if channel < 0 or channel > self.nchans:
-            return None
+        if type(channel) != str:
+            if channel < 0 or channel > self.nchans:
+                return None
+            else:
+                return self.dataEU.iloc[:,channel]
         else:
-            channame = self.chan_names[channel]
-            col_array = self.tdms_file_obj.channel_data('DATA', channame)
-            return self.cals[channame](col_array)
+            return self.dataEU.loc[:,channel]
+
         
     def getRAWData(self, channel):
         """ Returns an array containing the request channel of data
             in raw units (no conversion)
         """
+
+        if type(channel) != str:
+            if channel < 0 or channel > self.nchans:
+                return None
+            else:
+                return self.data.iloc[:,channel]
+        else: 
+            return self.data.loc[:,channel]
         
-        if channel < 0 or channel > self.nchans:
-            return None
-        else:
-            channame = self.chan_names[channel]
-            col_array = self.tdms_file_obj.channel_data('DATA', channame)
-            return col_array
             
     #AM-tdms files post 2016/02/23 will have the script_mode channel, prior versions will not
     # therefore all stats will be zero for earlier tdms files  
@@ -564,7 +569,7 @@ class TDMSFile:
 	# First build a header with the channel titles in one line
         headerstr = ', '.join(self.chan_names)
         # now build a numpy array with all the EU data
-        alldata = self.cals[chan_names[0]](self.tdms_file_obj.channel_data('DATA', self.chan_names[0]))
+        alldata = self.cals[self.chan_names[0]](self.tdms_file_obj.channel_data('DATA', self.chan_names[0]))
         for i in range(1, self.nchans):
             alldata = np.column_stack((alldata, self.gains[i]*(self.tdms_file_obj.channel_data('DATA', self.chan_names[i]))+self.zeros[i]))
 	# Now output to the EU file
@@ -949,7 +954,7 @@ class OBCFile:
 
 if __name__ == "__main__":
 
-    test = OBCFile('13015')
+    test = TDMSFile('2050')
     #test = STDFile('10-1242.std', 'known')
 #    test.info()
 #    test.run_stats()
