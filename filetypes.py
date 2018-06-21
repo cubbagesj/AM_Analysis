@@ -22,6 +22,7 @@ import pandas as pd
 from nptdms import TdmsFile  #package for importing tdms file data into python using numpy arrays
 import os.path, time
 from scipy.interpolate import interp1d
+import struct
 
 # Imports - Local Packages
 from search_file import search_file_walk
@@ -617,6 +618,7 @@ class OBCFile:
             dirname, filename = os.path.split(fullname)
             runfile = os.path.join(dirname, 'run-'+run_number+'.run')
             calfilename = os.path.join(dirname, 'run-'+run_number+'.cal')
+            
 
             self.filename = filename
             self.dirname = dirname
@@ -722,9 +724,16 @@ class OBCFile:
             # Compute the run stats
             self.run_stats()
             
+            # Map the navigation data 
             self.mapNavInfo()
             
+            # Compute the 6DOF dynos
             self.computeSpecials()
+            
+            # Read the BMS packet
+            self.readBMS()
+            
+            
 
     def info(self):
         """ Prints information on the run"""
@@ -758,7 +767,7 @@ class OBCFile:
             return self.dataEU.loc[:,channel]
 
     def getRAWData(self, channel):
-        """ Returns an array containitestng the request channel of data
+        """ Returns an array containing the request channel of data
             in raw units (no conversion)
             channel is a column number or column name
         """
@@ -871,13 +880,76 @@ class OBCFile:
                 # Update the channel names and number
                 self.chan_names = self.dataEU.columns.values.tolist()
                 self.nchans = len(self.chan_names)
-                                
-                          
-
+    
+    def readBMS(self):
+        """
+            This routine reads the BMS packet (if present) and adds the
+            data to the dataEU array so that it can be plotted
+        """
+        # This could go bad and it is optional so wrap it all in a try
+        try:
+            # BMS Pkt format - 208 bytes It has both big and little endian
+            # numbers so need to read it in parts
+            bmsFmtA = '<71B2h8B2h8Bh3Bh5B2h3B2h'
+            bmsFmtB = '>36h6B6h'
+            
+            # Read in channel names and scale factors
+            
+            self.bmsNames = []
+            self.bmsGains = []
+            with open('bmsNameMap.txt', mode='r') as file:
+                NameMap = file.read().splitlines()
+            for line in NameMap:
+                name, gain = line.split(',')
+                self.bmsNames.append(name)
+                self.bmsGains.append(float(gain))
+            
+            bmsfilename = os.path.join(self.dirname, self.basename+'.bms')
+            # First open and read in the bms file
+            with open(bmsfilename, mode='rb') as file:
+                bmsFile = file.read()
+            
+            # Now parse it
+            index = 0
+            bmsArray=[]
+            bmsRow=[]
+            for n in range(int(len(bmsFile)/208)):
+                rowA = struct.unpack_from(bmsFmtA, bmsFile, offset=index)
+                index += struct.calcsize(bmsFmtA)
+                for item in rowA:
+                    bmsRow.append(item)
+                
+                rowB = struct.unpack_from(bmsFmtB, bmsFile, offset=index)
+                index += struct.calcsize(bmsFmtB)
+                for item in rowB:
+                    bmsRow.append(item)
+                
+                # Now pad to 100 Hz
+                for n in range(99):
+                    bmsArray.append(bmsRow)
+                bmsRow=[]
+                
+            self.bmsData = pd.DataFrame(np.array(bmsArray), columns=self.bmsNames) * self.bmsGains
+            self.dataEU = pd.concat([self.dataEU, self.bmsData], axis=1)
+            # Clean up the na values caused by the concat
+            self.dataEU.fillna(0, inplace=True)
+            
+            # Update the channel names and number
+            self.chan_names = self.dataEU.columns.values.tolist()
+            self.nchans = len(self.chan_names)
+            
+            # Recreate nTime because of BMS data mismatch
+            self.time = np.arange(0, len(self.dataEU), dtype=float)
+            self.time = self.time * 0.01
+            self.ntime = self.time - self.exectime
+        except:
+            pass
+            
+                                                                     
 
 if __name__ == "__main__":
 
-    test = OBCFile('12994')
+    test = OBCFile('13015')
     #test = STDFile('10-1242.std', 'known')
 #    test.info()
 #    test.run_stats()
