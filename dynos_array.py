@@ -794,4 +794,3 @@ class Rot_Dyno6:
         self.CMx = bodyMx
         self.CMy = bodyMy + self.weight * self.arm * cosPH * cosTH
         self.CMz = bodyMz - self.weight * self.arm * sinPH * cosTH
-
