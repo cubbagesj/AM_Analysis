@@ -193,7 +193,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
         sp_gauges['Kistler'] = dynos.Kistler6(cal.kistler)
 
     if cal.hasKistler3 == "TRUE":
-        sp_gauges['Kistler'] = dynos.Kistler3(cal.kistler3)
+        sp_gauges['Kistler3'] = dynos.Kistler3(cal.kistler3)
 
     if cal.hasDeck == "TRUE":
         sp_gauges['Deck'] = dynos.Deck(cal.deck)
