@@ -512,6 +512,8 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                 sp_gauges[gauge].compute(rawdata, cal.gains, bodyAngles, cb_id)
 
             # Now loop for the special channels
+            # All Channels above 800 are computed channels for special gauges
+            
             for i in range(len(mrg_names)):
                 if mrg_chans[i] == 800:            # Empty channel
                     EUdata[i] = 0
@@ -561,6 +563,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
 #                    if inujump:
 #                        EUdata[i] -= uoffset
                     EUdata[i] -= ((EUdata[4]/57.296)*ADCPLoc[2])
+                    
                 elif mrg_chans[i] == 805:           #Filtered and Corr ADCP v
                     if abs(EUdata[v_chan]) > 15:
                         EUdata[i] = Vprev
@@ -588,6 +591,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
 #                    if invjump:
 #                        EUdata[i] -= voffset
                     EUdata[i] += (((EUdata[3]/57.296)*ADCPLoc[2])-((EUdata[5]/57.296)*ADCPLoc[0]))
+                    
                 elif mrg_chans[i] == 806:           #Filtered and Corr ADCP w
                     if abs(EUdata[w_chan]) > 15:
                         EUdata[i] = Wprev
@@ -753,6 +757,104 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     EUdata[i] *= 1.0284
                     EUdata[i] *= .083333
 
+                elif mrg_chans[i] == 850 and 'Kistler' in sp_gauges:         # Computed Kistler Fx
+                    EUdata[i] = sp_gauges['Kistler'].CFx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 851 and 'Kistler' in sp_gauges:         # Computed Kistler Fy
+                    EUdata[i] = sp_gauges['Kistler'].CFy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 852 and 'Kistler' in sp_gauges:         # Computed Kistler Fz
+                    EUdata[i] = sp_gauges['Kistler'].CFz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 853 and 'Kistler' in sp_gauges:         # Computed Kistler Mx
+                    EUdata[i] = sp_gauges['Kistler'].CMx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
+                elif mrg_chans[i] == 854 and 'Kistler' in sp_gauges:         # Computed Kistler My
+                    EUdata[i] = sp_gauges['Kistler'].CMy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
+                elif mrg_chans[i] == 855 and 'Kistler' in sp_gauges:         # Computed Kistler Mz
+                    EUdata[i] = sp_gauges['Kistler'].CMz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
+                elif mrg_chans[i] == 860 and '6DOF1' in sp_gauges:         # Computed 6DOF1 Fx
+                    EUdata[i] = sp_gauges['6DOF1'].CFx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 861 and '6DOF1' in sp_gauges:         # Computed 6DOF1 Fy
+                    EUdata[i] = sp_gauges['6DOF1'].CFy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 862 and '6DOF1' in sp_gauges:         # Computed 6DOF1 Fz
+                    EUdata[i] = sp_gauges['6DOF1'].CFz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 863 and '6DOF1' in sp_gauges:         # Computed 6DOF1 Mx
+                    EUdata[i] = sp_gauges['6DOF1'].CMx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
+                elif mrg_chans[i] == 864 and '6DOF1' in sp_gauges:         # Computed 6DOF1 My
+                    EUdata[i] = sp_gauges['6DOF1'].CMy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
+                elif mrg_chans[i] == 865 and '6DOF1' in sp_gauges:         # Computed 6DOF1 Mz
+                    EUdata[i] = sp_gauges['6DOF1'].CMz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
+
+                elif mrg_chans[i] == 870 and '6DOF2' in sp_gauges:         # Computed 6DOF2 Fx
+                    EUdata[i] = sp_gauges['6DOF2'].CFx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 871 and '6DOF2' in sp_gauges:         # Computed 6DOF2 Fy
+                    EUdata[i] = sp_gauges['6DOF2'].CFy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 872 and '6DOF2' in sp_gauges:         # Computed 6DOF2 Fz
+                    EUdata[i] = sp_gauges['6DOF2'].CFz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 873 and '6DOF2' in sp_gauges:         # Computed 6DOF2 Mx
+                    EUdata[i] = sp_gauges['6DOF2'].CMx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
+                elif mrg_chans[i] == 874 and '6DOF2' in sp_gauges:         # Computed 6DOF2 My
+                    EUdata[i] = sp_gauges['6DOF2'].CMy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
+                elif mrg_chans[i] == 875 and '6DOF2' in sp_gauges:         # Computed 6DOF2 Mz
+                    EUdata[i] = sp_gauges['6DOF2'].CMz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
+
+                elif mrg_chans[i] == 880:                                   #Equiv Stern
+                    EUdata[i] = (EUdata[32]+EUdata[33]+EUdata[34]+EUdata[35])/4.0
+                elif mrg_chans[i] == 881:                                   #Equiv Rudder
+                    EUdata[i] = (-EUdata[32]+EUdata[33]-EUdata[34]+EUdata[35])/4.0
+                elif mrg_chans[i] == 890:                                   #Stbd RPM Flip
+                    EUdata[i] = (rawdata[stbd_rpm_chan]-cal.zeros[stbd_rpm_chan])*cal.gains[stbd_rpm_chan]
+                    if rawdata[stbd_rpm_com] < -50:
+                        EUdata[i] *= -1
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                elif mrg_chans[i] == 891:                                   #Port RPM Flip
+                    EUdata[i] = (rawdata[port_rpm_chan]-cal.zeros[port_rpm_chan])*cal.gains[port_rpm_chan]
+                    if rawdata[port_rpm_com] < -50:
+                        EUdata[i] *= -1
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+              
                 elif mrg_chans[i] == 890 and '6DOF3' in sp_gauges:         # Computed 6DOF3 Fx
                     EUdata[i] = sp_gauges['6DOF3'].CFx
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
@@ -948,106 +1050,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     EUdata[i] *= pow(c_lambda, mrg_scale[i])
                     EUdata[i] *= 1.0284
                     EUdata[i] *= .083333
-
-
-                elif mrg_chans[i] == 850 and 'Kistler' in sp_gauges:         # Computed Kistler Fx
-                    EUdata[i] = sp_gauges['Kistler'].CFx
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 851 and 'Kistler' in sp_gauges:         # Computed Kistler Fy
-                    EUdata[i] = sp_gauges['Kistler'].CFy
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 852 and 'Kistler' in sp_gauges:         # Computed Kistler Fz
-                    EUdata[i] = sp_gauges['Kistler'].CFz
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 853 and 'Kistler' in sp_gauges:         # Computed Kistler Mx
-                    EUdata[i] = sp_gauges['Kistler'].CMx
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                    EUdata[i] *= .083333
-                elif mrg_chans[i] == 854 and 'Kistler' in sp_gauges:         # Computed Kistler My
-                    EUdata[i] = sp_gauges['Kistler'].CMy
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                    EUdata[i] *= .083333
-                elif mrg_chans[i] == 855 and 'Kistler' in sp_gauges:         # Computed Kistler Mz
-                    EUdata[i] = sp_gauges['Kistler'].CMz
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                    EUdata[i] *= .083333
-
-                elif mrg_chans[i] == 860 and '6DOF1' in sp_gauges:         # Computed 6DOF1 Fx
-                    EUdata[i] = sp_gauges['6DOF1'].CFx
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 861 and '6DOF1' in sp_gauges:         # Computed 6DOF1 Fy
-                    EUdata[i] = sp_gauges['6DOF1'].CFy
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 862 and '6DOF1' in sp_gauges:         # Computed 6DOF1 Fz
-                    EUdata[i] = sp_gauges['6DOF1'].CFz
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 863 and '6DOF1' in sp_gauges:         # Computed 6DOF1 Mx
-                    EUdata[i] = sp_gauges['6DOF1'].CMx
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                    EUdata[i] *= .083333
-                elif mrg_chans[i] == 864 and '6DOF1' in sp_gauges:         # Computed 6DOF1 My
-                    EUdata[i] = sp_gauges['6DOF1'].CMy
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                    EUdata[i] *= .083333
-                elif mrg_chans[i] == 865 and '6DOF1' in sp_gauges:         # Computed 6DOF1 Mz
-                    EUdata[i] = sp_gauges['6DOF1'].CMz
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                    EUdata[i] *= .083333
-
-                elif mrg_chans[i] == 870 and '6DOF2' in sp_gauges:         # Computed 6DOF2 Fx
-                    EUdata[i] = sp_gauges['6DOF2'].CFx
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 871 and '6DOF2' in sp_gauges:         # Computed 6DOF2 Fy
-                    EUdata[i] = sp_gauges['6DOF2'].CFy
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 872 and '6DOF2' in sp_gauges:         # Computed 6DOF2 Fz
-                    EUdata[i] = sp_gauges['6DOF2'].CFz
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                elif mrg_chans[i] == 873 and '6DOF2' in sp_gauges:         # Computed 6DOF2 Mx
-                    EUdata[i] = sp_gauges['6DOF2'].CMx
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                    EUdata[i] *= .083333
-                elif mrg_chans[i] == 874 and '6DOF2' in sp_gauges:         # Computed 6DOF2 My
-                    EUdata[i] = sp_gauges['6DOF2'].CMy
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                    EUdata[i] *= .083333
-                elif mrg_chans[i] == 875 and '6DOF2' in sp_gauges:         # Computed 6DOF2 Mz
-                    EUdata[i] = sp_gauges['6DOF2'].CMz
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    EUdata[i] *= 1.0284
-                    EUdata[i] *= .083333
-                elif mrg_chans[i] == 880:                                   #Equiv Stern
-                    EUdata[i] = (EUdata[32]+EUdata[33]+EUdata[34]+EUdata[35])/4.0
-                elif mrg_chans[i] == 881:                                   #Equiv Rudder
-                    EUdata[i] = (-EUdata[32]+EUdata[33]-EUdata[34]+EUdata[35])/4.0
-                elif mrg_chans[i] == 890:                                   #Stbd RPM Flip
-                    EUdata[i] = (rawdata[stbd_rpm_chan]-cal.zeros[stbd_rpm_chan])*cal.gains[stbd_rpm_chan]
-                    if rawdata[stbd_rpm_com] < -50:
-                        EUdata[i] *= -1
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                elif mrg_chans[i] == 891:                                   #Port RPM Flip
-                    EUdata[i] = (rawdata[port_rpm_chan]-cal.zeros[port_rpm_chan])*cal.gains[port_rpm_chan]
-                    if rawdata[port_rpm_com] < -50:
-                        EUdata[i] *= -1
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                
+ 
                 elif mrg_chans[i] == 960:                                   #gps Easting
                     EUdata[i] = easting
                     EUdata[i] *=pow(c_lambda, mrg_scale[i])
@@ -1061,6 +1064,33 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                     # compute pitch using depth2 and depth3 - hardwired for now
                     EUdata[i] = degrees(arcsin((EUdata[zsensor[3]] - EUdata[zsensor2[3]])/(zsensor2[0] - zsensor[0])))
 
+                elif mrg_chans[i] == 970 and 'Kistler3' in sp_gauges:         # Computed Kistler Fx
+                    EUdata[i] = sp_gauges['Kistler3'].CFx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 971 and 'Kistler3' in sp_gauges:         # Computed Kistler Fy
+                    EUdata[i] = sp_gauges['Kistler3'].CFy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 972 and 'Kistler3' in sp_gauges:         # Computed Kistler Fz
+                    EUdata[i] = sp_gauges['Kistler3'].CFz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                elif mrg_chans[i] == 973 and 'Kistler3' in sp_gauges:         # Computed Kistler Mx
+                    EUdata[i] = sp_gauges['Kistler3'].CMx
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
+                elif mrg_chans[i] == 974 and 'Kistler3' in sp_gauges:         # Computed Kistler My
+                    EUdata[i] = sp_gauges['Kistler3'].CMy
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
+                elif mrg_chans[i] == 975 and 'Kistler3' in sp_gauges:         # Computed Kistler Mz
+                    EUdata[i] = sp_gauges['Kistler3'].CMz
+                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    EUdata[i] *= 1.0284
+                    EUdata[i] *= .083333
 
 
             if (step % c_skip) == 0:         # Output only the records we want

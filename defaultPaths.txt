@@ -5,7 +5,7 @@
 #
 obcDir /home/pi/Documents/OBC_Data
 tdmsDir c:/Users/CubbageSJ/Documents/test_data
-stdDir c:/Users/CubbageSJ/Documents/rcmdata
+stdDir y:/rcmdata
 fstDir c:/Users/CubbageSJ/Documents/fstdata
 #
 # This entry is for overplots of OBC files and is root of current test data tree

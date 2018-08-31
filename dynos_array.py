@@ -608,7 +608,12 @@ class Dyno6:
         
         self.zeros = zeros
         
-        
+        # Compute the sin/cos of body angles
+        sinTH = bodyAngles[0]
+        cosTH = bodyAngles[1]
+        sinPH = bodyAngles[2]
+        cosPH = bodyAngles[3]
+       
         # Set up raw forces
         rawForces = np.array([rawdata[rawdata.columns[self.Fx_chan]].values-self.zeros[self.Fx_chan],
                            rawdata[rawdata.columns[self.Fy_chan]].values-self.zeros[self.Fy_chan],
@@ -635,6 +640,13 @@ class Dyno6:
         self.CMy = compForces[:,4]
         self.CMz = compForces[:,5]
 
+        # And then we subtract weight and map the computed forces
+        self.CFx = self.CFx + self.weight * sinTH
+        self.CFy = self.CFy - self.weight * sinPH * cosTH
+        self.CFz = self.CFz - self.weight * cosPH * cosTH
+        self.CMx = self.CMx
+        self.CMy = self.CMy + self.weight * self.arm * cosPH * cosTH
+        self.CMz = self.CMz - self.weight * self.arm * sinPH * cosTH
 
 class Rot_Dyno6:
     """ This class is a special case of a 6DOF dyno that rotates.  It

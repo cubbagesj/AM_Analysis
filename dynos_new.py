@@ -16,7 +16,7 @@
 """
 
 from math import *
-from numpy import *
+import numpy as np
 
 class RingBuffer(object):
     """ class that implements a not-yet-full buffer
@@ -119,7 +119,7 @@ class Kistler6:
         self.Orient_Mat = calfile['Orient_Mat']
 
         # Finally we set the channel zeros to zero
-        self.zeros = array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), float)
+        self.zeros = np.array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), float)
 
     def compute(self, rawdata, gains, bodyAngles,cb_id=10):
         """ Compute the corrected forces for the current timestep by combining the
@@ -133,7 +133,7 @@ class Kistler6:
         cosPH = bodyAngles[3]
 
         # Subtract zeros to get the relative forces
-        relForces = array([(rawdata[self.Fx1_chan]-self.zeros[0])*gains[self.Fx1_chan],
+        relForces = np.array([(rawdata[self.Fx1_chan]-self.zeros[0])*gains[self.Fx1_chan],
                            (rawdata[self.Fy1_chan]-self.zeros[1])*gains[self.Fy1_chan],
                            (rawdata[self.Fz1_chan]-self.zeros[2])*gains[self.Fz1_chan],
                            (rawdata[self.Fx2_chan]-self.zeros[3])*gains[self.Fx2_chan],
@@ -155,7 +155,7 @@ class Kistler6:
         combMz = (self.ydist*(relForces[0] - relForces[3] + relForces[6] - relForces[10]) +
                   self.xdist*(relForces[1] + relForces[4] - relForces[7] -relForces[10]))
 
-        rawForces = array([combFx,
+        rawForces = np.array([combFx,
                            combFy,
                            combFz,
                            combMx,
@@ -163,10 +163,10 @@ class Kistler6:
                            combMz], float)
 
         # Apply the Interaction Matrix
-        intForces = dot( rawForces, self.Int_Mat)
+        intForces = np.dot( rawForces, self.Int_Mat)
 
         # Apply the Orientation Matrix
-        compForces = dot(intForces, self.Orient_Mat)
+        compForces = np.dot(intForces, self.Orient_Mat)
 
         # And then take out the sail weight using the body angles
         # The values for the sin and cos of pitch and roll were calculated in the
@@ -186,7 +186,7 @@ class Kistler6:
     def addZero(self, rawdata):
         """ Adds a point to the accumulated zeros
         """
-        rawForces = array([rawdata[self.Fx1_chan],
+        rawForces = np.array([rawdata[self.Fx1_chan],
                            rawdata[self.Fy1_chan],
                            rawdata[self.Fz1_chan],
                            rawdata[self.Fx2_chan],
@@ -268,7 +268,7 @@ class Kistler3:
         self.Orient_Mat = calfile['Orient_Mat']
 
         # Finally we set the channel zeros to zero
-        self.zeros = array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), float)
+        self.zeros = np.array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), float)
 
     def compute(self, rawdata, gains, bodyAngles,cb_id=10):
         """ Compute the corrected forces for the current timestep by combining the
@@ -282,7 +282,7 @@ class Kistler3:
         cosPH = bodyAngles[3]
 
         # Subtract zeros to get the relative forces
-        relForces = array([(rawdata[self.Fx1_chan]-self.zeros[0])*gains[self.Fx1_chan],
+        relForces = np.array([(rawdata[self.Fx1_chan]-self.zeros[0])*gains[self.Fx1_chan],
                            (rawdata[self.Fy1_chan]-self.zeros[1])*gains[self.Fy1_chan],
                            (rawdata[self.Fz1_chan]-self.zeros[2])*gains[self.Fz1_chan],
                            (rawdata[self.Fx2_chan]-self.zeros[3])*gains[self.Fx2_chan],
@@ -301,7 +301,7 @@ class Kistler3:
         combMz = (self.ydist*(-relForces[0] - relForces[3] + relForces[6]) +
                   self.xdist*(-relForces[1] + relForces[4]))
 
-        rawForces = array([combFx,
+        rawForces = np.array([combFx,
                            combFy,
                            combFz,
                            combMx,
@@ -309,10 +309,10 @@ class Kistler3:
                            combMz], float)
 
         # Apply the Interaction Matrix
-        intForces = dot( rawForces, self.Int_Mat)
+        intForces = np.dot( rawForces, self.Int_Mat)
 
         # Apply the Orientation Matrix
-        compForces = dot(intForces, self.Orient_Mat)
+        compForces = np.dot(intForces, self.Orient_Mat)
 
         # And then take out the sail weight using the body angles
         # The values for the sin and cos of pitch and roll were calculated in the
@@ -332,7 +332,7 @@ class Kistler3:
     def addZero(self, rawdata):
         """ Adds a point to the accumulated zeros
         """
-        rawForces = array([rawdata[self.Fx1_chan],
+        rawForces = np.array([rawdata[self.Fx1_chan],
                            rawdata[self.Fy1_chan],
                            rawdata[self.Fz1_chan],
                            rawdata[self.Fx2_chan],
@@ -435,7 +435,7 @@ class Deck:
         self.Orient_Mata = calfile['Orient_Mata']
 
         # Finally we set the channel zeros to zero
-        self.zeros = array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), float)
+        self.zeros = np.array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), float)
 
     def compute(self, rawdata, gains, bodyAngles,cb_id=10):
         """ Compute the corrected forces for the current timestep by combining the
@@ -454,7 +454,7 @@ class Deck:
         cosPHZ = bodyAngles[7]
 
         # Subtract zeros to get the relative forces
-        relForcesf = array([(rawdata[self.Fx1f_chan]-self.zeros[0])*gains[self.Fx1f_chan],
+        relForcesf = np.array([(rawdata[self.Fx1f_chan]-self.zeros[0])*gains[self.Fx1f_chan],
                             (rawdata[self.Fy1f_chan]-self.zeros[1])*gains[self.Fy1f_chan],
                             (rawdata[self.Fz1f_chan]-self.zeros[2])*gains[self.Fz1f_chan],
                             (rawdata[self.Fx2f_chan]-self.zeros[3])*gains[self.Fx2f_chan],
@@ -464,7 +464,7 @@ class Deck:
                             (rawdata[self.Fy3f_chan]-self.zeros[7])*gains[self.Fy3f_chan],
                             (rawdata[self.Fz3f_chan]-self.zeros[8])*gains[self.Fz3f_chan]], float)
 
-        relForcesa = array([(rawdata[self.Fx1a_chan]-self.zeros[9])*gains[self.Fx1a_chan],
+        relForcesa = np.array([(rawdata[self.Fx1a_chan]-self.zeros[9])*gains[self.Fx1a_chan],
                             (rawdata[self.Fy1a_chan]-self.zeros[10])*gains[self.Fy1a_chan],
                             (rawdata[self.Fz1a_chan]-self.zeros[11])*gains[self.Fz1a_chan],
                             (rawdata[self.Fx2a_chan]-self.zeros[12])*gains[self.Fx2a_chan],
@@ -504,7 +504,7 @@ class Deck:
         combMzf = (self.ydistf*(-relForcesf[0] - relForcesf[3] + relForcesf[6]) +
                    self.xdistf*(-relForcesf[1] + relForcesf[4]))
 
-        rawForcesf = array([combFxf,
+        rawForcesf = np.array([combFxf,
                             combFyf,
                             combFzf,
                             combMxf,
@@ -512,9 +512,9 @@ class Deck:
                             combMzf], float)
 
         # Apply the Interaction Matrix
-        intForcesf = dot( rawForcesf, self.Int_Matf)
+        intForcesf = np.dot( rawForcesf, self.Int_Matf)
         # Apply the Orientation Matrix
-        compForcesf = dot(intForcesf, self.Orient_Matf)
+        compForcesf = np.dot(intForcesf, self.Orient_Matf)
 
         self.compForcesf = compForcesf
 
@@ -527,17 +527,17 @@ class Deck:
         combMza = (self.ydista*(-relForcesa[0] - relForcesa[3] + relForcesa[6]) +
                    self.xdista*(-relForcesa[1] + relForcesa[4]))
 
-        rawForcesa = array([combFxa,
+        rawForcesa = np.array([combFxa,
                             combFya,
                             combFza,
                             combMxa,
                             combMya,
                             combMza], float)
         # Apply the Interaction Matrix
-        intForcesa = dot( rawForcesa, self.Int_Mata)
+        intForcesa = np.dot( rawForcesa, self.Int_Mata)
 
         # Apply the Orientation Matrix
-        compForcesa = dot(intForcesa, self.Orient_Mata)
+        compForcesa = np.dot(intForcesa, self.Orient_Mata)
 
         self.compForcesa = compForcesa
 
@@ -570,7 +570,7 @@ class Deck:
         """ Adds a point to the accumulated zeros
         To account for the zeros not being at zero pitch and roll 
         we need to also compute a zero for the pitch and roll channels"""
-        rawForces = array([rawdata[self.Fx1f_chan],
+        rawForces = np.array([rawdata[self.Fx1f_chan],
                            rawdata[self.Fy1f_chan],
                            rawdata[self.Fz1f_chan],
                            rawdata[self.Fx2f_chan],
@@ -632,6 +632,10 @@ class Dyno6:
         self.Mx_chan = calfile['Mx']
         self.My_chan = calfile['My']
         self.Mz_chan = calfile['Mz']
+   
+        # Next comes the weight       
+        self.weight = calfile['weight']
+        self.arm = calfile['arm']
 
         # Next comes the rotation angle
         try:
@@ -644,14 +648,20 @@ class Dyno6:
         self.Orient_Mat = calfile['Orient_Mat']
 
         # Finally we set the channel zeros to zero
-        self.zeros = array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), float)
+        self.zeros = np.array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), float)
 
     def compute(self, rawdata, gains, bodyAngles, cb_id=10):
         """ Compute the corrected forces for the current timestep using
         the interaction and orientation matricies"""
 
+        # Compute the sin/cos of body angles
+        sinTH = bodyAngles[0]
+        cosTH = bodyAngles[1]
+        sinPH = bodyAngles[2]
+        cosPH = bodyAngles[3]
+
         # Set up raw forces
-        rawForces = array([rawdata[self.Fx_chan]-self.zeros[0],
+        rawForces = np.array([rawdata[self.Fx_chan]-self.zeros[0],
                            rawdata[self.Fy_chan]-self.zeros[1],
                            rawdata[self.Fz_chan]-self.zeros[2],
                            rawdata[self.Mx_chan]-self.zeros[3],
@@ -659,10 +669,10 @@ class Dyno6:
                            rawdata[self.Mz_chan]-self.zeros[5]], float)
 
         # Apply the Interaction Matrix
-        intForces = dot( rawForces, self.Int_Mat)
+        intForces = np.dot( rawForces, self.Int_Mat)
 
         # Apply the Orientation Matrix
-        compForces = dot(intForces, self.Orient_Mat)
+        compForces = np.dot(intForces, self.Orient_Mat)
 
         # And then we map the computed forces
         self.CFx = compForces[0]
@@ -671,11 +681,19 @@ class Dyno6:
         self.CMx = compForces[3]
         self.CMy = compForces[4]
         self.CMz = compForces[5]
-
+        
+        # And then we subtract weight and map the computed forces
+        self.CFx = self.CFx + self.weight * sinTH
+        self.CFy = self.CFy - self.weight * sinPH * cosTH
+        self.CFz = self.CFz - self.weight * cosPH * cosTH
+        self.CMx = self.CMx
+        self.CMy = self.CMy + self.weight * self.arm * cosPH * cosTH
+        self.CMz = self.CMz - self.weight * self.arm * sinPH * cosTH
+        
     def addZero(self, rawdata):
         """ Adds a point to the accumulated zeros
         """
-        rawForces = array([rawdata[self.Fx_chan],
+        rawForces = np.array([rawdata[self.Fx_chan],
                            rawdata[self.Fy_chan],
                            rawdata[self.Fz_chan],
                            rawdata[self.Mx_chan],
@@ -751,7 +769,7 @@ class Rot_Dyno6:
         self.rotating = 0
 
         # Finally we set the channel zeros to zero
-        self.zeros = array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), float)
+        self.zeros = np.array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), float)
 
     def compute(self, rawdata, gains, bodyAngles, cb_id=10):
         """ Compute the corrected forces for the current timestep using
@@ -760,12 +778,15 @@ class Rot_Dyno6:
         Also do the rotation to model coords and subtract the prop
         weight
         """
-        # Start with getting the prop rotation angle and comparing
-        # with the last angle to see if we are rotating
+        
+        # Compute the sin/cos of body angles
         sinTH = bodyAngles[0]
         cosTH = bodyAngles[1]
         sinPH = bodyAngles[2]
         cosPH = bodyAngles[3]
+
+        # Start with getting the prop rotation angle and comparing
+        # with the last angle to see if we are rotating
 
         # Prop position depends on which centerbody it is
         prop_pos = rawdata[184] - self.PropPosZero
@@ -795,7 +816,7 @@ class Rot_Dyno6:
 
         # Set up raw forces - Zero subtraction depends on if we are rotating 
         if self.rotating:           # Rotating prop
-            rawForces = array([rawdata[self.Fx_chan]-self.runavg[0].average(),
+            rawForces = np.array([rawdata[self.Fx_chan]-self.runavg[0].average(),
                                rawdata[self.Fy_chan]-self.runavg[1].average(),
                                rawdata[self.Fz_chan]-self.zeros[2],
                                rawdata[self.Mx_chan]-self.runavg[2].average(),
@@ -803,7 +824,7 @@ class Rot_Dyno6:
                                rawdata[self.Mz_chan]-self.zeros[5]], float)
 
         else:                       # static prop
-            rawForces = array([rawdata[self.Fx_chan]-self.zeros[0],
+            rawForces = np.array([rawdata[self.Fx_chan]-self.zeros[0],
                                rawdata[self.Fy_chan]-self.zeros[1],
                                rawdata[self.Fz_chan]-self.zeros[2],
                                rawdata[self.Mx_chan]-self.zeros[3],
@@ -811,10 +832,10 @@ class Rot_Dyno6:
                                rawdata[self.Mz_chan]-self.zeros[5]], float)
 
         # Apply the Interaction Matrix
-        intForces = dot( rawForces, self.Int_Mat)
+        intForces = np.dot( rawForces, self.Int_Mat)
 
         # Apply the Orientation Matrix
-        compForces = dot(intForces, self.Orient_Mat)
+        compForces = np.dot(intForces, self.Orient_Mat)
 
         # Now we need to rotate to the body coordinates
 
@@ -838,7 +859,7 @@ class Rot_Dyno6:
     def addZero(self, rawdata):
         """ Adds a point to the accumulated zeros
         """
-        rawForces = array([rawdata[self.Fx_chan],
+        rawForces = np.array([rawdata[self.Fx_chan],
                            rawdata[self.Fy_chan],
                            rawdata[self.Fz_chan],
                            rawdata[self.Mx_chan],
