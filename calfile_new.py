@@ -120,7 +120,9 @@ class CalFile:
                                  ('My', 'int'),
                                  ('Mz', 'int'),
                                  ('weight', 'float'),
-                                 ('arm', 'float'),
+                                 ('armx', 'float'),
+                                 ('army', 'float'),
+                                 ('armz', 'float'),
                                  ('angle', 'float'),
                                  ('int_row1', 'string'),
                                  ('int_row2', 'string'),
@@ -266,7 +268,7 @@ class CalFile:
         if self.hasRotor == "TRUE":
             self.rotor = self.ParseGauge('ROTOR', type='prop')
         if self.hasStator == "TRUE":
-            self.stator = self.ParseGauge('STATOR', type='prop')
+            self.stator = self.ParseGauge('STATOR', type='6dof')
         if self.hasKistler == "TRUE":
             self.kistler = self.ParseGauge('KISTLER', type='kistler')
         if self.hasKistler3 == "TRUE":

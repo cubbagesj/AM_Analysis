@@ -438,6 +438,41 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
             if bytecount > maxcnt:
                 bytecount = maxcnt - 10
             prgbar.Update(bytecount)
+            
+        # 9/4/2018 - Changing order of processing - Compute the EU data for
+        # every point
+        for i in range(len(mrg_names)):
+            if mrg_chans[i] < 800:       # Normal Channel
+                EUdata[i] = (rawdata[mrg_chans[i]]-cal.zeros[mrg_chans[i]])*cal.gains[mrg_chans[i]]
+                EUdata[i] -= EUzero[i]*mrg_zero[i]
+                EUdata[i] *= pow(c_lambda, mrg_scale[i])
+                    
+                if mrg_scale[i] >= 3:
+                    EUdata[i] *= 1.0284
+                if mrg_scale[i] == 4:       # in-lb to ft-lb conversion
+                    EUdata[i] *= 0.083333
+
+        # At this point we have gone through all of the straight channels
+        # Now we set up some variables for values that will be used to do
+        # the calculated channels
+
+        # Pitch
+        sinTH = math.sin(math.radians(EUdata[8]))
+        cosTH = math.cos(math.radians(EUdata[8]))
+
+        #Pitch Zero
+        sinTHZ = math.sin(math.radians(EUzero[8]))
+        cosTHZ = math.cos(math.radians(EUzero[8]))
+
+        #Roll
+        sinPH = math.sin(math.radians(EUdata[7]))
+        cosPH = math.cos(math.radians(EUdata[7]))
+
+        # Roll zero 
+        sinPHZ = math.sin(math.radians(EUzero[7]))
+        cosPHZ = math.cos(math.radians(EUzero[7]))
+
+        bodyAngles = [sinTH, cosTH, sinPH, cosPH, sinTHZ, cosTHZ, sinPHZ, cosPHZ]
 
         # Now we have the raw data split out, check for taking zeros
         if rawdata[mode_chan] == 0x0F13:
@@ -447,6 +482,7 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
 
             # zeros on special gauges
             for gauge in sp_gauges.keys():
+                sp_gauges[gauge].compute(rawdata, cal.gains, bodyAngles, cb_id, doZeros = 0.0)
                 sp_gauges[gauge].addZero(rawdata)
 
             zerosdone = 1
@@ -468,44 +504,8 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
         # Now look for actual run
         # 11/30/07 - Change to only put the data between standby and execute in merge file
         elif (rawdata[mode_chan] >= 0x0F23 and rawdata[mode_chan] <= 0x0F43) or rawdata[mode_chan] == 1:
-#        elif rawdata[mode_chan] <= 0x0F43:
-#        if rawdata[mode_chan] >= 0x0013 :
 
-            # This is the actual run data - First we handle the normal channels
-            # and then get to the computed ones
-
-            for i in range(len(mrg_names)):
-                if mrg_chans[i] < 800:       # Normal Channel
-                    EUdata[i] = (rawdata[mrg_chans[i]]-cal.zeros[mrg_chans[i]])*cal.gains[mrg_chans[i]]
-                    EUdata[i] -= EUzero[i]*mrg_zero[i]
-                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-                    
-                    if mrg_scale[i] >= 3:
-                        EUdata[i] *= 1.0284
-                    if mrg_scale[i] == 4:       # in-lb to ft-lb conversion
-                        EUdata[i] *= 0.083333
-
-            # At this point we have gone through all of the straight channels
-            # Now we set up some variables for values that will be used to do
-            # the calculated channels
-
-            # Pitch
-            sinTH = math.sin(math.radians(EUdata[8]))
-            cosTH = math.cos(math.radians(EUdata[8]))
-
-            #Pitch Zero
-            sinTHZ = math.sin(math.radians(EUzero[8]))
-            cosTHZ = math.cos(math.radians(EUzero[8]))
-
-            #Roll
-            sinPH = math.sin(math.radians(EUdata[7]))
-            cosPH = math.cos(math.radians(EUdata[7]))
-
-            # Roll zero 
-            sinPHZ = math.sin(math.radians(EUzero[7]))
-            cosPHZ = math.cos(math.radians(EUzero[7]))
-
-            bodyAngles = [sinTH, cosTH, sinPH, cosPH, sinTHZ, cosTHZ, sinPHZ, cosPHZ]
+            # This is the actual run data - We already have the normal channels
 
             # And now to process the 6DOF dynos
             for gauge in sp_gauges.keys():

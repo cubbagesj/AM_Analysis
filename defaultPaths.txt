@@ -3,10 +3,10 @@
 # These are the deafult search paths used by the program.
 # They can be changed from the menu in the program
 #
-obcDir /home/pi/Documents/OBC_Data
-tdmsDir c:/Users/CubbageSJ/Documents/test_data
-stdDir y:/rcmdata
-fstDir c:/Users/CubbageSJ/Documents/fstdata
+obcDir f:/Analysis
+tdmsDir f:/Analysis
+stdDir f:/Analysis
+fstDir f:/Analysis
 #
 # This entry is for overplots of OBC files and is root of current test data tree
 obcOvrpltDir  c:/Users/CubbageSJ/Documents/test_data/VIRGINIA
