@@ -601,21 +601,28 @@ class Rot_Dyno6:
         self.runavg[3].append(rawdata[self.My_chan])
 
         # Set up raw forces - Zero subtraction depends on if we are rotating 
-        if self.rotating:           # Rotating prop
-            rawForces = np.array([rawdata[self.Fx_chan]-self.runavg[0].average(),
-                               rawdata[self.Fy_chan]-self.runavg[1].average(),
-                               rawdata[self.Fz_chan]-self.zeros[2],
-                               rawdata[self.Mx_chan]-self.runavg[2].average(),
-                               rawdata[self.My_chan]-self.runavg[3].average(),
-                               rawdata[self.Mz_chan]-self.zeros[5]], float)
+#        if self.rotating:           # Rotating prop
+#            rawForces = np.array([rawdata[self.Fx_chan]-self.runavg[0].average(),
+#                               rawdata[self.Fy_chan]-self.runavg[1].average(),
+#                               rawdata[self.Fz_chan]-self.zeros[2],
+#                               rawdata[self.Mx_chan]-self.runavg[2].average(),
+#                               rawdata[self.My_chan]-self.runavg[3].average(),
+#                               rawdata[self.Mz_chan]-self.zeros[5]], float)
+#
+#        else:                       # static prop
+#            rawForces = np.array([rawdata[self.Fx_chan]-self.zeros[0],
+#                               rawdata[self.Fy_chan]-self.zeros[1],
+#                               rawdata[self.Fz_chan]-self.zeros[2],
+#                               rawdata[self.Mx_chan]-self.zeros[3],
+#                               rawdata[self.My_chan]-self.zeros[4],
+#                               rawdata[self.Mz_chan]-self.zeros[5]], float)
 
-        else:                       # static prop
-            rawForces = np.array([rawdata[self.Fx_chan]-self.zeros[0],
-                               rawdata[self.Fy_chan]-self.zeros[1],
-                               rawdata[self.Fz_chan]-self.zeros[2],
-                               rawdata[self.Mx_chan]-self.zeros[3],
-                               rawdata[self.My_chan]-self.zeros[4],
-                               rawdata[self.Mz_chan]-self.zeros[5]], float)
+        rawForces = np.array([rawdata[self.Fx_chan],
+                           rawdata[self.Fy_chan],
+                           rawdata[self.Fz_chan],
+                           rawdata[self.Mx_chan],
+                           rawdata[self.My_chan],
+                           rawdata[self.Mz_chan]], float)
 
         # Apply the Interaction Matrix
         intForces = np.dot( rawForces, self.Int_Mat)
@@ -632,14 +639,20 @@ class Rot_Dyno6:
         bodyMy = cosR * compForces[4] - sinR * compForces[5]
         bodyMz = sinR * compForces[4] + cosR * compForces[5]
 
+        self.CFx = bodyFx - (self.zeros[0] * doZeros)
+        self.CFy = bodyFy - (self.zeros[1] * doZeros)
+        self.CFz = bodyFz - (self.zeros[2] * doZeros)
+        self.CMx = bodyMx - (self.zeros[3] * doZeros)
+        self.CMy = bodyMy - (self.zeros[4] * doZeros)
+        self.CMz = bodyMz - (self.zeros[5] * doZeros)
 
         # And then we subtract weight and map the computed forces
-        self.CFx = bodyFx + self.weight * sinTH
-        self.CFy = bodyFy - self.weight * sinPH * cosTH
-        self.CFz = bodyFz - self.weight * cosPH * cosTH
-        self.CMx = bodyMx
-        self.CMy = bodyMy + self.weight * self.arm * cosPH * cosTH
-        self.CMz = bodyMz - self.weight * self.arm * sinPH * cosTH
+        self.CFx = self.CFx + self.weight * sinTH
+        self.CFy = self.CFy - self.weight * sinPH * cosTH
+        self.CFz = self.CFz - self.weight * cosPH * cosTH
+        self.CMx = self.CMx
+        self.CMy = self.CMy + self.weight * self.arm * cosPH * cosTH
+        self.CMz = self.CMz - self.weight * self.arm * sinPH * cosTH
 
     def addZero(self, rawdata):
         """ Adds a point to the accumulated zeros

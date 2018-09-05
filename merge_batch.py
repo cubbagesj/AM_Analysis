@@ -12,15 +12,15 @@ from am_merge import MergeRun
 
 # Open and read the batch script file
 if len(sys.argv) < 2:
-    print "Usage: merge_batch.py {scriptfile}"
+    print( "Usage: merge_batch.py {scriptfile}")
 else:
 
     try:
-        print "Processing the batch file...\n"
+        print( "Processing the batch file...\n")
         f = open(sys.argv[1], 'r')
         batch_lines = f.read().splitlines()
     except:
-        print "Could not read batch file!"
+        print( "Could not read batch file!")
         raise
 
 
@@ -37,9 +37,9 @@ else:
             rootname, ext = os.path.splitext(os.path.basename(fullname))
             runnumber = rootname[4:]
 
-            print "runnumber = ", runnumber
-            print "stddir = " , std_dir
-            print "merge_file = ", merge_file
+            print( "runnumber = ", runnumber)
+            print( "stddir = " , std_dir)
+            print( "merge_file = ", merge_file)
 
             # Now change to the directory with the run
             os.chdir(obcpath)
@@ -47,6 +47,6 @@ else:
             try:
                 MergeRun(int(runnumber), std_dir, merge_file)
             except:
-                print "Merge failed for run: ", runnumber
+                print( "Merge failed for run: ", runnumber)
             
 
