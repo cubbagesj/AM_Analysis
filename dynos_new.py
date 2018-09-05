@@ -19,6 +19,7 @@
 """
 
 import numpy as np
+import datatools as dt
 
 class RingBuffer(object):
     """ class that implements a not-yet-full buffer
@@ -126,7 +127,7 @@ class Kistler6:
     def compute(self, rawdata, gains, bodyAngles, cb_id=10, doZeros = 1.0):
         """ Compute the corrected forces for the current timestep by combining the
         forces from each of the individual gauges and then applying
-        the interaction and orientation matricies.  Finally, the sail weight
+        the interaction and orientation matricies.  Finally, the self weight
         is taken out using the body angles
         
         Note: Unlike the stator and other 6DOF gauges.  The Kistler buttons usually
@@ -134,11 +135,10 @@ class Kistler6:
               to having them rolled into the interaction matrix
         """
 
-        # bodyAngles contains the sin/cos of the pitch and roll angles
-        sinTH = bodyAngles[0]
-        cosTH = bodyAngles[1]
-        sinPH = bodyAngles[2]
-        cosPH = bodyAngles[3]
+        # The bodyAngles are in radians
+        phi = bodyAngles[0]
+        theta = bodyAngles[1]
+        psi = bodyAngles[2]
 
         # Compute the realtive forces on each button using channel gains 
         relForces = np.array([rawdata[self.Fx1_chan] * gains[self.Fx1_chan],
@@ -185,19 +185,16 @@ class Kistler6:
         self.CMy = compForces[4] - (self.zeros[4] * doZeros)
         self.CMz = compForces[5] - (self.zeros[5] * doZeros)
 
-        # And then take out the sail weight using the body angles
-        # The values for the sin and cos of pitch and roll were calculated in the
-        # main program so just use them here
-
-        self.CFx = compForces[0] + self.weight*sinTH
-        self.CFy = compForces[1] - self.weight*sinPH*cosTH
-        self.CFz = compForces[2] + self.weight*(1 - cosPH*cosTH)
-        self.CMx = compForces[3] + (self.weight*sinPH*cosTH*self.armz +
-                                    self.weight*self.army*(1-cosTH*cosPH))
-        self.CMy = compForces[4] + (self.weight*sinTH*self.armz +
-                                    self.weight*self.armx*(cosTH*cosPH -1))
-        self.CMz = compForces[5] - (self.weight*sinTH*self.army +
-                                    self.weight*sinPH*cosTH*self.armx)
+        # Now compute the self weight vector in body coords
+        Wx, Wy, Wz = dt.doTransform([0.0], [0.0], [self.weight], [phi], [theta],[psi]) 
+       
+        # And then we subtract self weight and map the computed forces
+        self.CFx = self.CFx - Wx[0]
+        self.CFy = self.CFy - Wy[0]
+        self.CFz = self.CFz - Wz[0]
+        self.CMx = self.CMx - (Wz[0]*self.army - Wy[0]*self.armz)
+        self.CMy = self.CMy - (-Wz[0]*self.armx - Wx[0]*self.armz)
+        self.CMz = self.CMz - (Wy[0]*self.armx - Wx[0]*self.army)
 
 
     def addZero(self, rawdata):
@@ -240,6 +237,9 @@ class Kistler3:
     def __init__(self, calfile):
         """ The constructor needs the calfile dictionary
             for the dyno
+
+            This routine populates the various variables needed for the class
+            from the calfile
         """
 
         # First we get the channel assignments - There are 12 channels, 3 per gauge
@@ -263,7 +263,12 @@ class Kistler3:
         self.ydist = calfile['ydist']
 
         # Now we need to get the info needed to remove the self weight
-        # This is the weight and the moment arms of this weight
+        # The weight is the water weight in pounds which is really the 
+        # (weight-bouyancy) term in inertial coordinates [0, 0, (w-b)]
+        # for the thing being measured plus half of the gauge weight
+        #
+        # The arm values are the distance from the center of the mass to the
+        # center of the gauge
 
         self.weight = calfile['weight']
         self.armx = calfile['armx']
@@ -289,10 +294,10 @@ class Kistler3:
               to having them rolled into the interaction matrix
         """
 
-        sinTH = bodyAngles[0]
-        cosTH = bodyAngles[1]
-        sinPH = bodyAngles[2]
-        cosPH = bodyAngles[3]
+        # The bodyAngles are in radians
+        phi = bodyAngles[0]
+        theta = bodyAngles[1]
+        psi = bodyAngles[2]
 
         # Subtract zeros to get the relative forces
         relForces = np.array([rawdata[self.Fx1_chan] * gains[self.Fx1_chan],
@@ -335,19 +340,16 @@ class Kistler3:
         self.CMy = compForces[4] - (self.zeros[4] * doZeros)
         self.CMz = compForces[5] - (self.zeros[5] * doZeros)
 
-        # And then take out the sail weight using the body angles
-        # The values for the sin and cos of pitch and roll were calculated in the
-        # main program so just use them here
-
-        self.CFx = compForces[0] + self.weight*sinTH
-        self.CFy = compForces[1] - self.weight*sinPH*cosTH
-        self.CFz = compForces[2] + self.weight*(1 - cosPH*cosTH)
-        self.CMx = compForces[3] + (self.weight*sinPH*cosTH*self.armz +
-                                    self.weight*self.army*(1-cosTH*cosPH))
-        self.CMy = compForces[4] + (self.weight*sinTH*self.armz +
-                                    self.weight*self.armx*(cosTH*cosPH -1))
-        self.CMz = compForces[5] - (self.weight*sinTH*self.army +
-                                    self.weight*sinPH*cosTH*self.armx)
+        # Now compute the self weight vector in body coords
+        Wx, Wy, Wz = dt.doTransform([0.0], [0.0], [self.weight], [phi], [theta],[psi]) 
+       
+        # And then we subtract self weight and map the computed forces
+        self.CFx = self.CFx - Wx[0]
+        self.CFy = self.CFy - Wy[0]
+        self.CFz = self.CFz - Wz[0]
+        self.CMx = self.CMx - (Wz[0]*self.army - Wy[0]*self.armz)
+        self.CMy = self.CMy - (-Wz[0]*self.armx - Wx[0]*self.armz)
+        self.CMz = self.CMz - (Wy[0]*self.armx - Wx[0]*self.army)
 
 
     def addZero(self, rawdata):
@@ -390,6 +392,9 @@ class Dyno6:
     def __init__(self, calfile):
         """ The constructor needs the calfile dictionary
             for the dyno
+
+            This routine populates the various variables needed for the class
+            from the calfile
         """
 
         # First we get the channel assignments
@@ -402,6 +407,13 @@ class Dyno6:
         self.Mz_chan = calfile['Mz']
    
         # Next comes the weight and arm locations
+        # The weight is the water weight in pounds which is really the 
+        # (weight-bouyancy) term in inertial coordinates [0, 0, (w-b)]
+        # for the thing being measured plus half of the gauge weight
+        #
+        # The arm values are the distance from the center of the mass to the
+        # center of the gauge
+        #
         # These are pre-initialized and wrapped in try clauses in case 
         # they are omitted in the cal file we don't want the program to crash
         self.weight = 0.0
@@ -421,6 +433,7 @@ class Dyno6:
             pass
 
         # Now for the interaction Matrix and Orient Matrix
+        # These take out interactions and rotate to body coordinates
         self.Int_Mat = calfile['Int_Mat']
         self.Orient_Mat = calfile['Orient_Mat']
 
@@ -437,11 +450,10 @@ class Dyno6:
                  array
         """
 
-        # The bodyAngles are actually the sin/cos of the pitch and roll angles
-        sinTH = bodyAngles[0]
-        cosTH = bodyAngles[1]
-        sinPH = bodyAngles[2]
-        cosPH = bodyAngles[3]
+        # The bodyAngles are in radians
+        phi = bodyAngles[0]
+        theta = bodyAngles[1]
+        psi = bodyAngles[2]
 
         # Set up raw forces
         rawForces = np.array([rawdata[self.Fx_chan],
@@ -465,16 +477,16 @@ class Dyno6:
         self.CMy = compForces[4] - (self.zeros[4] * doZeros)
         self.CMz = compForces[5] - (self.zeros[5] * doZeros)
 
+        # Now compute the self weight vector in body coords
+        Wx, Wy, Wz = dt.doTransform([0.0], [0.0], [self.weight], [phi], [theta],[psi]) 
+       
         # And then we subtract self weight and map the computed forces
-        self.CFx = self.CFx + self.weight*sinTH
-        self.CFy = self.CFy - self.weight*sinPH*cosTH
-        self.CFz = self.CFz + self.weight*(1 - cosPH*cosTH)
-        self.CMx = self.CMx + (self.weight*sinPH*cosTH*self.armz +
-                                    self.weight*self.army*(1-cosTH*cosPH))
-        self.CMy = self.CMy + (self.weight*sinTH*self.armz +
-                                    self.weight*self.armx*(cosTH*cosPH -1))
-        self.CMz = self.CMz - (self.weight*sinTH*self.army +
-                                    self.weight*sinPH*cosTH*self.armx)
+        self.CFx = self.CFx - Wx[0]
+        self.CFy = self.CFy - Wy[0]
+        self.CFz = self.CFz - Wz[0]
+        self.CMx = self.CMx - (Wz[0]*self.army - Wy[0]*self.armz)
+        self.CMy = self.CMy - (-Wz[0]*self.armx - Wx[0]*self.armz)
+        self.CMz = self.CMz - (Wy[0]*self.armx - Wx[0]*self.army)
       
     def addZero(self, rawdata):
         """ Adds a point to the accumulated zeros
@@ -566,10 +578,10 @@ class Rot_Dyno6:
         """
         
         # Compute the sin/cos of body angles
-        sinTH = bodyAngles[0]
-        cosTH = bodyAngles[1]
-        sinPH = bodyAngles[2]
-        cosPH = bodyAngles[3]
+        sinTH = 0.0
+        cosTH = 0.0
+        sinPH = 0.0
+        cosPH = 0.0
 
         # Start with getting the prop rotation angle and comparing
         # with the last angle to see if we are rotating
@@ -601,28 +613,21 @@ class Rot_Dyno6:
         self.runavg[3].append(rawdata[self.My_chan])
 
         # Set up raw forces - Zero subtraction depends on if we are rotating 
-#        if self.rotating:           # Rotating prop
-#            rawForces = np.array([rawdata[self.Fx_chan]-self.runavg[0].average(),
-#                               rawdata[self.Fy_chan]-self.runavg[1].average(),
-#                               rawdata[self.Fz_chan]-self.zeros[2],
-#                               rawdata[self.Mx_chan]-self.runavg[2].average(),
-#                               rawdata[self.My_chan]-self.runavg[3].average(),
-#                               rawdata[self.Mz_chan]-self.zeros[5]], float)
-#
-#        else:                       # static prop
-#            rawForces = np.array([rawdata[self.Fx_chan]-self.zeros[0],
-#                               rawdata[self.Fy_chan]-self.zeros[1],
-#                               rawdata[self.Fz_chan]-self.zeros[2],
-#                               rawdata[self.Mx_chan]-self.zeros[3],
-#                               rawdata[self.My_chan]-self.zeros[4],
-#                               rawdata[self.Mz_chan]-self.zeros[5]], float)
+        if self.rotating:           # Rotating prop
+            rawForces = np.array([rawdata[self.Fx_chan]-self.runavg[0].average(),
+                               rawdata[self.Fy_chan]-self.runavg[1].average(),
+                               rawdata[self.Fz_chan]-self.zeros[2],
+                               rawdata[self.Mx_chan]-self.runavg[2].average(),
+                               rawdata[self.My_chan]-self.runavg[3].average(),
+                               rawdata[self.Mz_chan]-self.zeros[5]], float)
 
-        rawForces = np.array([rawdata[self.Fx_chan],
-                           rawdata[self.Fy_chan],
-                           rawdata[self.Fz_chan],
-                           rawdata[self.Mx_chan],
-                           rawdata[self.My_chan],
-                           rawdata[self.Mz_chan]], float)
+        else:                       # static prop
+            rawForces = np.array([rawdata[self.Fx_chan]-self.zeros[0],
+                               rawdata[self.Fy_chan]-self.zeros[1],
+                               rawdata[self.Fz_chan]-self.zeros[2],
+                               rawdata[self.Mx_chan]-self.zeros[3],
+                               rawdata[self.My_chan]-self.zeros[4],
+                               rawdata[self.Mz_chan]-self.zeros[5]], float)
 
         # Apply the Interaction Matrix
         intForces = np.dot( rawForces, self.Int_Mat)

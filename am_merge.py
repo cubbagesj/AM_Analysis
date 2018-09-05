@@ -457,22 +457,15 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
         # the calculated channels
 
         # Pitch
-        sinTH = math.sin(math.radians(EUdata[8]))
-        cosTH = math.cos(math.radians(EUdata[8]))
-
-        #Pitch Zero
-        sinTHZ = math.sin(math.radians(EUzero[8]))
-        cosTHZ = math.cos(math.radians(EUzero[8]))
+        theta = math.radians(EUdata[8])
 
         #Roll
-        sinPH = math.sin(math.radians(EUdata[7]))
-        cosPH = math.cos(math.radians(EUdata[7]))
+        phi = math.radians(EUdata[7])
 
-        # Roll zero 
-        sinPHZ = math.sin(math.radians(EUzero[7]))
-        cosPHZ = math.cos(math.radians(EUzero[7]))
+        # Yaw
+        psi = math.radians(EUdata[9])
 
-        bodyAngles = [sinTH, cosTH, sinPH, cosPH, sinTHZ, cosTHZ, sinPHZ, cosPHZ]
+        bodyAngles = [phi, theta, psi]
 
         # Now we have the raw data split out, check for taking zeros
         if rawdata[mode_chan] == 0x0F13:
@@ -520,8 +513,8 @@ def MergeRun(runnumber, std_dir, merge_file='MERGE.INP', password=''):
                 elif mrg_chans[i] == 801:          # Time Channel 
                     EUdata[i] = c_FSdt * step
                 elif mrg_chans[i] == 802:          # ZCG
-                    EUdata[i] = (EUdata[zsensor[3]] + zsensor[0] * sinTH -
-                                 cosTH*(zsensor[1]*sinPH + zsensor[2] * cosPH))
+                    EUdata[i] = (EUdata[zsensor[3]] + zsensor[0] * math.sin(theta) -
+                                 math.cos(theta)*(zsensor[1]*math.sin(phi) + zsensor[2] * math.cos(phi)))
                 elif mrg_chans[i] == 820:           # Status
                     if rawdata[mode_chan] == 0x0F33:
                         EUdata[i] = 2

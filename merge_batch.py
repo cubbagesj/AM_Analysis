@@ -48,5 +48,6 @@ else:
                 MergeRun(int(runnumber), std_dir, merge_file)
             except:
                 print( "Merge failed for run: ", runnumber)
+                raise
             
 
