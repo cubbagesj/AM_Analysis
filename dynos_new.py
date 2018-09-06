@@ -545,6 +545,11 @@ class Rot_Dyno6:
         self.weight = calfile['weight']
         self.arm = calfile['arm']
 
+        # Quick patch for arms
+        self.armx = self.arm
+        self.army = 0.0
+        self.armz = 0.0
+        
         # Prop position zero
         try:
             self.PropPosZero = calfile['position']
@@ -559,7 +564,7 @@ class Rot_Dyno6:
 
         # For the prop running averages we need to create some ring buffers
         self.runavg = []
-        for i in range(4):
+        for i in range(6):
             self.runavg.append(RingBuffer(100))
 
         # initialize the rotation sensor
@@ -569,6 +574,14 @@ class Rot_Dyno6:
         # Finally we set the channel zeros to zero
         self.zeros = np.array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), float)
 
+        # Add the initial points to the running averages
+        self.runavg[0].append(0.0)
+        self.runavg[1].append(0.0)
+        self.runavg[2].append(0.0)
+        self.runavg[3].append(0.0)
+        self.runavg[4].append(0.0)
+        self.runavg[5].append(0.0)
+
     def compute(self, rawdata, gains, bodyAngles, cb_id=10, doZeros = 1.0):
         """ Compute the corrected forces for the current timestep using
         the interaction and orientation matricies
@@ -577,11 +590,10 @@ class Rot_Dyno6:
         weight
         """
         
-        # Compute the sin/cos of body angles
-        sinTH = 0.0
-        cosTH = 0.0
-        sinPH = 0.0
-        cosPH = 0.0
+        # The bodyAngles are in radians
+        phi = bodyAngles[0]
+        theta = bodyAngles[1]
+        psi = bodyAngles[2]
 
         # Start with getting the prop rotation angle and comparing
         # with the last angle to see if we are rotating
@@ -601,79 +613,90 @@ class Rot_Dyno6:
         cosR = np.cos(np.radians(rot_angle))
 
         if rot_angle != self.lastpos:
-            self.rotating = 1
+            self.rotating = 0
         else:
             self.rotating = 0
         self.lastpos = rot_angle
-
-        # Add the points to the running averages
-        self.runavg[0].append(rawdata[self.Fx_chan])
-        self.runavg[1].append(rawdata[self.Fy_chan])
-        self.runavg[2].append(rawdata[self.Mx_chan])
-        self.runavg[3].append(rawdata[self.My_chan])
-
-        # Set up raw forces - Zero subtraction depends on if we are rotating 
-        if self.rotating:           # Rotating prop
-            rawForces = np.array([rawdata[self.Fx_chan]-self.runavg[0].average(),
-                               rawdata[self.Fy_chan]-self.runavg[1].average(),
-                               rawdata[self.Fz_chan]-self.zeros[2],
-                               rawdata[self.Mx_chan]-self.runavg[2].average(),
-                               rawdata[self.My_chan]-self.runavg[3].average(),
-                               rawdata[self.Mz_chan]-self.zeros[5]], float)
-
-        else:                       # static prop
-            rawForces = np.array([rawdata[self.Fx_chan]-self.zeros[0],
-                               rawdata[self.Fy_chan]-self.zeros[1],
-                               rawdata[self.Fz_chan]-self.zeros[2],
-                               rawdata[self.Mx_chan]-self.zeros[3],
-                               rawdata[self.My_chan]-self.zeros[4],
-                               rawdata[self.Mz_chan]-self.zeros[5]], float)
-
+ 
+        rawForces = np.array([rawdata[self.Fx_chan],
+                           rawdata[self.Fy_chan],
+                           rawdata[self.Fz_chan],
+                           rawdata[self.Mx_chan],
+                           rawdata[self.My_chan],
+                           rawdata[self.Mz_chan]], float)
+    
         # Apply the Interaction Matrix
         intForces = np.dot( rawForces, self.Int_Mat)
 
-        # Apply the Orientation Matrix
-        compForces = np.dot(intForces, self.Orient_Mat)
-
         # Now we need to rotate to the body coordinates
 
-        bodyFx = compForces[0]
-        bodyFy = cosR * compForces[1] - sinR * compForces[2]
-        bodyFz = sinR * compForces[1] + cosR * compForces[2]
-        bodyMx = compForces[3]
-        bodyMy = cosR * compForces[4] - sinR * compForces[5]
-        bodyMz = sinR * compForces[4] + cosR * compForces[5]
+        bodyFx = intForces[0]
+        bodyFy = cosR * intForces[1] - sinR * intForces[2]
+        bodyFz = sinR * intForces[1] + cosR * intForces[2]
+        bodyMx = intForces[3]
+        bodyMy = cosR * intForces[4] - sinR * intForces[5]
+        bodyMz = sinR * intForces[4] + cosR * intForces[5]
 
-        self.CFx = bodyFx - (self.zeros[0] * doZeros)
-        self.CFy = bodyFy - (self.zeros[1] * doZeros)
-        self.CFz = bodyFz - (self.zeros[2] * doZeros)
-        self.CMx = bodyMx - (self.zeros[3] * doZeros)
-        self.CMy = bodyMy - (self.zeros[4] * doZeros)
-        self.CMz = bodyMz - (self.zeros[5] * doZeros)
+        bodyForces = np.array([bodyFx,
+                              bodyFy,
+                              bodyFz,
+                              bodyMx,
+                              bodyMy,
+                              bodyMz])
+    
+        # Apply the Orientation Matrix
+        compForces = np.dot(bodyForces, self.Orient_Mat)
 
-        # And then we subtract weight and map the computed forces
-        self.CFx = self.CFx + self.weight * sinTH
-        self.CFy = self.CFy - self.weight * sinPH * cosTH
-        self.CFz = self.CFz - self.weight * cosPH * cosTH
-        self.CMx = self.CMx
-        self.CMy = self.CMy + self.weight * self.arm * cosPH * cosTH
-        self.CMz = self.CMz - self.weight * self.arm * sinPH * cosTH
+        # Set up raw forces - Zero subtraction depends on if we are rotating 
+        if self.rotating:           # Rotating prop
+            self.CFx = compForces[0]-self.runavg[0].average()
+            self.CFy = compForces[1]-self.runavg[1].average()
+            self.CFz = compForces[2]-self.runavg[2].average()
+            self.CMx = compForces[3]-self.runavg[3].average()
+            self.CMy = compForces[4]-self.runavg[4].average()
+            self.CMz = compForces[5]-self.runavg[5].average()
+
+        else:                       # static prop
+            self.CFx = compForces[0]
+            self.CFy = compForces[1]
+            self.CFz = compForces[2]
+            self.CMx = compForces[3]
+            self.CMy = compForces[4]
+            self.CMz = compForces[5]
+
+        # Now compute the self weight vector in body coords
+        Wx, Wy, Wz = dt.doTransform([0.0], [0.0], [self.weight], [phi], [theta],[psi]) 
+       
+        # And then we subtract self weight and map the computed forces
+        self.CFx = self.CFx - Wx[0]
+        self.CFy = self.CFy - Wy[0]
+        self.CFz = self.CFz - Wz[0]
+        self.CMx = self.CMx - (Wz[0]*self.army - Wy[0]*self.armz)
+        self.CMy = self.CMy - (-Wz[0]*self.armx - Wx[0]*self.armz)
+        self.CMz = self.CMz - (Wy[0]*self.armx - Wx[0]*self.army)
+ 
+        # Add the points to the running averages
+        self.runavg[0].append(self.CFx)
+        self.runavg[1].append(self.CFy)
+        self.runavg[2].append(self.CFz)
+        self.runavg[3].append(self.CMx)
+        self.runavg[4].append(self.CMy)
+        self.runavg[5].append(self.CMz)
 
     def addZero(self, rawdata):
         """ Adds a point to the accumulated zeros
+            
+            Zeros are done different for rotating dyno
         """
-        self.zeros = self.zeros + np.array([self.CFx, self.CFy, self.CFz, 
-                                            self.CMx, self.CMy, self.CMz], float)
-
+        pass
+        
     def compZero(self, count):
-        """ Computes the zero by dividing by the count"""
+        """ Computes the zero by dividing by the count
+        
+            Zeros are done different for rotating dyno
+        """
 
-        # Really need to take the prop weight out of here by using
-        # the inverse of the Int matrix.  This only affects the value
-        # when the prop is not rotating
-
-        self.zeros = self.zeros / count
-
+        pass
 
 class Deck:
     """ A class to handle the cals for a Deck gauge.
