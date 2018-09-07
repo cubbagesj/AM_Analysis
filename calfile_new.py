@@ -99,6 +99,9 @@ class CalFile:
                                  ('Mz', 'int'),
                                  ('weight', 'float'),
                                  ('arm', 'float'),
+                                 ('armx', 'float'),
+                                 ('army', 'float'),
+                                 ('armz', 'float'),
                                  ('position', 'float'),
                                  ('int_row1', 'string'),
                                  ('int_row2', 'string'),
@@ -120,6 +123,7 @@ class CalFile:
                                  ('My', 'int'),
                                  ('Mz', 'int'),
                                  ('weight', 'float'),
+                                 ('arm', 'float'),
                                  ('armx', 'float'),
                                  ('army', 'float'),
                                  ('armz', 'float'),
@@ -154,6 +158,7 @@ class CalFile:
                                     ('gagex', 'float'),
                                     ('gagey', 'float'),
                                     ('gagez', 'float'),
+                                    ('arm', 'float'),
                                     ('armx', 'float'),
                                     ('army', 'float'),
                                     ('armz', 'float'),
@@ -184,6 +189,7 @@ class CalFile:
                                      ('gagex', 'float'),
                                      ('gagey', 'float'),
                                      ('gagez', 'float'),
+                                     ('arm', 'float'),
                                      ('armx', 'float'),
                                      ('army', 'float'),
                                      ('armz', 'float'),
@@ -320,6 +326,7 @@ class CalFile:
                 gauge[item] = self.c.add_option(item, type=itype, keys=section).get()
             except:
                 gauge[item] = None
+                print('None')
 
         # Build the interaction/orient matrices
         rows = []

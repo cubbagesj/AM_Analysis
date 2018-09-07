@@ -112,10 +112,24 @@ class Kistler6:
         # This is the weight and the moment arms of this weight
 
         self.weight = calfile['weight']
-        self.armx = calfile['armx']
-        self.army = calfile['army']
-        self.armz = calfile['armz']
-
+        
+        # Older cal files only had one arm term, check for this:
+        self.arm = calfile['arm']       
+        if self.arm != None:
+            self.armx = self.arm
+            self.army = 0.0
+            self.armz = 0.0
+        else:
+            self.armx = calfile['armx']
+            if self.armx == None:
+                self.armx = 0.0
+            self.army = calfile['army']
+            if self.army == None:
+                self.army = 0.0
+            self.armz = calfile['armz']
+            if self.army == None:
+                self.army = 0.0
+ 
         # Now read the Interaction Matrix and Orientation Matrix
 
         self.Int_Mat = calfile['Int_Mat']
@@ -271,10 +285,24 @@ class Kistler3:
         # center of the gauge
 
         self.weight = calfile['weight']
-        self.armx = calfile['armx']
-        self.army = calfile['army']
-        self.armz = calfile['armz']
 
+        # Older cal files only had one arm term, check for this:
+        self.arm = calfile['arm']       
+        if self.arm != None:
+            self.armx = self.arm
+            self.army = 0.0
+            self.armz = 0.0
+        else:
+            self.armx = calfile['armx']
+            if self.armx == None:
+                self.armx = 0.0
+            self.army = calfile['army']
+            if self.army == None:
+                self.army = 0.0
+            self.armz = calfile['armz']
+            if self.army == None:
+                self.army = 0.0
+ 
         # Now read the Interaction Matrix and Orientation Matrix
 
         self.Int_Mat = calfile['Int_Mat']
@@ -414,24 +442,28 @@ class Dyno6:
         # The arm values are the distance from the center of the mass to the
         # center of the gauge
         #
-        # These are pre-initialized and wrapped in try clauses in case 
-        # they are omitted in the cal file we don't want the program to crash
-        self.weight = 0.0
-        self.armx = 0.0
-        self.army = 0.0
-        self.armz = 0.0
-        self.angle = 0.0
         
         # Next comes the rotation angle
-        try:
-            self.angle = calfile['angle']
-            self.weight = calfile['weight']
-            self.armx = calfile['armx']
-            self.army = calfile['army']
-            self.armz = calfile['armz']
-        except:
-            pass
+        self.angle = calfile['angle']
+        self.weight = calfile['weight']
 
+        # Older cal files only had one arm term, check for this:
+        self.arm = calfile['arm']       
+        if self.arm != None:
+            self.armx = self.arm
+            self.army = 0.0
+            self.armz = 0.0
+        else:
+            self.armx = calfile['armx']
+            if self.armx == None:
+                self.armx = 0.0
+            self.army = calfile['army']
+            if self.army == None:
+                self.army = 0.0
+            self.armz = calfile['armz']
+            if self.army == None:
+                self.army = 0.0
+    
         # Now for the interaction Matrix and Orient Matrix
         # These take out interactions and rotate to body coordinates
         self.Int_Mat = calfile['Int_Mat']
@@ -543,13 +575,24 @@ class Rot_Dyno6:
 
         # Next comes the weight       
         self.weight = calfile['weight']
-        self.arm = calfile['arm']
 
-        # Quick patch for arms
-        self.armx = self.arm
-        self.army = 0.0
-        self.armz = 0.0
-        
+        # Older cal files only had one arm term, check for this:
+        self.arm = calfile['arm']       
+        if self.arm != None:
+            self.armx = self.arm
+            self.army = 0.0
+            self.armz = 0.0
+        else:
+            self.armx = calfile['armx']
+            if self.armx == None:
+                self.armx = 0.0
+            self.army = calfile['army']
+            if self.army == None:
+                self.army = 0.0
+            self.armz = calfile['armz']
+            if self.army == None:
+                self.army = 0.0
+       
         # Prop position zero
         try:
             self.PropPosZero = calfile['position']
@@ -570,6 +613,7 @@ class Rot_Dyno6:
         # initialize the rotation sensor
         self.lastpos = 0
         self.rotating = 0
+        self.zerosdone = 0
 
         # Finally we set the channel zeros to zero
         self.zeros = np.array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), float)
@@ -600,6 +644,7 @@ class Rot_Dyno6:
 
         # Prop position depends on which centerbody it is
         prop_pos = rawdata[184] - self.PropPosZero
+        
         if cb_id < 12:
             if prop_pos < 0:
                 prop_pos = prop_pos + 20000
@@ -613,7 +658,7 @@ class Rot_Dyno6:
         cosR = np.cos(np.radians(rot_angle))
 
         if rot_angle != self.lastpos:
-            self.rotating = 0
+            self.rotating = 1
         else:
             self.rotating = 0
         self.lastpos = rot_angle
@@ -624,45 +669,57 @@ class Rot_Dyno6:
                            rawdata[self.Mx_chan],
                            rawdata[self.My_chan],
                            rawdata[self.Mz_chan]], float)
-    
+
         # Apply the Interaction Matrix
         intForces = np.dot( rawForces, self.Int_Mat)
-
-        # Now we need to rotate to the body coordinates
-
-        bodyFx = intForces[0]
-        bodyFy = cosR * intForces[1] - sinR * intForces[2]
-        bodyFz = sinR * intForces[1] + cosR * intForces[2]
-        bodyMx = intForces[3]
-        bodyMy = cosR * intForces[4] - sinR * intForces[5]
-        bodyMz = sinR * intForces[4] + cosR * intForces[5]
-
-        bodyForces = np.array([bodyFx,
-                              bodyFy,
-                              bodyFz,
-                              bodyMx,
-                              bodyMy,
-                              bodyMz])
-    
+ 
         # Apply the Orientation Matrix
-        compForces = np.dot(bodyForces, self.Orient_Mat)
+        compForces = np.dot( intForces, self.Orient_Mat)
+
 
         # Set up raw forces - Zero subtraction depends on if we are rotating 
         if self.rotating:           # Rotating prop
-            self.CFx = compForces[0]-self.runavg[0].average()
-            self.CFy = compForces[1]-self.runavg[1].average()
-            self.CFz = compForces[2]-self.runavg[2].average()
-            self.CMx = compForces[3]-self.runavg[3].average()
-            self.CMy = compForces[4]-self.runavg[4].average()
-            self.CMz = compForces[5]-self.runavg[5].average()
+        # Add the points to the running averages
+            self.runavg[0].append(compForces[0])
+            self.runavg[1].append(compForces[1])
+            self.runavg[2].append(compForces[2])
+            self.runavg[3].append(compForces[3])
+            self.runavg[4].append(compForces[4])
+            self.runavg[5].append(compForces[5])
+            
+        if self.zerosdone:    
+            compForces[0] = compForces[0] - self.zeros[0]
+            compForces[1] = compForces[1] - self.runavg[1].average()
+            compForces[2] = compForces[2] - self.runavg[2].average()
+            compForces[3] = compForces[3] - self.zeros[3]
+            compForces[4] = compForces[4] - self.runavg[4].average()
+            compForces[5] = compForces[5] - self.runavg[5].average()
+
+        # Now we need to rotate to the body coordinates
+        bodyFx = compForces[0]
+        bodyFy = cosR * compForces[1] - sinR * compForces[2]
+        bodyFz = sinR * compForces[1] + cosR * compForces[2]
+        bodyMx = compForces[3]
+        bodyMy = cosR * compForces[4] - sinR * compForces[5]
+        bodyMz = sinR * compForces[4] + cosR * compForces[5]
+
+        # Set up raw forces - Zero subtraction depends on if we are rotating 
+        if self.rotating or self.zerosdone:           # Rotating prop
+            # Rotating zero taken out above
+            self.CFx = bodyFx 
+            self.CFy = bodyFy
+            self.CFz = bodyFz
+            self.CMx = bodyMx
+            self.CMy = bodyMy
+            self.CMz = bodyMz
 
         else:                       # static prop
-            self.CFx = compForces[0]
-            self.CFy = compForces[1]
-            self.CFz = compForces[2]
-            self.CMx = compForces[3]
-            self.CMy = compForces[4]
-            self.CMz = compForces[5]
+            self.CFx = bodyFx - (self.zeros[0] * doZeros)
+            self.CFy = bodyFy - (self.zeros[1] * doZeros)
+            self.CFz = bodyFz - (self.zeros[2] * doZeros)
+            self.CMx = bodyMx - (self.zeros[3] * doZeros)
+            self.CMy = bodyMy - (self.zeros[4] * doZeros)
+            self.CMz = bodyMz - (self.zeros[5] * doZeros)
 
         # Now compute the self weight vector in body coords
         Wx, Wy, Wz = dt.doTransform([0.0], [0.0], [self.weight], [phi], [theta],[psi]) 
@@ -671,32 +728,25 @@ class Rot_Dyno6:
         self.CFx = self.CFx - Wx[0]
         self.CFy = self.CFy - Wy[0]
         self.CFz = self.CFz - Wz[0]
-        self.CMx = self.CMx - (Wz[0]*self.army - Wy[0]*self.armz)
-        self.CMy = self.CMy - (-Wz[0]*self.armx - Wx[0]*self.armz)
-        self.CMz = self.CMz - (Wy[0]*self.armx - Wx[0]*self.army)
+        self.CMx = self.CMx - ( Wz[0] * self.army - Wy[0] * self.armz)
+        self.CMy = self.CMy - (-Wz[0] * self.armx - Wx[0] * self.armz)
+        self.CMz = self.CMz - ( Wy[0] * self.armx - Wx[0] * self.army)
+        
  
-        # Add the points to the running averages
-        self.runavg[0].append(self.CFx)
-        self.runavg[1].append(self.CFy)
-        self.runavg[2].append(self.CFz)
-        self.runavg[3].append(self.CMx)
-        self.runavg[4].append(self.CMy)
-        self.runavg[5].append(self.CMz)
-
     def addZero(self, rawdata):
         """ Adds a point to the accumulated zeros
             
-            Zeros are done different for rotating dyno
         """
-        pass
+        self.zeros = self.zeros + np.array([self.CFx, self.CFy, self.CFz, 
+                                            self.CMx, self.CMy, self.CMz], float)
         
     def compZero(self, count):
         """ Computes the zero by dividing by the count
-        
-            Zeros are done different for rotating dyno
+
         """
 
-        pass
+        self.zeros = self.zeros / count
+        self.zerosdone = 1
 
 class Deck:
     """ A class to handle the cals for a Deck gauge.

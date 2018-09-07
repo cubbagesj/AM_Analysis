@@ -109,10 +109,23 @@ class Kistler6:
         # This is the weight and the moment arms of this weight
 
         self.weight = calfile['weight']
-        self.armx = calfile['armx']
-        self.army = calfile['army']
-        self.armz = calfile['armz']
-
+        # Older cal files only had one arm term, check for this:
+        self.arm = calfile['arm']       
+        if self.arm != None:
+            self.armx = self.arm
+            self.army = 0.0
+            self.armz = 0.0
+        else:
+            self.armx = calfile['armx']
+            if self.armx == None:
+                self.armx = 0.0
+            self.army = calfile['army']
+            if self.army == None:
+                self.army = 0.0
+            self.armz = calfile['armz']
+            if self.army == None:
+                self.army = 0.0
+ 
         # Now read the Interaction Matrix and Orientation Matrix
 
         self.Int_Mat = calfile['Int_Mat']
@@ -242,10 +255,24 @@ class Kistler3:
         # This is the weight and the moment arms of this weight
 
         self.weight = calfile['weight']
-        self.armx = calfile['armx']
-        self.army = calfile['army']
-        self.armz = calfile['armz']
 
+        # Older cal files only had one arm term, check for this:
+        self.arm = calfile['arm']       
+        if self.arm != None:
+            self.armx = self.arm
+            self.army = 0.0
+            self.armz = 0.0
+        else:
+            self.armx = calfile['armx']
+            if self.armx == None:
+                self.armx = 0.0
+            self.army = calfile['army']
+            if self.army == None:
+                self.army = 0.0
+            self.armz = calfile['armz']
+            if self.army == None:
+                self.army = 0.0
+ 
         # Now read the Interaction Matrix and Orientation Matrix
 
         self.Int_Mat = calfile['Int_Mat']
@@ -582,7 +609,24 @@ class Dyno6:
 
         # Next comes the weight       
         self.weight = calfile['weight']
-        self.arm = calfile['arm']
+
+        # Older cal files only had one arm term, check for this:
+        self.arm = calfile['arm']       
+        if self.arm != None:
+            self.armx = self.arm
+            self.army = 0.0
+            self.armz = 0.0
+        else:
+            self.armx = calfile['armx']
+            if self.armx == None:
+                self.armx = 0.0
+            self.army = calfile['army']
+            if self.army == None:
+                self.army = 0.0
+            self.armz = calfile['armz']
+            if self.army == None:
+                self.army = 0.0
+
 
         # Next comes the rotation angle
         try:
@@ -686,7 +730,23 @@ class Rot_Dyno6:
 
         # Next comes the weight       
         self.weight = calfile['weight']
-        self.arm = calfile['arm']
+
+        # Older cal files only had one arm term, check for this:
+        self.arm = calfile['arm']       
+        if self.arm != None:
+            self.armx = self.arm
+            self.army = 0.0
+            self.armz = 0.0
+        else:
+            self.armx = calfile['armx']
+            if self.armx == None:
+                self.armx = 0.0
+            self.army = calfile['army']
+            if self.army == None:
+                self.army = 0.0
+            self.armz = calfile['armz']
+            if self.army == None:
+                self.army = 0.0
 
         # Prop position zero
         try:
