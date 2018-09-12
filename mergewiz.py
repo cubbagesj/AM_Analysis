@@ -199,22 +199,18 @@ class RunMrgPage(wx.adv.WizardPageSimple):
         # Here is where we run the actual merge.
         # The obc directory is in the global obcdir.  Run the merge from here
         
-        self.password = ''
-
         currdir = os.getcwd()
         os.chdir(obcDir)
-        keepGoing = True
         count = 0
         for run in runsToMerge:
-            if keepGoing:              
-                OrigFileName, FileType = run.split(".") #AFP Split file into name and extension
-                FileName = OrigFileName.replace(" ","") #AFP Remove space after underslash in tdms file, does nothing for OBC file.
-                self.runnum = FileName[4:] #AFP
-                self.FilePath = os.path.join(obcDir,run) #AFP
-                if FileType.lower() == 'tdms':
-                    self.tdmsMerge()
-                else:
-                    MergeRun(int(self.runnum), mrgDir, inpDir, self.password)                     
+            OrigFileName, FileType = run.split(".") #AFP Split file into name and extension
+            FileName = OrigFileName.replace(" ","") #AFP Remove space after underslash in tdms file, does nothing for OBC file
+            self.runnum = FileName[4:] #AFP
+            self.FilePath = os.path.join(obcDir,run) #AFP
+            if FileType.lower() == 'tdms':
+                self.tdmsMerge()
+            else:
+                MergeRun(int(self.runnum), mrgDir, inpDir)                     
             count += 1
         os.chdir(currdir)
         
@@ -222,7 +218,7 @@ class RunMrgPage(wx.adv.WizardPageSimple):
         tdmsToOBC(self.FilePath, obcDir) #Check to see if the the file we are merging is a TDMS file or an OBC file using the IsTDMSFile input. If it
                                     #is a TDMS file, use Woody's converter to handle it. If it is an OBC file, proceed as normal.
         tdmsinpDir = os.path.join(obcDir,'run-'+self.runnum+'_MERGE.INP')
-        MergeRun(int(self.runnum), mrgDir, tdmsinpDir, self.password) #AFP Added filepath and filetype inputs to check if TDMS file
+        MergeRun(int(self.runnum), mrgDir, tdmsinpDir) #AFP Added filepath and filetype inputs to check if TDMS file
         #AFP Now delete files generated from TDMS conversion, since they are not needed.        
         os.remove(os.path.join(obcDir,'run-'+self.runnum+'.cal'))
         os.remove(os.path.join(obcDir,'run-'+self.runnum+'.gps'))

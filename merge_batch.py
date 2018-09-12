@@ -2,7 +2,7 @@
 
 import os,sys
 import wx
-from am_merge import MergeRun
+from am_merge_array import MergeRun
 
 # This routine allows for batch processing of a set of runs
 # It reads a text file with the filename and path, the mrgdir and the merge file
@@ -37,6 +37,7 @@ else:
             rootname, ext = os.path.splitext(os.path.basename(fullname))
             runnumber = rootname[4:]
 
+            print( "fullname = ", fullname)
             print( "runnumber = ", runnumber)
             print( "stddir = " , std_dir)
             print( "merge_file = ", merge_file)
@@ -45,7 +46,7 @@ else:
             os.chdir(obcpath)
 
             try:
-                MergeRun(int(runnumber), std_dir, merge_file)
+                MergeRun(fullname, int(runnumber), std_dir, merge_file)
             except:
                 print( "Merge failed for run: ", runnumber)
                 raise
