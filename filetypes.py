@@ -687,7 +687,7 @@ class OBCFile:
             if cal.hasSOF2 == 'TRUE':
                 self.sp_gauges['SOF2'] = dynos.Dyno6(cal.SOF2)
         
-            # Kistler - Can only have 1 Kistler gauge at a time
+            # Kistler 
             if cal.hasKistler == 'TRUE':
                 self.sp_gauges['Kistler'] = dynos.Kistler6(cal.kistler)
         
@@ -854,27 +854,40 @@ class OBCFile:
             structure as additional columns
         """
         # Pitch
-        sinTH = np.sin(np.radians(self.theta))
-        cosTH = np.cos(np.radians(self.theta))
-
-        #Pitch Zero
-        sinTHZ = np.sin(np.radians(self.avgEUzeros['ln200_pitch']))
-        cosTHZ = np.cos(np.radians(self.avgEUzeros['ln200_pitch']))
+        theta = np.radians(self.theta)
 
         #Roll
-        sinPH = np.sin(np.radians(self.phi))
-        cosPH = np.cos(np.radians(self.phi))
+        phi = np.radians(self.phi)
 
-        # Roll zero 
-        sinPHZ = np.sin(np.radians(self.avgEUzeros['ln200_roll']))
-        cosPHZ = np.cos(np.radians(self.avgEUzeros['ln200_roll']))
+        # Yaw
+        psi = np.radians(self.psi)
 
-        bodyAngles = [sinTH, cosTH, sinPH, cosPH, sinTHZ, cosTHZ, sinPHZ, cosPHZ]
+        bodyAngles = [phi, theta, psi]
 
+        
         for gauge in self.sp_gauges.keys():
-            # Compute the special gauges - For now just rotor/stator
+            # Compute the special gauges - The Deck is not used and has not been updates
             if (gauge != 'Deck'):
-                self.sp_gauges[gauge].compute(self.data, self.gains, bodyAngles, self.avgRawzeros, 10 )
+                
+                # Before computing the data, need to compute the zeros
+                # This is done by passing in a subset of the data (usually the zeros section)
+                # and having this data processed and averaged
+                if (gauge == 'Rotor'):
+                    self.sp_gauges[gauge].compute(self.dataEU.query('mode325 == 0x0F33'),
+                                  bodyAngles, 
+                                  cb_id = 10,
+                                  doZeros = 0.0)
+                else:
+                    self.sp_gauges[gauge].compute(self.dataEU.query('mode325 == 0x0F13'),
+                                  bodyAngles, 
+                                  cb_id = 10,
+                                  doZeros = 0.0)
+
+                self.sp_gauges[gauge].compute(self.dataEU,
+                              bodyAngles, 
+                              cb_id = 10,
+                              doZeros = 1.0)
+
                 # Then append to the EU dataframe
                 self.dataEU[gauge+'_CFx'] = self.sp_gauges[gauge].CFx
                 self.dataEU[gauge+'_CFy'] = self.sp_gauges[gauge].CFy
@@ -954,7 +967,7 @@ class OBCFile:
 
 if __name__ == "__main__":
 
-    test = TDMSFile('2050')
+    test = OBCFile('12805')
     #test = STDFile('10-1242.std', 'known')
 #    test.info()
 #    test.run_stats()
