@@ -51,7 +51,6 @@ class SelectFilesPage(wx.adv.WizardPageSimple):
         titleText = wx.StaticText(self, -1, 'Select OBC or TDMS Files')
         titleText.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
         
-        print(self.dataDir + "\n")
         self.dirpick = wx.DirPickerCtrl(self, -1, path=self.dataDir, message="Choose Directory")
         self.dirpick.SetTextCtrlGrowable(grow=True)
         self.dirpick.SetTextCtrlProportion(1)

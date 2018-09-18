@@ -24,6 +24,7 @@ import fnmatch
 from plotcanvas import CanvasFrame
 import plottools as plottools
 import images
+import newmerge
 import mergewiz
 import overplot
 import analysis
@@ -317,6 +318,7 @@ class BrowserFrame(wx.Frame):
                  ("&Quit", "Quit", self.OnCloseWindow)),
                 ("&Merge",
                  ("Merge Wizard...", "Merge Files", self.OnMerge),
+                 ("New Style Merge...","New Merge", self.OnNewMerge),
                  ("Convert TDMS to OBC for Merge...", "Convert TDMS Files", self.OnTDMStoOBC)),
                 ("&Plot",
                  ("Overplot Tool...", "Overplot Files", self.OnPlot),
@@ -459,6 +461,13 @@ class BrowserFrame(wx.Frame):
 
     def OnCloseWindow(self, event):
         self.Destroy()
+
+    def OnNewMerge(self, event):
+        """
+            Uses new style merge
+        """
+        frame = newmerge.MergeFrame(paths = self.defaultPaths)
+        frame.Show()
 
     def OnMerge(self, event):
         """
