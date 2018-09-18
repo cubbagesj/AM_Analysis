@@ -7,7 +7,7 @@ import wx.adv
 import glob
 
 
-from am_merge import MergeRun
+from am_merge_array import MergeRun
 
 from tdms_to_obc import tdmsToOBC #AFP - Initially use Woody's file tdms_to_obc converter to handle the TDMS file
 
@@ -210,7 +210,7 @@ class RunMrgPage(wx.adv.WizardPageSimple):
             if FileType.lower() == 'tdms':
                 self.tdmsMerge()
             else:
-                MergeRun(int(self.runnum), mrgDir, inpDir)                     
+                MergeRun(self.FilePath, int(self.runnum), mrgDir, inpDir)                     
             count += 1
         os.chdir(currdir)
         
