@@ -300,8 +300,8 @@ class Kistler3:
             if self.army == None:
                 self.army = 0.0
             self.armz = calfile['armz']
-            if self.army == None:
-                self.army = 0.0
+            if self.armz == None:
+                self.armz = 0.0
  
         # Now read the Interaction Matrix and Orientation Matrix
 
@@ -449,21 +449,21 @@ class Dyno6:
 
         # Older cal files only had one arm term, check for this:
         self.arm = calfile['arm']       
-        if self.arm != None:
+        if self.arm != None and self.arm != 0:
             self.armx = self.arm
             self.army = 0.0
             self.armz = 0.0
-        else:
-            self.armx = calfile['armx']
-            if self.armx == None:
-                self.armx = 0.0
-            self.army = calfile['army']
-            if self.army == None:
-                self.army = 0.0
-            self.armz = calfile['armz']
-            if self.army == None:
-                self.army = 0.0
-    
+
+        self.armx = calfile['armx']
+        if self.armx == None:
+            self.armx = 0.0
+        self.army = calfile['army']
+        if self.army == None:
+            self.army = 0.0
+        self.armz = calfile['armz']
+        if self.armz == None:
+            self.armz = 0.0
+   
         # Now for the interaction Matrix and Orient Matrix
         # These take out interactions and rotate to body coordinates
         self.Int_Mat = calfile['Int_Mat']
@@ -578,21 +578,21 @@ class Rot_Dyno6:
 
         # Older cal files only had one arm term, check for this:
         self.arm = calfile['arm']       
-        if self.arm != None:
+        if self.arm != None and self.arm != 0:
             self.armx = self.arm
             self.army = 0.0
             self.armz = 0.0
-        else:
-            self.armx = calfile['armx']
-            if self.armx == None:
-                self.armx = 0.0
-            self.army = calfile['army']
-            if self.army == None:
-                self.army = 0.0
-            self.armz = calfile['armz']
-            if self.army == None:
-                self.army = 0.0
-       
+
+        self.armx = calfile['armx']
+        if self.armx == None:
+            self.armx = 0.0
+        self.army = calfile['army']
+        if self.army == None:
+            self.army = 0.0
+        self.armz = calfile['armz']
+        if self.armz == None:
+            self.armz = 0.0
+   
         # Prop position zero
         try:
             self.PropPosZero = calfile['position']

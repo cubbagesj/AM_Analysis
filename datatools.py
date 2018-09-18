@@ -148,6 +148,6 @@ def doTransform(u, v, w, phi, theta, psi, direction='toInertial'):
             vnew.append(v[n])
             wnew.append(w[n])
 
-    return [unew, vnew, wnew]
+    return [np.array(unew), np.array(vnew), np.array(wnew)]
 
 

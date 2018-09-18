@@ -326,7 +326,6 @@ class CalFile:
                 gauge[item] = self.c.add_option(item, type=itype, keys=section).get()
             except:
                 gauge[item] = None
-                print('None')
 
         # Build the interaction/orient matrices
         rows = []

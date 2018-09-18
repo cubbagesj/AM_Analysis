@@ -110,22 +110,16 @@ class Kistler6:
         # This is the weight and the moment arms of this weight
 
         self.weight = calfile['weight']
-        # Older cal files only had one arm term, check for this:
-        self.arm = calfile['arm']       
-        if self.arm != None:
-            self.armx = self.arm
+
+        self.armx = calfile['armx']
+        if self.armx == None:
+            self.armx = 0.0
+        self.army = calfile['army']
+        if self.army == None:
             self.army = 0.0
-            self.armz = 0.0
-        else:
-            self.armx = calfile['armx']
-            if self.armx == None:
-                self.armx = 0.0
-            self.army = calfile['army']
-            if self.army == None:
-                self.army = 0.0
-            self.armz = calfile['armz']
-            if self.army == None:
-                self.army = 0.0
+        self.armz = calfile['armz']
+        if self.army == None:
+            self.army = 0.0
  
         # Now read the Interaction Matrix and Orientation Matrix
 
@@ -197,9 +191,9 @@ class Kistler6:
         self.CFx = compForces[:,0] - Wx 
         self.CFy = compForces[:,1] - Wy
         self.CFz = compForces[:,2] - Wz
-        self.CMx = compForces[:,3] - (Wz[0]*self.army - Wy[0]*self.armz)
-        self.CMy = compForces[:,4] - (-Wz[0]*self.armx - Wx[0]*self.armz)
-        self.CMz = compForces[:,5] - (Wy[0]*self.armx - Wx[0]*self.army)
+        self.CMx = compForces[:,3] - (Wz*self.army - Wy*self.armz)
+        self.CMy = compForces[:,4] - (-Wz*self.armx - Wx*self.armz)
+        self.CMz = compForces[:,5] - (Wy*self.armx - Wx*self.army)
         
         if doZeros == 1.0:                      #Subtract zeros
             self.CFx = self.CFx - self.CFx_z
@@ -270,22 +264,15 @@ class Kistler3:
 
         self.weight = calfile['weight']
 
-        # Older cal files only had one arm term, check for this:
-        self.arm = calfile['arm']       
-        if self.arm != None:
-            self.armx = self.arm
+        self.armx = calfile['armx']
+        if self.armx == None:
+            self.armx = 0.0
+        self.army = calfile['army']
+        if self.army == None:
             self.army = 0.0
+        self.armz = calfile['armz']
+        if self.armz == None:
             self.armz = 0.0
-        else:
-            self.armx = calfile['armx']
-            if self.armx == None:
-                self.armx = 0.0
-            self.army = calfile['army']
-            if self.army == None:
-                self.army = 0.0
-            self.armz = calfile['armz']
-            if self.army == None:
-                self.army = 0.0
  
         # Now read the Interaction Matrix and Orientation Matrix
 
@@ -356,9 +343,9 @@ class Kistler3:
         self.CFx = compForces[:,0] - Wx 
         self.CFy = compForces[:,1] - Wy
         self.CFz = compForces[:,2] - Wz
-        self.CMx = compForces[:,3] - (Wz[0]*self.army - Wy[0]*self.armz)
-        self.CMy = compForces[:,4] - (-Wz[0]*self.armx - Wx[0]*self.armz)
-        self.CMz = compForces[:,5] - (Wy[0]*self.armx - Wx[0]*self.army)
+        self.CMx = compForces[:,3] - (Wz*self.army - Wy*self.armz)
+        self.CMy = compForces[:,4] - (-Wz*self.armx - Wx*self.armz)
+        self.CMz = compForces[:,5] - (Wy*self.armx - Wx*self.army)
 
         if doZeros == 1.0:                      #Subtract zeros
             self.CFx = self.CFx - self.CFx_z
@@ -416,20 +403,20 @@ class Dyno6:
 
         # Older cal files only had one arm term, check for this:
         self.arm = calfile['arm']       
-        if self.arm != None:
+        if self.arm != None and self.arm != 0:
             self.armx = self.arm
             self.army = 0.0
             self.armz = 0.0
-        else:
-            self.armx = calfile['armx']
-            if self.armx == None:
-                self.armx = 0.0
-            self.army = calfile['army']
-            if self.army == None:
-                self.army = 0.0
-            self.armz = calfile['armz']
-            if self.army == None:
-                self.army = 0.0
+
+        self.armx = calfile['armx']
+        if self.armx == None:
+            self.armx = 0.0
+        self.army = calfile['army']
+        if self.army == None:
+            self.army = 0.0
+        self.armz = calfile['armz']
+        if self.armz == None:
+            self.armz = 0.0
 
 
         # Next comes the rotation angle
@@ -489,9 +476,9 @@ class Dyno6:
         self.CFx = compForces[:,0] - Wx 
         self.CFy = compForces[:,1] - Wy
         self.CFz = compForces[:,2] - Wz
-        self.CMx = compForces[:,3] - (Wz[0]*self.army - Wy[0]*self.armz)
-        self.CMy = compForces[:,4] - (-Wz[0]*self.armx - Wx[0]*self.armz)
-        self.CMz = compForces[:,5] - (Wy[0]*self.armx - Wx[0]*self.army)
+        self.CMx = compForces[:,3] - (Wz*self.army - Wy*self.armz)
+        self.CMy = compForces[:,4] - (-Wz*self.armx - Wx*self.armz)
+        self.CMz = compForces[:,5] - (Wy*self.armx - Wx*self.army)
         
         if doZeros == 1.0:                      #Subtract zeros
             self.CFx = self.CFx - self.CFx_z
@@ -549,20 +536,20 @@ class Rot_Dyno6:
 
         # Older cal files only had one arm term, check for this:
         self.arm = calfile['arm']       
-        if self.arm != None:
+        if self.arm != None and self.arm != 0:
             self.armx = self.arm
             self.army = 0.0
             self.armz = 0.0
-        else:
-            self.armx = calfile['armx']
-            if self.armx == None:
-                self.armx = 0.0
-            self.army = calfile['army']
-            if self.army == None:
-                self.army = 0.0
-            self.armz = calfile['armz']
-            if self.army == None:
-                self.army = 0.0
+
+        self.armx = calfile['armx']
+        if self.armx == None:
+            self.armx = 0.0
+        self.army = calfile['army']
+        if self.army == None:
+            self.army = 0.0
+        self.armz = calfile['armz']
+        if self.armz == None:
+            self.armz = 0.0
 
         # Prop position zero
         try:
@@ -596,7 +583,7 @@ class Rot_Dyno6:
         psi = bodyAngles[2]
              
         # Prop position depends on which centerbody it is
-        prop_pos = rawdata['prop_position'] - self.PropPosZero
+        prop_pos = rawdata['prop_position'].copy(deep=True)
          
         if cb_id < 12:
             prop_pos = prop_pos.map(lambda x: x+20000 if (x < 0) else x)
@@ -625,14 +612,28 @@ class Rot_Dyno6:
             return np.dot( a,b)
         compForces = np.apply_along_axis(orientMatrix, 1, intForces, self.Orient_Mat)
 
-        # Now we need to rotate to the body coordinates
+        if doZeros == 0.0:                      #Subtract zeros
+            self.CFx_z = compForces[:,0].mean()
+            self.CFy_z = compForces[:,1].mean()
+            self.CFz_z = compForces[:,2].mean()
+            self.CMx_z = compForces[:,3].mean()
+            self.CMy_z = compForces[:,4].mean()
+            self.CMz_z = compForces[:,5].mean()        
 
+        rawbodyFx = compForces[:,0] - self.CFx_z
+        rawbodyFy = compForces[:,1] - self.CFy_z
+        rawbodyFz = compForces[:,2] - self.CFz_z
+        rawbodyMx = compForces[:,3] - self.CMx_z
+        rawbodyMy = compForces[:,4] - self.CMy_z
+        rawbodyMz = compForces[:,5] - self.CMz_z
+
+        # Now we need to rotate to the body coordinates
         bodyFx = compForces[:,0]
-        bodyFy = cosR * compForces[:,1] - sinR * compForces[:,2]
-        bodyFz = sinR * compForces[:,1] + cosR * compForces[:,2]
+        bodyFy = cosR * rawbodyFy - sinR * rawbodyFz
+        bodyFz = sinR * rawbodyFy + cosR * rawbodyFz
         bodyMx = compForces[:,3]
-        bodyMy = cosR * compForces[:,4] - sinR * compForces[:,5]
-        bodyMz = sinR * compForces[:,4] + cosR * compForces[:,5]
+        bodyMy = cosR * rawbodyMy - sinR * rawbodyMz
+        bodyMz = sinR * rawbodyMy + cosR * rawbodyMz
 
         # Now compute the self weight vector in body coords
         Wx, Wy, Wz = dt.doTransform(np.zeros(len(bodyFx), dtype=float),
@@ -646,25 +647,11 @@ class Rot_Dyno6:
         self.CFx = bodyFx - Wx 
         self.CFy = bodyFy - Wy
         self.CFz = bodyFz - Wz
-        self.CMx = bodyMx - (Wz[0]*self.army - Wy[0]*self.armz)
-        self.CMy = bodyMy - (-Wz[0]*self.armx - Wx[0]*self.armz)
-        self.CMz = bodyMz - (Wy[0]*self.armx - Wx[0]*self.army)
+        self.CMx = bodyMx - (Wz*self.army - Wy*self.armz)
+        self.CMy = bodyMy - (-Wz*self.armx - Wx*self.armz)
+        self.CMz = bodyMz - (Wy*self.armx - Wx*self.army)
 
-        if doZeros == 1.0:                      #Subtract zeros
-            self.CFx = self.CFx - self.CFx_z
-            self.CFy = self.CFy - self.CFy_z
-            self.CFz = self.CFz - self.CFz_z
-            self.CMx = self.CMx - self.CMx_z
-            self.CMy = self.CMy - self.CMy_z
-            self.CMz = self.CMz - self.CMz_z
-        else:                                   #Compute Zeros
-            self.CFx_z = self.CFx.mean()
-            self.CFy_z = self.CFy.mean()
-            self.CFz_z = self.CFz.mean()
-            self.CMx_z = self.CMx.mean()
-            self.CMy_z = self.CMy.mean()
-            self.CMz_z = self.CMz.mean()
-  
+
 
 class Deck:
     """ A class to handle the cals for a Deck gauge.

@@ -759,7 +759,7 @@ class OBCFile:
             pass
 
     def getEUData(self, channel):
-        """ Returns an array containing the request channel of data
+        """ Returns a copy of a series containing the request channel of data
             in engineering units - Model Scale Units
             channel is a column number or column name
         """
@@ -767,12 +767,12 @@ class OBCFile:
             if channel < 0 or channel > self.nchans:
                 return None
             else:
-                return self.dataEU.iloc[:,channel]
+                return self.dataEU.iloc[:,channel].copy(deep=True)
         else:
-            return self.dataEU.loc[:,channel]
+            return self.dataEU.loc[:,channel].copy(deep=True)
 
     def getRAWData(self, channel):
-        """ Returns an array containing the request channel of data
+        """ Returns an series containing the request channel of data
             in raw units (no conversion)
             channel is a column number or column name
         """
@@ -842,6 +842,10 @@ class OBCFile:
             self.u_adcp_raw = self.dataEU.adcp_x_vel_btm.values
             self.v_adcp_raw = self.dataEU.adcp_y_vel_btm.values
             self.w_adcp_raw = self.dataEU.adcp_z_vel_btm.values
+            
+            self.bigU = np.sqrt(self.dataEU.adcp_x_vel_btm.values ** 2 +
+                                self.dataEU.adcp_y_vel_btm.values ** 2 +
+                                self.dataEU.adcp_z_vel_btm.values ** 2)
 
             self.depth = self.dataEU.obs_depth2.values
         except:
@@ -894,7 +898,7 @@ class OBCFile:
                 self.dataEU[gauge+'_CFz'] = self.sp_gauges[gauge].CFz
                 self.dataEU[gauge+'_CMx'] = self.sp_gauges[gauge].CMx
                 self.dataEU[gauge+'_CMy'] = self.sp_gauges[gauge].CMy
-                self.dataEU[gauge+'_CMZ'] = self.sp_gauges[gauge].CMz
+                self.dataEU[gauge+'_CMz'] = self.sp_gauges[gauge].CMz
                 # Update the channel names and number
                 self.chan_names = self.dataEU.columns.values.tolist()
                 self.nchans = len(self.chan_names)
