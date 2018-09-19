@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import wx
-import wx.lib.filebrowsebutton as filebrowse
 import os
 import wx.adv
 import glob

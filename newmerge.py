@@ -13,6 +13,7 @@ Provides input fields to select directories and filenames
 import os, glob
 import wx
 import wx.grid, wx.html
+from tdms_to_obc import tdmsToOBC 
 
 from am_merge_array import MergeRun
 
@@ -23,6 +24,10 @@ class MergeFrame(wx.Frame):
         '''
         wx.Frame.__init__(self, None, -1, 'Merge', style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
         self.SetBackgroundColour(wx.Colour("LIGHTGREY"))
+        
+        # Setup status bar
+        self.statusbar = self.CreateStatusBar(1)
+        self.statusbar.SetStatusText('Ready to Merge')
         
         # Map default paths
         self.defaultPaths = paths
@@ -46,15 +51,21 @@ class MergeFrame(wx.Frame):
         stdLabel.SetFont(wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD))
         
         # File selector
-        self.dirpick = wx.DirPickerCtrl(self, -1, path='/home/pi/Documents', message="Choose Directory")
-        self.fileList = wx.CheckListBox(self, -1, size=(200,150), style=wx.LB_MULTIPLE)
+        self.dirpick = wx.DirPickerCtrl(self, -1, 
+                                        path=self.defaultPaths['obcDir'], 
+                                        message="Choose Directory")
+        self.fileList = wx.CheckListBox(self, -1, 
+                                        size=(200,150), 
+                                        style=wx.LB_MULTIPLE)
 
         self.Bind(wx.EVT_DIRPICKER_CHANGED,  self.OnDirPick, self.dirpick)
         self.Bind(wx.EVT_CHECKLISTBOX, self.OnCheck, self.fileList) #AFP Updated onCheck function
 
 
-        self.mrgdirpick = wx.DirPickerCtrl(self, -1, path='/home/pi/Documents', message="Choose Directory",
-                        style=wx.DIRP_USE_TEXTCTRL)
+        self.mrgdirpick = wx.DirPickerCtrl(self, -1, 
+                                           path=self.defaultPaths['stdDir'], 
+                                           message="Choose Directory",
+                                           style=wx.DIRP_USE_TEXTCTRL)
         self.Bind(wx.EVT_DIRPICKER_CHANGED, self.OnMrgDirPick, self.mrgdirpick)
  
         # Run Merge Button
@@ -120,8 +131,12 @@ class MergeFrame(wx.Frame):
             if FileType.lower() == 'tdms':
                 self.tdmsMerge()
             else:
+                
+                self.statusbar.SetStatusText('Merging run: ' + self.runnum)
                 MergeRun(self.FilePath, int(self.runnum), self.mrgDir, self.MergeCfg)                     
+                self.statusbar.SetStatusText('Merging run: ' + self.runnum + ' -Done')
             count += 1
+        self.statusbar.SetStatusText('Merge Complete!')
         os.chdir(currdir)
          
     def OnDirPick(self, evt):
@@ -162,13 +177,13 @@ class MergeFrame(wx.Frame):
 
 
     def tdmsMerge(self):
-        tdmsToOBC(self.FilePath, obcDir) #Check to see if the the file we are merging is a TDMS file or an OBC file using the IsTDMSFile input. If it
+        tdmsToOBC(self.FilePath, self.dataDir) #Check to see if the the file we are merging is a TDMS file or an OBC file using the IsTDMSFile input. If it
                                     #is a TDMS file, use Woody's converter to handle it. If it is an OBC file, proceed as normal.
-        tdmsinpDir = os.path.join(obcDir,'run-'+self.runnum+'_MERGE.INP')
-        MergeRun(int(self.runnum), mrgDir, tdmsinpDir) #AFP Added filepath and filetype inputs to check if TDMS file
+        tdmsinpDir = os.path.join(self.dataDir,'run-'+self.runnum+'_MERGE.INP')
+        MergeRun(int(self.runnum), self.mrgDir, tdmsinpDir) #AFP Added filepath and filetype inputs to check if TDMS file
         #AFP Now delete files generated from TDMS conversion, since they are not needed.        
-        os.remove(os.path.join(obcDir,'run-'+self.runnum+'.cal'))
-        os.remove(os.path.join(obcDir,'run-'+self.runnum+'.gps'))
-        os.remove(os.path.join(obcDir,'run-'+self.runnum+'.obc'))               
-        os.remove(os.path.join(obcDir,'run-'+self.runnum+'.run'))                
-        os.remove(os.path.join(obcDir,'run-'+self.runnum+'_MERGE.INP')) 
+        os.remove(os.path.join(self.dataDir,'run-'+self.runnum+'.cal'))
+        os.remove(os.path.join(self.dataDir,'run-'+self.runnum+'.gps'))
+        os.remove(os.path.join(self.dataDir,'run-'+self.runnum+'.obc'))               
+        os.remove(os.path.join(self.dataDir,'run-'+self.runnum+'.run'))                
+        os.remove(os.path.join(self.dataDir,'run-'+self.runnum+'_MERGE.INP')) 
