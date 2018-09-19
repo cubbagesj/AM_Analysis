@@ -715,12 +715,12 @@ class App(wx.App):
     def OnInit(self):
         # Start with a splash screen, skip if the file can not be found
         try:
-            bmp = wx.Image("./tool_img.png").ConvertToBitmap()
-            wx.SplashScreen(bmp, wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT,
-                            500, None, -1)
-            wx.Yield()
+            bmp = wx.Bitmap("./tool_img.png")
+            splash = wx.adv.SplashScreen(bmp, wx.adv.SPLASH_CENTRE_ON_SCREEN | wx.adv.SPLASH_TIMEOUT,
+                            3000, None, -1)
+            splash.Show()
         except:
-            pass
+            raise
 
        
         # Start the main app window
