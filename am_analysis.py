@@ -720,7 +720,7 @@ class App(wx.App):
                             3000, None, -1)
             splash.Show()
         except:
-            raise
+            pass
 
        
         # Start the main app window
