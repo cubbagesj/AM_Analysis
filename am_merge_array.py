@@ -316,8 +316,10 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
     q_FS *= pow(c_lambda, -.5)
     r_FS = runObj.r.copy()
     r_FS *= pow(c_lambda, -.5)
-    
-       
+
+    # Initialize spike filters
+    Uprev = Vprev = Wprev
+
     rawStatus = runObj.getEUData(mode_chan).copy()
 
     for i in range(len(mrg_names)):
@@ -346,6 +348,10 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
 
         elif mrg_chans[i] == 804:           #Filtered and Corr. ADCP u
             EUdata = runObj.u_adcp.copy()
+            for t in range(len(EUdata)):
+                if abs(EUdata[t]) > 70:
+                    EUdata[t] = Uprev
+                Uprev = EUdata[t]
             EUdata *= pow(c_lambda, mrg_scale[i])
             EUdata -= ((q_FS/57.296)*ADCPLoc[2])
             # We need this later on for alpha/beta calcs so store it
@@ -353,6 +359,10 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
             
         elif mrg_chans[i] == 805:           #Filtered and Corr ADCP v
             EUdata = runObj.v_adcp.copy()
+            for t in range(len(EUdata)):
+                if abs(EUdata[t]) > 15:
+                    EUdata[t] = Vprev
+                Vprev = EUdata[t]
             EUdata *= pow(c_lambda, mrg_scale[i])
             EUdata += (((p_FS/57.296)*ADCPLoc[2])-((r_FS/57.296)*ADCPLoc[0]))
             # We need this later on for alpha/beta calcs so store it
@@ -360,6 +370,10 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
             
         elif mrg_chans[i] == 806:           #Filtered and Corr ADCP w
             EUdata = runObj.w_adcp.copy()
+            for t in range(len(EUdata)):
+                if abs(EUdata[t]) > 15:
+                    EUdata[t] = Wprev
+                Wprev = EUdata[t]
             EUdata *= pow(c_lambda, mrg_scale[i])
             EUdata += (((q_FS/57.296)*ADCPLoc[0])-((p_FS/57.296)*ADCPLoc[1]))
             # We need this later on for alpha/beta calcs so store it
