@@ -51,7 +51,6 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
 
     # LOG File - Open up a file to write diagnostic info to
     #
-    print(std_dir+"\n")
     try:
         logfile = open('merge.log','w')
     except:
@@ -318,7 +317,7 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
     r_FS *= pow(c_lambda, -.5)
 
     # Initialize spike filters
-    Uprev = Vprev = Wprev
+    Uprev = Vprev = Wprev = 0.0
 
     rawStatus = runObj.getEUData(mode_chan).copy()
 

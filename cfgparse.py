@@ -1568,8 +1568,8 @@ class ConfigParser(OptionContainer):
     def write_errors(self,errors):
         CFGPARSE_USER_ERROR = '\n' + '\n'.join(errors)
         if not self.exception:
-            sys.stderr.write("ERROR: Configuration File Parser\n")           
-            sys.stderr.write(CFGPARSE_USER_ERROR)
+#            sys.stderr.write("ERROR: Configuration File Parser\n")           
+#            sys.stderr.write(CFGPARSE_USER_ERROR)
             self.system_exit()
         else:
             if self.exception is True:

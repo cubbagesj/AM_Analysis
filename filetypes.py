@@ -874,13 +874,25 @@ class OBCFile:
             if (gauge != 'Deck'):
                 
                 # Before computing the data, need to compute the zeros
-                # This is done by passing in a subset of the data (usually the zeros section)
+                # This is done by passing in a subset of the data (usually the zeros section mode=0x0F13)
                 # and having this data processed and averaged
+                
+                # But for the rotor we want the running zero during the approach (mode=0x0F33)
+                # This can cause an error though if there was no standby (i.e. and aborted run)
+                # so we wrap this in a try clause and default back to the zeros portion if necessary
+                
                 if (gauge == 'Rotor'):
-                    self.sp_gauges[gauge].compute(self.dataEU.query('mode325 == 0x0F33'),
-                                  bodyAngles, 
-                                  cb_id = 10,
-                                  doZeros = 0.0)
+                    try:
+                        self.sp_gauges[gauge].compute(self.dataEU.query('mode325 == 0x0F33'),
+                                      bodyAngles, 
+                                      cb_id = 10,
+                                      doZeros = 0.0)
+                    except:
+                        self.sp_gauges[gauge].compute(self.dataEU.query('mode325 == 0x0F13'),
+                                      bodyAngles, 
+                                      cb_id = 10,
+                                      doZeros = 0.0)
+
                 else:
                     self.sp_gauges[gauge].compute(self.dataEU.query('mode325 == 0x0F13'),
                                   bodyAngles, 

@@ -132,9 +132,8 @@ class MergeFrame(wx.Frame):
                 self.tdmsMerge()
             else:
                 
-                self.statusbar.SetStatusText('Merging run: ' + self.runnum)
+                self.statusbar.SetStatusText('Merging runs -----> ' )
                 MergeRun(self.FilePath, int(self.runnum), self.mrgDir, self.MergeCfg)                     
-                self.statusbar.SetStatusText('Merging run: ' + self.runnum + ' -Done')
             count += 1
         self.statusbar.SetStatusText('Merge Complete!')
         os.chdir(currdir)
