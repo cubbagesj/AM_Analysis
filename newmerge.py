@@ -133,7 +133,11 @@ class MergeFrame(wx.Frame):
             else:
                 
                 self.statusbar.SetStatusText('Merging runs -----> ' )
-                MergeRun(self.FilePath, int(self.runnum), self.mrgDir, self.MergeCfg)                     
+                try:
+                    MergeRun(self.FilePath, int(self.runnum), self.mrgDir, self.MergeCfg)                     
+                except:
+                    pass
+
             count += 1
         self.statusbar.SetStatusText('Merge Complete!')
         os.chdir(currdir)
