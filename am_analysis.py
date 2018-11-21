@@ -25,7 +25,6 @@ from plotcanvas import CanvasFrame
 import plottools as plottools
 import images
 import newmerge
-import mergewiz
 import overplot
 import analysis
 import extrema
@@ -317,7 +316,6 @@ class BrowserFrame(wx.Frame):
                  ("Update Paths", "Update Paths",self.OnPathUpdate),
                  ("&Quit", "Quit", self.OnCloseWindow)),
                 ("&Merge",
-                 ("Merge Wizard...", "Merge Files", self.OnMerge),
                  ("New Style Merge...","New Merge", self.OnNewMerge),
                  ("Convert TDMS to OBC for Merge...", "Convert TDMS Files", self.OnTDMStoOBC)),
                 ("&Plot",
@@ -468,28 +466,6 @@ class BrowserFrame(wx.Frame):
         """
         frame = newmerge.MergeFrame(paths = self.defaultPaths)
         frame.Show()
-
-    def OnMerge(self, event):
-        """
-            This is triggered when 'Merge' is selected from 
-            the main menu
-        """
-        
-#        wizard = wx.wizard.Wizard(self, -1, "Merge Wizard", images.getWizTest1Bitmap())
-        wizard = wx.adv.Wizard(self, -1, "Merge Wizard")
-        page1 = mergewiz.StartPage(wizard)
-        page2 = mergewiz.SelectFilesPage(wizard)
-        page3 = mergewiz.MrgDirPage(wizard)
-        page4 = mergewiz.RunMrgPage(wizard)
-
-        wx.adv.WizardPageSimple.Chain(page1, page2)
-        wx.adv.WizardPageSimple.Chain(page2, page3)
-        wx.adv.WizardPageSimple.Chain(page3, page4)
-
-        wizard.FitToPage(page1)
-
-        wizard.RunWizard(page1)
-        wx.MessageBox("Merge completed successfully", "That's all folks!")
         
     def OnTDMStoOBC(self, event):
         wizard = wx.wizard.Wizard(self, -1, "TDMS to OBC conversion", images.getWizTest1Bitmap())
