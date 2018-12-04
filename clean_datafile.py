@@ -1,33 +1,43 @@
 #!/usr/bin/env python
-# newmerge.py
+# clean_datafile.py
 #
 # Copyright (C) 2006-2018 - Samuel J. Cubbage
 # 
 #  This program is part of the Autonomous Model Software Tools Package
 # 
 """
-This class defines an merge frame that allows user set up a file merge
+This class defines a tool frame that allows the user to blank out
+selected columns in an STD datafile.  
 
-Provides input fields to select directories and filenames
+This tool would be used to remove classified data from a standard
+STD datafile so that the resulting file could be downgraded to unclassified
+to put on the model.  
+
+The primary use is for creating time history files
+for correlation maneuvers but it could be used to create unclassified data files
+to provide to others.
+
+The tool keeps the structure of the data file and the original number of rows
+and columns but zeros out the unwanted data.  It also allows for cleaning
+the name of the file if required.
+
+The tool creates an entirely new file instead of modifying and existing one to 
+be sure that no data is hidden in the slack space.
 """
 import os, glob
 import wx
-import wx.grid, wx.html
-from tdms_to_obc import tdmsToOBC 
 
-from am_merge_array import MergeRun
-
-class MergeFrame(wx.Frame):
+class CleanDataFrame(wx.Frame):
     
     def __init__(self, paths ):
         '''Initializes the frame and all the widgets.  
         '''
-        wx.Frame.__init__(self, None, -1, 'Merge', style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
+        wx.Frame.__init__(self, None, -1, 'Clean Datafile', style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
         self.SetBackgroundColour(wx.Colour("LIGHTGREY"))
         
         # Setup status bar
         self.statusbar = self.CreateStatusBar(1)
-        self.statusbar.SetStatusText('Ready to Merge')
+        self.statusbar.SetStatusText('Ready to Clean')
         
         # Map default paths
         self.defaultPaths = paths
@@ -118,31 +128,8 @@ class MergeFrame(wx.Frame):
             Get the values from the dialog box and create the plot
             with a call to mplt in the plottools module
         """
-        currdir = os.getcwd()
-        os.chdir(self.dataDir)
-        count = 0
-        for run in self.runsToMerge:
-            # Split file into name and extenson
-            OrigFileName, FileType = run.split(".") 
-            # Remove space after underslash in tdms file
-            FileName = OrigFileName.replace(" ","") 
-            self.runnum = FileName[4:] 
-            self.FilePath = os.path.join(self.dataDir,run) 
-            if FileType.lower() == 'tdms':
-                self.statusbar.SetStatusText('Performing TDMS merge...')
-                self.tdmsMerge()
-            else:
-                
-                self.statusbar.SetStatusText('Merging runs -----> ' )
-                try:
-                    MergeRun(self.FilePath, int(self.runnum), self.mrgDir, self.MergeCfg)                     
-                except:
-                    pass
-
-            count += 1
-        self.statusbar.SetStatusText('Merge Complete!')
-        os.chdir(currdir)
-         
+        pass
+        
     def OnDirPick(self, evt):
         self.dataDir = self.dirpick.GetPath()
         self.fileList.Set(self.getFiles())
@@ -162,32 +149,15 @@ class MergeFrame(wx.Frame):
                     continue
                   
     def getFiles(self):
-        obctdmsfiles = [] # now also includes TDMS files
+        datafiles = [] # now also includes TDMS files
 
         for file in glob.glob(os.path.join(self.dataDir,'*.obc')):
             head, tail = os.path.split(file)
-            obctdmsfiles.append(tail)
+            datafiles.append(tail)
 
-        for file in glob.glob(os.path.join(self.dataDir,'*.tdms')): #AFP added search for TDMS files
-            head, tail = os.path.split(file)
-            obctdmsfiles.append(tail) #AFP Display extension since there will now be TDMS files
-
-        return obctdmsfiles
+        return datafiles
 
 
     def OnMrgDirPick(self, evt):
         self.mrgDir = self.mrgdirpick.GetPath()
 
-
-
-    def tdmsMerge(self):
-        #First create needed interim files
-        tdmsToOBC(self.FilePath, self.dataDir) 
-        tdmsinpDir = os.path.join(self.dataDir,'run-'+self.runnum+'_MERGE.INP')
-        MergeRun(self.FilePath, int(self.runnum), self.mrgDir, tdmsinpDir) 
-        #AFP Now delete files generated from TDMS conversion, since they are not needed.        
-        os.remove(os.path.join(self.dataDir,'run-'+self.runnum+'.cal'))
-        os.remove(os.path.join(self.dataDir,'run-'+self.runnum+'.gps'))
-        os.remove(os.path.join(self.dataDir,'run-'+self.runnum+'.obc'))               
-        os.remove(os.path.join(self.dataDir,'run-'+self.runnum+'.run'))                
-        os.remove(os.path.join(self.dataDir,'run-'+self.runnum+'_MERGE.INP')) 

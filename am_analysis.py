@@ -25,6 +25,7 @@ from plotcanvas import CanvasFrame
 import plottools as plottools
 import images
 import newmerge
+import clean_datafile
 import overplot
 import analysis
 import extrema
@@ -325,8 +326,8 @@ class BrowserFrame(wx.Frame):
                  ("Analyze Run...", "Analyze Run", self.OnAnalyze),
                  ("Beginning of Shift Runs", "Compare Beginning of Shift Runs", self.OnCompareBoS),
                  ("Extrema", "Extrema", self.OnExtrema)),
-#                ("&Data",
-#                ("Extract Data...", "Extract Data", self.OnData)),
+                ("&Tools",
+                 ("Clean Data File...","Clean Datafile", self.OnCleanDatafile)),
                 ("&Help",
                  ("&About", "About Program", self.OnAbout)))
 
@@ -503,8 +504,6 @@ class BrowserFrame(wx.Frame):
         frame = analysis.AnalysisFrame()
         frame.Show()
 
-    def OnData(self, event): 
-        pass 
 
     def OnPathUpdate(self,event):
         """ 
@@ -527,6 +526,12 @@ class BrowserFrame(wx.Frame):
     def OnExtrema(self, event):
         frame = extrema.ExtremaFrame()
         frame.Show()
+        
+    def OnCleanDatafile(self, event):
+        frame = clean_datafile.CleanDataFrame(paths = self.defaultPaths)
+        frame.Show()
+
+    
 
 class PathFrame(wx.Frame):
     """

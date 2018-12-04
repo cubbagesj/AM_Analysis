@@ -92,8 +92,6 @@ def tdmsToOBC(tdmsfile, obcDirectory):
     # Open files that will be needed
     tdms_file_obj = TdmsFile(tdmsfile_name)  #open the tdms file using nptdms package
     configfile_data = open(configfile_name)  #open the config file
-    #channel = tdms_file_obj.object('DATA', 'phins_roll')
-    #data = channel.data
     leng = 0
     for i in configfile_data:
         leng +=1
@@ -172,7 +170,7 @@ def tdmsToOBC(tdmsfile, obcDirectory):
         progress += 1
         prgbar.Update(progress)   
                     
-    data_length = len(obc_data[obc_data.keys()[0]]) #the length of the data arrays
+    data_length = len(obc_data[list(obc_data.keys())[0]]) #the length of the data arrays
     
     cal = ConfigParser.SafeConfigParser()  #configuration instance for the cal ini file
     
