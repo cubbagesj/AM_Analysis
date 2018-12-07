@@ -583,8 +583,11 @@ class Rot_Dyno6:
         psi = bodyAngles[2]
              
         # Prop position depends on which centerbody it is
-        prop_pos = rawdata['prop_position'].copy(deep=True)
-         
+        try:
+            prop_pos = rawdata['prop_position'].copy(deep=True)
+        except:
+            prop_pos = rawdata['Prop_Position'].copy(deep=True)
+        
         if cb_id < 12:
             prop_pos = prop_pos.map(lambda x: x+20000 if (x < 0) else x)
             prop_pos = prop_pos.map(lambda x: x-20000 if (x > 20000) else x)
