@@ -469,6 +469,38 @@ class OBCFile:
             self.time = np.arange(0, len(self.data), dtype=float)
             self.time = self.time * .01
 
+            #----------------------------------
+            #  Build the runtype from the maneuver settings in the .run file
+            #  MOPT 30 defines the type of maneuver and the other settings are for
+                # plane angles etc.
+            #------------------------------------
+            mantypes = ['Set Planes',
+                        'Controlled Turn',
+                        'Plane Jam',
+                        'FST Correlation',
+                        'System Ident',
+                        'Diagnostic Turn',
+                        'Contt test',
+                        'Horizontal Overshoot',
+                        'Vertical Overshoot',
+                        'Special',
+                        'Surface Turn with fixed sterns',
+                        'Toms rudder on/off',
+                        'Turn with fixed sternplanes',
+                        'Acceleration run',
+                        'Deceleration Run',
+                        'Horizontal stability run',
+                        'Ordered R at execute',
+                        'Flowvis',
+                        'ZIGZAG',
+                        'Shore Test',
+                        'Speed Cal Jam',
+                        'Uncontrolled Turn',
+                        'Manual Mode',
+                        'Shore Test',
+                        'Todds Astern 3 turn',
+                        'Rudder Perturbation']
+
             # try to get the run info from runfile
             try:
                 lines = open(runfile).read().splitlines()
@@ -481,6 +513,27 @@ class OBCFile:
                         self.title = "Title Not Defined"
             except:
                 self.title = ''
+
+            # Now lets get the MOPT 30 value
+            lcount = 0
+            for line in lines:
+                if line.find('#MOPT2') != -1:
+                    break
+                else:
+                    lcount += 1
+            mopts = []
+            for mopt in lines[lcount+1].split(','):
+                try:
+                    mopts.append(int(mopt))
+                except ValueError:
+                    pass
+            try:
+                runtype = mantypes[mopts[9]]
+            except:
+                runtype = ''
+            
+            # Add to title
+            self.title = runtype + ' ' + self.title
 
             # Compute the run stats
             self.run_stats()
@@ -1041,7 +1094,7 @@ class TDMSFile:
 
             self.u_adcp_raw = self.dataEU.BTIR_Xvel.values
             self.v_adcp_raw = self.dataEU.BTIR_Yvel.values
-            self.w_adcp_raw = self.dataEU.BTIR_z_vel.values
+            self.w_adcp_raw = self.dataEU.BTIR_Zvel.values
             
             self.bigU = np.sqrt(self.dataEU.BTIR_Xvel.values ** 2 +
                                 self.dataEU.BTIR_Yvel.values ** 2 +
@@ -1133,7 +1186,7 @@ class TDMSFile:
 
 if __name__ == "__main__":
 
-#    test = OBCFile('12805')
+#    test = OBCFile('13617')
     test = TDMSFile('1632')
 #    test = STDFile('10-1242.std', 'known')
 #    test.info()

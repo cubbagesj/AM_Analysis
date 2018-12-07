@@ -153,72 +153,6 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
     runObj = plottools.get_run(fullname)
 
 
-    #----------------------------------
-    #  Build the runtype from the maneuver settings in the .run file
-    #  MOPT 30 defines the type of maneuver and the other settings are for
-        # plane angles etc.
-    #------------------------------------
-    mantypes = ['Set Planes',
-                'Controlled Turn',
-                'Plane Jam',
-                'FST Correlation',
-                'System Ident',
-                'Diagnostic Turn',
-                'Contt test',
-                'Horizontal Overshoot',
-                'Vertical Overshoot',
-                'Special',
-                'Surface Turn with fixed sterns',
-                'Toms rudder on/off',
-                'Turn with fixed sternplanes',
-                'Acceleration run',
-                'Deceleration Run',
-                'Horizontal stability run',
-                'Ordered R at execute',
-                'Flowvis',
-                'ZIGZAG',
-                'Shore Test',
-                'Speed Cal Jam',
-                'Uncontrolled Turn',
-                'Manual Mode',
-                'Shore Test',
-                'Todds Astern 3 turn',
-                'Rudder Perturbation']
-    try:
-        lines = open('run-'+str(runnumber)+'.run').read().splitlines()
-    except:
-        logfile.write(' Could not open run-'+str(runnumber)+'.run file!')
-        sys.exit(1)
-
-    logfile.write('Reading the .run file ........')
-
-    # Start with a dummy title - This is how I used to do it for old AM runs
-    for line in lines:
-        if line.find('#RUNTYPE:') != -1:
-            runtype = line[line.find('#RUNTYPE:')+9:]
-            break
-        else:
-            runtype = 'Run Type Not Defined'
-    # Now lets get the MOPT 30 value
-    lcount = 0
-    for line in lines:
-        if line.find('#MOPT2') != -1:
-            break
-        else:
-            lcount += 1
-    mopts = []
-    for mopt in lines[lcount+1].split(','):
-        try:
-            mopts.append(int(mopt))
-        except ValueError:
-            pass
-    try:
-        runtype = mantypes[mopts[9]]
-    except:
-        runtype = 'Run Type Not Defined'
-
-    logfile.write('Done')
-
     #--------------------------------------
     # Now we start to process the OBC file
     #
@@ -290,7 +224,7 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
     stdfile = open(stdfilename, 'w')
 
     stdfile.write(" 'DELIMTXT' \n")
-    stdfile.write(" 'AM:run-%d:%3.1f:%d:  %s '\n" % (runnumber, apprU, runkind, runtype))
+    stdfile.write(" 'AM:run-%d:%3.1f:%d:  %s '\n" % (runnumber, apprU, runkind, runObj.title))
     stdfile.write(" '"+time.ctime(os.path.getmtime(fullname))+"' \n")
     stdfile.write(" %d, %10.6f, %8.4f \n" %(len(mrg_names), c_FSdt*c_skip, c_length))
 
@@ -857,8 +791,8 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
 
 if __name__ == "__main__":
     # Test for merge
-    os.chdir('f:\\Analysis\\VPM_DDS_082018\\20180912')
-    MergeRun('F:\\Analysis\\VPM_DDS_082018\\20180912\\run-13020.obc',
-             13020,
-             'F:\\Analysis',
-             'F:\\Analysis\\MERGE_VPM-BLKV-DDSHatch.txt')
+    os.chdir('C:\\Users\\CubbageSJ\\Documents\\rcmdata\\Test_Data\\SSN23\\20170821')
+    MergeRun('C:\\Users\\CubbageSJ\\Documents\\rcmdata\\Test_Data\\SSN23\\20170821\\run_1632.tdms',
+             1632,
+             'C:\\Users\\CubbageSJ\\Documents\\rcmdata\\STD_Data\\SSN23\\s23de-dg-eav-1708',
+             'C:\\Users\\CubbageSJ\\Documents\\rcmdata\\Merge_Files\\CB12\\CB12-S23_MIP.INP')

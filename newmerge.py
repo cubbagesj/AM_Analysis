@@ -128,16 +128,12 @@ class MergeFrame(wx.Frame):
             FileName = OrigFileName.replace(" ","") 
             self.runnum = FileName[4:] 
             self.FilePath = os.path.join(self.dataDir,run) 
-            if FileType.lower() == 'tdms':
-                self.statusbar.SetStatusText('Performing TDMS merge...')
-                self.tdmsMerge()
-            else:
                 
-                self.statusbar.SetStatusText('Merging runs -----> ' )
-                try:
-                    MergeRun(self.FilePath, int(self.runnum), self.mrgDir, self.MergeCfg)                     
-                except:
-                    pass
+            self.statusbar.SetStatusText('Merging runs -----> ' )
+            try:
+                MergeRun(self.FilePath, int(self.runnum), self.mrgDir, self.MergeCfg)                     
+            except:
+                raise
 
             count += 1
         self.statusbar.SetStatusText('Merge Complete!')
@@ -177,17 +173,3 @@ class MergeFrame(wx.Frame):
 
     def OnMrgDirPick(self, evt):
         self.mrgDir = self.mrgdirpick.GetPath()
-
-
-
-    def tdmsMerge(self):
-        #First create needed interim files
-        tdmsToOBC(self.FilePath, self.dataDir) 
-        tdmsinpDir = os.path.join(self.dataDir,'run-'+self.runnum+'_MERGE.INP')
-        MergeRun(self.FilePath, int(self.runnum), self.mrgDir, tdmsinpDir) 
-        #AFP Now delete files generated from TDMS conversion, since they are not needed.        
-        os.remove(os.path.join(self.dataDir,'run-'+self.runnum+'.cal'))
-        os.remove(os.path.join(self.dataDir,'run-'+self.runnum+'.gps'))
-        os.remove(os.path.join(self.dataDir,'run-'+self.runnum+'.obc'))               
-        os.remove(os.path.join(self.dataDir,'run-'+self.runnum+'.run'))                
-        os.remove(os.path.join(self.dataDir,'run-'+self.runnum+'_MERGE.INP')) 
