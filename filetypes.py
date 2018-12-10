@@ -984,6 +984,20 @@ class TDMSFile:
             self.data = pd.DataFrame(data, columns=self.chan_names)
             self.dataEU = pd.DataFrame(dataEU, columns=self.chan_names)
             
+            # It is hard to update TDMS file cals so check if there are
+            # any updates that are needed in the tdms_cal_updates.txt file
+            
+            try:
+                f = open('tdms_cal_updates.txt', 'r')
+                calupdates = f.read().splitlines()
+                print('Processing TDMS cal updates...')
+                for line in calupdates:
+                    update = line.split(',')
+                    self.dataEU[update[0]] = self.dataEU[update[0]] * float(update[1])
+                f.close()
+            except:
+                print('No TDMS updates to process')
+            
             # Compute the run stats
             self.run_stats()
             
