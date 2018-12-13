@@ -129,11 +129,12 @@ class MergeFrame(wx.Frame):
             self.runnum = FileName[4:] 
             self.FilePath = os.path.join(self.dataDir,run) 
                 
-            self.statusbar.SetStatusText('Merging runs -----> ' )
+            self.statusbar.SetStatusText('Merging run: %s -----> ' % self.runnum )
+            wx.Yield()
             try:
                 MergeRun(self.FilePath, int(self.runnum), self.mrgDir, self.MergeCfg)                     
             except:
-                raise
+                pass
 
             count += 1
         self.statusbar.SetStatusText('Merge Complete!')

@@ -46,6 +46,7 @@ import plottools as plottools
 import pandas as pd
 import numpy as np
 from filetypes import STDFile
+import datatools as dt
 
 def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):  
 
@@ -721,7 +722,6 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
     
  
     stdfile.close()
-    logfile.close()
 
     # The following code is used to offset and rotate the x,y, positions so that
     # the position at execute is (0,0) and the initial track is along the x-axis
@@ -729,7 +729,7 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
     # new data back out.
 
     # At this point in the code the name of the std file is in stdfilename.  Us this 
-    # in a call to the OBCFile class to read in the file and get the stats
+    # in a call to the STDFile class to read in the file and get the stats
 
     # Wrap it in a try clause in case we get an error
     try:
@@ -784,8 +784,189 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
         os.remove(stdfilename)
         os.rename(stdfilename+'new', stdfilename)
     except:
-        pass
+        logfile.write('Error in rotating track data!\n')
+        
+        
+    # Data Consistency Check
+    # This section performs a data consistency check on the velocity and motions 
+    # data.  It creates computed values of u, v, w from the motions data and appends
+    # these columns to the STD file
+    
+#    logfile.write('Computing data consistency\n' )
+    rundata = STDFile(stdfilename, 'known')
+    
+    # Now we have the data so we begin the processing
+    # We are going to assume that phi, theta, psi are correct along with u,v from
+    # the ADCP
 
+    # LN200 Checkout -----------
+    
+    # The first step is to check if p,q,r are consistant with phi, theta, psi
+    # We can do this by using phi, theta, psi to compute p,q,r.
+    # The steps are: - differentiate phi,theta, psi to get phidot, thetadot, psidot
+    #                - transform to body coordinates using equations from 2510
+    #                - Compare the computed versus the measured values
+    #
+    # Before we differentiate need to convert and filter signals
+    #
+    # Convert to radians for easier math
+
+    # Get original phi,theta,psi and p,q,r
+    # yawFilter removes the yaw flips
+    thetarad = np.radians(rundata.theta)
+    phirad = np.radians(rundata.phi)
+    psirad = np.radians(dt.yawFilter(rundata.psi))
+
+    prad = np.radians(rundata.p)
+    qrad = np.radians(rundata.q)
+    rrad = np.radians(rundata.r)
+    
+    pradf = dt.butter_lowpass_filter(prad, .01/rundata.dt, 1/rundata.dt, 2)
+    qradf = dt.butter_lowpass_filter(qrad, .01/rundata.dt, 1/rundata.dt, 2)
+    rradf = dt.butter_lowpass_filter(rrad, .01/rundata.dt, 1/rundata.dt, 2)
+    
+
+    # Filter angles so derivatives are smooth - bit resolution noise makes original
+    # signal steppy.
+    thetaradf = dt.butter_lowpass_filter(thetarad, .01/rundata.dt, 1/rundata.dt, 2)
+    phiradf = dt.butter_lowpass_filter(phirad, .01/rundata.dt, 1/rundata.dt, 2)
+    psiradf = dt.butter_lowpass_filter(psirad, .01/rundata.dt, 1/rundata.dt, 2)
+
+    # Now we get thetadot, psidot, phidot by differentiating
+    # add a point to the end to keep array size the same
+
+    thetadot = np.append(np.diff(thetaradf)/(rundata.dt), 0.0)
+    phidot = np.append(np.diff(phiradf)/(rundata.dt), 0.0)
+    psidot = np.append(np.diff(psiradf)/(rundata.dt), 0.0)
+
+    # Now we can compute p,q,r from these values using 2510 equations
+
+    pcomp = phidot - psidot*np.sin(thetaradf)
+    qcomp = psidot*np.cos(thetaradf)*np.sin(phiradf) + thetadot*np.cos(phiradf)
+    rcomp = psidot*np.cos(thetaradf)*np.cos(phiradf) - thetadot*np.sin(phiradf)
+
+    # So now we have the computed p,q,r from phi, theta, psi. Add these
+    # to the original dataFrame. (convert to degrees first)
+    
+    # We also need to fix the delay caused by the filter so drop first delay points
+    
+    buff = np.zeros(20)             
+    
+    rundata.dataEU["'compP'"] = np.degrees(np.concatenate((pcomp[20:], buff)))
+    rundata.dataEU["'compQ'"] = np.degrees(np.concatenate((qcomp[20:], buff)))
+    rundata.dataEU["'compR'"] = np.degrees(np.concatenate((rcomp[20:], buff)))
+    
+    
+    # ADCP Velocity Check ------
+    
+    # Next we want to see if the adcp w velocity is consistant with the
+    # depth gage. We assume that adcp_u and adcp_v are correct
+    # The process is:
+    #               - Compute a trajectory using u,v,w and the p,q,r that
+    #                 was verified above as correct
+    #               - Compare the Z to the ZCG
+    #               - To go the other way, take the X,Y and ZCG and
+    #                 differentiate to get Xdot, Ydot, zdot
+    #               - Rotate to body coordinate to get u,v,w
+    #               - Compare to adcp_w.
+    
+
+    # We need to get the velocities from adcp,
+    # These are raw adcp velocities so first do a spike filter to remove
+    # adcp dropouts
+    u_adcp = dt.spikeFilter(rundata.u_adcp_raw, 10)
+    v_adcp = dt.spikeFilter(rundata.v_adcp_raw, 10)
+    w_adcp = dt.spikeFilter(rundata.w_adcp_raw, 10)
+
+    # Now filter to smooth bit noise steps
+    u_adcpf = dt.butter_lowpass_filter(u_adcp, .01/rundata.dt, 1/rundata.dt, 2)
+    v_adcpf = dt.butter_lowpass_filter(v_adcp, .01/rundata.dt, 1/rundata.dt, 2)
+    w_adcpf = dt.butter_lowpass_filter(w_adcp, .01/rundata.dt, 1/rundata.dt, 2)
+
+    # There might be a misalignment of the adcp in Pitch
+    # Do this to try and correct for this before proceeding
+    offset = 0.0
+    adcp_pitch_offset = np.ones(len(u_adcp)) * np.radians(offset)
+    adcp_roll_offset = np.zeros(len(u_adcp))
+    adcp_yaw_offset = np.zeros(len(u_adcp))
+
+    # Try a rotation on the adcp velocities to account for a physical alignment
+    u_adcpr, v_adcpr, w_adcpr = dt.doTransform(u_adcpf, v_adcpf, 
+                                               w_adcpf,adcp_pitch_offset,
+                                               adcp_roll_offset,
+                                               adcp_yaw_offset, 'toBody')
+
+    # ADCP is not at CG so need to translate it to CG to get CG velocities
+    # This translation uses the location specified in this program, not what was
+    # used during the merge in the case of the STD files
+    u_adcpfc  = u_adcpr - (qrad * ADCPLoc[2])
+    v_adcpfc  = v_adcpr + ((prad*ADCPLoc[2])-(rrad*ADCPLoc[0]))
+    w_adcpfc  = w_adcpr + ((qrad*ADCPLoc[0])-(prad*ADCPLoc[1]))
+
+    # Do the same for the unfiltered ADCP 
+    # This translation uses the location specified in this program, not what was
+    # used during the merge in the case of the STD files
+    u_adcpc  = u_adcp - (qrad * ADCPLoc[2])
+    v_adcpc  = v_adcp + ((prad*ADCPLoc[2])-(rrad*ADCPLoc[0]))
+    w_adcpc  = w_adcp + ((qrad*ADCPLoc[0])-(prad*ADCPLoc[1]))
+
+    # We also need to get ZCG - Since this is using sensor data, need to
+    # translate Zsensor to ZCG using the sensor location specified
+    z_depth = rundata.depth
+    
+    # Skip depth filter
+    #z_depthf = dt.butter_lowpass_filter(z_depth, .01/rundata.dt, 1/rundata.dt, 2)
+    #z_depthf = z_depth
+
+    zcg = z_depth + (zsensor[0] * np.sin(thetaradf) -
+                                     np.cos(thetaradf)*(zsensor[1]*np.sin(phiradf)) +
+                                     zsensor[2] * np.cos(phiradf))
+    zcgf = dt.butter_lowpass_filter(zcg, .01/rundata.dt, 1/rundata.dt, 2)
+
+
+    # Now we have correct clean adcp velocities, compute the trajectory
+    # from p,q,r & u,v,w.  Use (0,0,Z0) as the initial position and
+    # the initial phi,theta,psi.  From there we integrate
+    # Using pcomp,qcomp,rcomp which are consistant with phi,theta, psi
+    xcomp, ycomp, zcomp, phicomp, thetacomp, psicomp = dt.compTrajectory(0,0,zcgf[0],
+                                                                      thetaradf[0],phiradf[0],psiradf[0],
+                                                                      u_adcpfc, v_adcpfc,w_adcpfc,
+                                                                      pcomp, qcomp, rcomp, rundata.dt)
+
+    # For the second part use xcomp, ycomp and ZCG to get velocities
+    # Compute xdot, ydot, zdot
+    xcompdot = np.diff(xcomp)/rundata.dt
+    ycompdot = np.diff(ycomp)/rundata.dt
+    zcgdot = np.append(np.diff(zcgf)/rundata.dt, 0.0)
+
+    # Transform these to body to get u,v,w
+    #ucomp, vcomp, wcomp = doTransform(xcompdot, ycompdot, zcgdot, phiradf, thetaradf, psiradf, 'toBody')
+    ucomp, vcomp, wcomp = dt.doTransform(xcompdot, ycompdot, zcgdot, phicomp, thetacomp, psicomp, 'toBody')
+    
+    # So now we have the computed u,v,w from trajectory and ZCG. Add these
+    # to the original dataFrame.
+
+    # We also need to fix the delay caused by the filter so drop first delay points
+    
+    buff = np.zeros(20)             
+
+    rundata.dataEU["'compU'"] = np.concatenate((ucomp[20:], buff))
+    rundata.dataEU["'compV'"] = np.concatenate((vcomp[20:], buff))
+    rundata.dataEU["'compW'"] = np.concatenate((wcomp[20:], buff))
+      
+    # Rewrite STD file
+        
+    with open(stdfilename, mode='w') as file:
+        file.write("'DELIMTXT'\n")
+        file.write(rundata.title + "\n")
+        file.write(rundata.timestamp + "\n")
+        file.write(' %d, %f, %f \n' % (rundata.nchans+6, rundata.dt, rundata.length))
+    
+        rundata.dataEU.to_csv(file, index=False, header=True, sep=' ', float_format='%12.7e')
+    
+
+    logfile.close()
+    
     return 
 
 

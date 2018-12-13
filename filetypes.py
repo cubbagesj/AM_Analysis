@@ -115,7 +115,15 @@ class STDFile:
                 
                 # Need to clean up names before reading in
                 rawnames = f.readline().strip()
-                channames = rawnames.lower().replace("' '", "''").replace(" ","_").replace("''","' '").split()
+                cleannames = rawnames.lower().replace("' '", "''").replace(" ","_").replace("''","' '").split()
+                channames = []
+                idx = 0
+                for chan in cleannames:
+                    if chan[1] == '-':
+                        channames.append("'empty_%d'" % idx)
+                        idx += 1
+                    else:
+                        channames.append(chan)
 
                 f.close()
 
@@ -180,6 +188,9 @@ class STDFile:
 
             # Compute the run stats
             self.run_stats()
+            
+            # Map navigation info
+            self.mapNavInfo()
 
     def info(self):
         """ Prints information on the run"""
@@ -284,9 +295,9 @@ class STDFile:
         names for use in calculations
         """
         try:
-            self.theta = self.dataEU["'Pitch'"]
-            self.phi = self.dataEU["'Roll'"]
-            self.psi = self.dataEU["'Yaw'"]
+            self.theta = self.dataEU["'pitch'"]
+            self.phi = self.dataEU["'roll'"]
+            self.psi = self.dataEU["'yaw'"]
 
             self.p = self.dataEU["'p'"]
             self.q = self.dataEU["'q'"]
@@ -302,7 +313,7 @@ class STDFile:
             self.v_adcp_raw = self.dataEU["'raw_v_ft/s'"]
             self.w_adcp_raw = self.dataEU["'raw_w_ft/s'"]
 
-            self.depth = self.dataEU["'Zsensor'"]
+            self.depth = self.dataEU["'zsensor'"]
         except:
             raise
 
