@@ -42,6 +42,18 @@ class STDFile:
             getEUData   : Returns a column of data converted to EU
             getRawData  : Returns a column of raw data
     """
+    # Set up the boat geometry info based on ship length
+    # Format is len: [radius, xnose, xsail, hsail]
+    GeoTable = {'688/751':[16.50, 164.4, 66.21, 16.19],
+                'S21':[20.0, 160.04, 66.21, 17.0],
+                'TB':[16.25, 130.0, 53.80, 13.813],
+                'S23':[20.0, 209.93, 116.10, 17.0],
+                'VA':[17.0, 172.27, 89.25, 19.58],
+                'SSGN':[21.0, 257.42, 154.96, 26.6],
+                'OR':[21.67, 253.67, 157.3, 33.2],
+                'VPM97':[17.0, 221.62, 138.61, 19.58],
+                'VPM62':[17.0, 172.27, 89.25, 19.58],
+                'VPM':[17.0, 180.0, 100.0, 19.58]}
 
     def __init__(self, run_number='0', search_path='.'):
         """ Initializes the run, finds and reads in the data. and
@@ -133,6 +145,31 @@ class STDFile:
 
                 # Time is found in column 26
                 self.time = self.data.iloc[:,26]
+                
+                # get the geometry info from the table based on boat length
+                if abs(self.length - 362) < 0.8 :
+                    self.boat = '688/751'
+                elif abs(self.length - 361) < 1:
+                    self.boat = 'S21'
+                elif abs(self.length - 461.63) < .2:
+                    self.boat = 'S23'
+                elif abs(self.length - 377.33) < 1 :
+                    self.boat = 'VA'
+                elif abs(self.length - 560 ) < 1:
+                    self.boat = 'SSGN'
+                elif abs(self.length - 299.25) < 1:
+                    self.boat = 'TB'
+                elif abs(self.length - 555.08) < 1:
+                    self.boat = 'OR'
+                elif abs(self.length - 474.33) < 1:
+                    self.boat = 'VPM97'
+                elif abs(self.length - 439.33) < 1:
+                    self.boat = 'VPM62'
+                elif abs(self.length - 461.14) < .2:
+                    self.boat = 'VPM'
+                else:
+                    self.boat = '688/751'
+                
             else:
                 # Block
                 self.title = self.filetype
@@ -338,8 +375,87 @@ class STDFile:
             for a turn maneuver
         """
 
-        # Removed for now until I can work out with new structure
-        pass
+        # extract the yaw data 
+        yaw180 = self.psi
+        yawrate = self.r
+
+        #compute the approach yaw
+        yawappr = yaw180[self.stdbyrec:self.execrec].mean()
+
+        # Now for advance/xfer  - where yaw has changed by 90
+        # Need to look for both positive and negative yaw change
+
+        yawpos90 = yawappr + 90
+        if yawpos90 > 180:
+            yawpos90 -= 360
+
+        yawneg90 = yawappr - 90
+        if yawneg90 < -180:
+            yawneg90 += 360
+
+        # Now look for this value in the data
+        # need to look in both directions and see which comes first
+
+        try:
+            posIndex90 = np.where(abs(yaw180-yawpos90)<0.1)[0][0]
+        except IndexError:
+            posIndex90 = 0
+        try:
+            negIndex90 = np.where(abs(yaw180-yawneg90)<0.1)[0][0]
+        except IndexError:
+            negIndex90 = 0
+
+
+        if posIndex90 != 0 and yawrate[posIndex90] > 0:
+            self.index90 = posIndex90
+        else:
+            self.index90 = negIndex90
+
+        self.advance = abs(self.getEUData(20)[self.index90])
+        self.transfer = abs(self.getEUData(21)[self.index90])
+
+        self.time90 = self.ntime[self.index90]
+
+        # Now for tactical Diam  - where yaw has changed by 180
+        # Need to look for both positive and negative yaw change
+        yawpos180 = yawappr + 180
+        if yawpos180 > 180:
+            yawpos180 -= 360
+
+        yawneg180 = yawappr - 180
+        if yawneg180 < -180:
+            yawneg180 += 360
+
+        # Now look for this value in the data
+        # need to look in both directions and see which comes first
+
+        if yawpos180 > 0:
+            try:
+                posIndex180 = np.where(abs(yaw180-yawpos180)< 0.1)[0][0]
+            except IndexError:
+                posIndex180 = 0
+        else:
+            posIndex180 = 0
+
+        if yawneg180 < 0:
+            try:
+                negIndex180 = np.where(abs(yaw180-yawneg180)<0.1)[0][0]
+            except IndexError:
+                negIndex180 = 0
+        else:
+            negIndex180 = 0
+
+        # The advance occurs at the lowest non zero index
+
+        self.index180 = min(posIndex180, negIndex180)
+
+        if self.index180 == 0:
+            self.index180 = max(posIndex180, negIndex180)
+
+
+        self.tactdiam = abs(self.getEUData(21)[self.index180])
+        self.time180 = self.ntime[self.index180]
+
 
 
 class OBCFile:
@@ -1212,8 +1328,8 @@ class TDMSFile:
 if __name__ == "__main__":
 
 #    test = OBCFile('13617')
-    test = TDMSFile('1632')
-#    test = STDFile('10-1242.std', 'known')
+#    test = TDMSFile('1632')
+    test = STDFile('10-13657.std', 'known')
 #    test.info()
 #    test.run_stats()
 #    print(test.getEUData(12))

@@ -315,11 +315,11 @@ class AnalysisFrame(wx.Frame):
         try:
             runPath = self.runFile[:-11]
         except:
-            runPath = '/disk2/home/'+os.environ['USER']+'/rcmdata' 
+            runPath = '.' 
             
         dlg = wx.FileDialog(self, "Choose Run File",
                                 defaultDir=runPath, wildcard="*.std",
-                                style=wx.OPEN)
+                                style=wx.FD_OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             self.runFile = dlg.GetPath()
             self.runObj = get_run(self.runFile)
