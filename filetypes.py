@@ -359,8 +359,57 @@ class STDFile:
         between start and end times.  The values are stored in 4 seperate lists
         that can be used by the analysis routines
         """
-        # Removed for now until I can work out with new structure
-        pass
+        # the first thing to do is to create a subset of the run data to search over
+        # This defaults to the data from execute to the end of the run
+        if start == None:
+            start = self.execrec
+        if end == None:
+            rundata = self.data[start:]
+        else:
+            rundata = self.data[start:end]
+
+        # Compute the nose and sail depths
+        self.compZnosesail(STDFile.GeoTable[self.boat], rundata)
+
+        # Now to get the max and mins for the normal channels
+        self.maxValues = []
+        self.minValues = []
+        self.maxTimes = []
+        self.minTimes = []
+        # set up a filter to eliminate spikes
+        tau = 1.0
+        tfact = (1 - np.exp(-self.dt/tau))
+        for channel in range(self.nchans):
+            # filter data first
+            data = rundata[:,channel].tolist()
+            for i in range(len(data)):
+                if i > 0:
+                    data[i] = data[i-1] + (data[i] - data[i-1])*tfact
+            # Then get values
+            chanmax = max(data)
+            maxrec = data.index(chanmax)
+            chanmin = min(data)
+            minrec = data.index(chanmin)
+            self.maxValues.append(chanmax)            
+            self.minValues.append(chanmin)
+            self.maxTimes.append(self.ntime[self.execrec+maxrec])
+            self.minTimes.append(self.ntime[self.execrec+minrec])
+
+        # Compute the maxes and mins of the nose and sail depth channels
+        # Filter the data first
+        for i in range(len(self.Znose)):
+            if i > 0:
+                self.Znose[i] = self.Znose[i-1] + (self.Znose[i] - self.Znose[i-1]) * tfact
+                self.Zsail[i] = self.Zsail[i-1] + (self.Zsail[i] - self.Zsail[i-1]) * tfact
+        self.maxZnose = max(self.Znose)
+        self.maxZnosetime = self.ntime[self.execrec+self.Znose.index(self.maxZnose)]
+        self.minZnose = min(self.Znose)
+        self.minZnosetime = self.ntime[self.execrec+self.Znose.index(self.minZnose)]
+        self.maxZsail = max(self.Zsail)
+        self.maxZsailtime = self.ntime[self.execrec+self.Zsail.index(self.maxZsail)]
+        self.minZsail = min(self.Zsail)
+        self.minZsailtime = self.ntime[self.execrec+self.Zsail.index(self.minZsail)]
+
 
     def compZnosesail(self, geometry, data):
         """ Computes the nose and sail depth based on the geometry info
