@@ -372,51 +372,39 @@ class STDFile:
         self.compZnosesail(STDFile.GeoTable[self.boat], rundata)
 
         # Now to get the max and mins for the normal channels
-        self.maxValues = []
-        self.minValues = []
-        self.maxTimes = []
-        self.minTimes = []
-        # set up a filter to eliminate spikes
-        tau = 1.0
-        tfact = (1 - np.exp(-self.dt/tau))
-        for channel in range(self.nchans):
-            # filter data first
-            data = rundata[:,channel].tolist()
-            for i in range(len(data)):
-                if i > 0:
-                    data[i] = data[i-1] + (data[i] - data[i-1])*tfact
-            # Then get values
-            chanmax = max(data)
-            maxrec = data.index(chanmax)
-            chanmin = min(data)
-            minrec = data.index(chanmin)
-            self.maxValues.append(chanmax)            
-            self.minValues.append(chanmin)
-            self.maxTimes.append(self.ntime[self.execrec+maxrec])
-            self.minTimes.append(self.ntime[self.execrec+minrec])
+        self.maxValues = rundata.max()            
+        self.minValues = rundata.min()
+        self.maxIndices = rundata.idxmax()
+        self.minIndices = rundata.idxmin()
 
         # Compute the maxes and mins of the nose and sail depth channels
-        # Filter the data first
-        for i in range(len(self.Znose)):
-            if i > 0:
-                self.Znose[i] = self.Znose[i-1] + (self.Znose[i] - self.Znose[i-1]) * tfact
-                self.Zsail[i] = self.Zsail[i-1] + (self.Zsail[i] - self.Zsail[i-1]) * tfact
-        self.maxZnose = max(self.Znose)
-        self.maxZnosetime = self.ntime[self.execrec+self.Znose.index(self.maxZnose)]
-        self.minZnose = min(self.Znose)
-        self.minZnosetime = self.ntime[self.execrec+self.Znose.index(self.minZnose)]
-        self.maxZsail = max(self.Zsail)
-        self.maxZsailtime = self.ntime[self.execrec+self.Zsail.index(self.maxZsail)]
-        self.minZsail = min(self.Zsail)
-        self.minZsailtime = self.ntime[self.execrec+self.Zsail.index(self.minZsail)]
-
-
+        self.maxZnose = self.Znose.max()
+        self.maxZnoseIndex = self.Znose.idxmax()
+        self.minZnose = self.Znose.min()
+        self.minZnoseIndex = self.Znose.idxmin()
+        self.maxZsail = self.Zsail.min()
+        self.maxZsailIndex = self.Zsail.idxmax()
+        self.minZsail = self.Zsail.min()
+        self.minZsailIndex = self.Zsail.idxmin()
+        
     def compZnosesail(self, geometry, data):
         """ Computes the nose and sail depth based on the geometry info
         Assumes that ZGA is at 22, pitch at 8, and roll at 7
         """
-        # Removed for now until I can work out with new structure
-        pass
+        radius, xnose, xsail, hsail = geometry
+        zsail = -(hsail+radius)
+        # Get the approach value based on appr pitch/roll
+        self.Znoseappr = self.appr_values[22] + (-xnose * np.sin(np.radians(self.appr_values[8])))
+        self.Zsailappr = self.appr_values[22] + (-xsail * np.sin(np.radians(self.appr_values[8]))+
+                                                 zsail * np.cos(np.radians(self.appr_values[8]))*
+                                                 np.cos(np.radians(self.appr_values[7])))
+
+        sinTH = np.sin(np.radians(data[data.columns[8]]))
+        cosTH = np.cos(np.radians(data[data.columns[8]]))
+        cosPH = np.cos(np.radians(data[data.columns[7]]))
+        self.Znose = data[data.columns[22]] + (-xnose * sinTH)
+        self.Zsail = data[data.columns[22]] + (-xsail * sinTH + zsail * cosTH * cosPH)
+
 
     def turnstats(self):
         """

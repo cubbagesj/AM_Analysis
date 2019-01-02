@@ -22,13 +22,11 @@ from multicanvas import MultiCanvasFrame
 
 from trackplot import TrackPlot
 
-
-
 class AnalysisFrame(wx.Frame):
     
     def __init__(self):
         wx.Frame.__init__(self, None, -1, 'AM Analysis',size=(600,700))
-        self.SetBackgroundColour(wx.NamedColour("LIGHTGREY"))
+        self.SetBackgroundColour(wx.Colour("LIGHTGREY"))
 
         self.dataList = [['U pw', 6],
                     ['U adcp', 0],
@@ -328,7 +326,7 @@ class AnalysisFrame(wx.Frame):
             self.runObj.compStats()
             self.runObj.turnstats()
             self.startTime.ChangeValue(str(0.0))
-            self.endTime.ChangeValue(str(self.runObj.ntime[-1]))
+            self.endTime.ChangeValue(str(self.runObj.ntime[self.runObj.ntime.last_valid_index()]))
             # Compute and Display data
             self.setData()
             self.boatBtn.SetStringSelection(self.runObj.boat)
@@ -374,8 +372,8 @@ class AnalysisFrame(wx.Frame):
             
         # Now To compute the stats and display.  These are done individually for now
         # Slice out the data of interest
-        rundata = self.runObj.data[startrec:endrec, :]
-        npts = len(rundata[:,6])
+        rundata = self.runObj.data[startrec:endrec]
+        npts = len(rundata[rundata.columns[6]])
                 
         self.ManeuverTitles = ['ApprUpw','ApprRoll','ApprPitch','ApprYaw','ApprStr1','ApprBow',
                             'ApprRud','ApprStr2','AvgUpw','AvgRoll','AvgPitch','AvgYaw','AvgStr1',
@@ -546,7 +544,7 @@ class AnalysisFrame(wx.Frame):
         """
         cfgfile = './analysis.ini'
                                
-        params = (0.0, self.runObj.ntime[-1]+5, 4)
+        params = (0.0, self.runObj.ntime[self.runObj.ntime.last_valid_index()]+5, 4)
                 
         plotData = PlotPage([self.runObj], params, cfgfile)
         frame = MultiCanvasFrame(plotData, [self.runObj.filename], 0)
@@ -565,26 +563,26 @@ class AnalysisFrame(wx.Frame):
             if data[1] >= 0:
                 apprValue = self.runObj.appr_values[data[1]]
                 data[2].SetLabel("%.2f" % apprValue)
-                data[3].SetLabel("%.2f/%.2f" % (self.runObj.maxValues[data[1]],self.runObj.maxTimes[data[1]]))
-                data[4].SetLabel("%.2f/%.2f" % (self.runObj.minValues[data[1]],self.runObj.minTimes[data[1]]))
-                data[5].SetLabel("%.2f/%.2f" % ((self.runObj.maxValues[data[1]] - apprValue),self.runObj.maxTimes[data[1]]))
-                data[6].SetLabel("%.2f/%.2f" % ((self.runObj.minValues[data[1]] - apprValue),self.runObj.minTimes[data[1]]))
+                data[3].SetLabel("%.2f/%.2f" % (self.runObj.maxValues[data[1]],self.runObj.ntime[self.runObj.maxIndices[data[1]]]))
+                data[4].SetLabel("%.2f/%.2f" % (self.runObj.minValues[data[1]],self.runObj.ntime[self.runObj.minIndices[data[1]]]))
+                data[5].SetLabel("%.2f/%.2f" % ((self.runObj.maxValues[data[1]] - apprValue),self.runObj.ntime[self.runObj.maxIndices[data[1]]]))
+                data[6].SetLabel("%.2f/%.2f" % ((self.runObj.minValues[data[1]] - apprValue),self.runObj.ntime[self.runObj.minIndices[data[1]]]))
             elif data[1] == -1:
                 apprValue = self.runObj.Znoseappr
                 ZNoffset = STDFile.GeoTable[self.runObj.boat][0]
                 data[2].SetLabel("%.2f" % apprValue)
-                data[3].SetLabel("%.2f/%.2f" % (self.runObj.maxZnose,self.runObj.maxZnosetime))
-                data[4].SetLabel("%.2f/%.2f" % (self.runObj.minZnose,self.runObj.minZnosetime))
-                data[5].SetLabel("%.2f/%.2f" % ((self.runObj.maxZnose - apprValue - ZNoffset),self.runObj.maxZnosetime))
-                data[6].SetLabel("%.2f/%.2f" % ((self.runObj.minZnose - apprValue - ZNoffset),self.runObj.minZnosetime))
+                data[3].SetLabel("%.2f/%.2f" % (self.runObj.maxZnose,self.runObj.ntime[self.runObj.maxZnoseIndex]))
+                data[4].SetLabel("%.2f/%.2f" % (self.runObj.minZnose,self.runObj.ntime[self.runObj.minZnoseIndex]))
+                data[5].SetLabel("%.2f/%.2f" % ((self.runObj.maxZnose - apprValue - ZNoffset),self.runObj.ntime[self.runObj.maxZnoseIndex]))
+                data[6].SetLabel("%.2f/%.2f" % ((self.runObj.minZnose - apprValue - ZNoffset),self.runObj.ntime[self.runObj.minZnoseIndex]))
             elif data[1] == -2:
                 apprValue = self.runObj.Zsailappr
                 ZSoffset = 2 * STDFile.GeoTable[self.runObj.boat][0] + STDFile.GeoTable[self.runObj.boat][3]
                 data[2].SetLabel("%.2f" % apprValue)
-                data[3].SetLabel("%.2f/%.2f" % (self.runObj.maxZsail,self.runObj.maxZsailtime))
-                data[4].SetLabel("%.2f/%.2f" % (self.runObj.minZsail,self.runObj.minZsailtime))
-                data[5].SetLabel("%.2f/%.2f" % ((self.runObj.maxZsail - apprValue - ZSoffset),self.runObj.maxZsailtime))
-                data[6].SetLabel("%.2f/%.2f" % ((self.runObj.minZsail - apprValue - ZSoffset),self.runObj.minZsailtime))
+                data[3].SetLabel("%.2f/%.2f" % (self.runObj.maxZsail,self.runObj.ntime[self.runObj.maxZsailIndex]))
+                data[4].SetLabel("%.2f/%.2f" % (self.runObj.minZsail,self.runObj.ntime[self.runObj.minZsailIndex]))
+                data[5].SetLabel("%.2f/%.2f" % ((self.runObj.maxZsail - apprValue - ZSoffset),self.runObj.ntime[self.runObj.maxZsailIndex]))
+                data[6].SetLabel("%.2f/%.2f" % ((self.runObj.minZsail - apprValue - ZSoffset),self.runObj.ntime[self.runObj.minZsailIndex]))
                 
         self.Layout()
         
