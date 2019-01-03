@@ -41,7 +41,7 @@ class AnalysisFrame(wx.Frame):
                     ['Rudder', 15],
                     ['Fwd. Pln.', 14]]
         
-        boats = ['688/751', 'S21', 'S23', 'VA', 'SSGN', 'TB','OR', 'VPM97', 'VPM62']
+        boats = ['688/751', 'S21', 'S23', 'VA', 'SSGN', 'TB','OR', 'VPM97', 'VPM62', 'VPM']
         
         maneuvers = ['None','Cont Turn','FP Turn','Vert OS','Horz OS','Dive Jam','Rise Jam',
                      'Rud Jam','Accel','Decel','Rev Spiral','Speed Cal']
@@ -99,7 +99,7 @@ class AnalysisFrame(wx.Frame):
         # Extra data fields
         self.extraData = []
         for i in range(14):
-            self.extraData.append(wx.StaticText(self, -1, " ", style=wx.CENTER))
+            self.extraData.append(wx.StaticText(self, -1, "           ", style=wx.CENTER))
         self.extraList = []
                   
         # Layout Screen - Set up the layout with sizers
@@ -269,14 +269,14 @@ class AnalysisFrame(wx.Frame):
         f.write('\n')
         
         # Put computed depths first
-        ZNoffset = STDFile.GeoTable[self.runObj.boat][0]
-        ZSoffset = 2 * STDFile.GeoTable[self.runObj.boat][0] + STDFile.GeoTable[self.runObj.boat][3]
+        ZNoffset = self.runObj.GeoTable[self.runObj.boat][0]
+        ZSoffset = 2 * self.runObj.GeoTable[self.runObj.boat][0] + self.runObj.GeoTable[self.runObj.boat][3]
 
-        cdata = [('Znose', (r.Znoseappr, r.maxZnose, r.maxZnosetime, r.minZnose,
-                            r.minZnosetime, r.maxZnose-r.Znoseappr-ZNoffset,
+        cdata = [('Znose', (r.Znoseappr, r.maxZnose, r.ntime[r.maxZnoseIndex], r.minZnose,
+                            r.ntime[r.minZnoseIndex], r.maxZnose-r.Znoseappr-ZNoffset,
                             r.minZnose-r.Znoseappr-ZNoffset)),
-                ('Zsail', (r.Zsailappr, r.maxZsail, r.maxZsailtime, r.minZsail,
-                           r.minZsailtime, r.maxZsail-r.Zsailappr-ZSoffset,
+                ('Zsail', (r.Zsailappr, r.maxZsail, r.ntime[r.maxZsailIndex], r.minZsail,
+                           r.ntime[r.minZsailIndex], r.maxZsail-r.Zsailappr-ZSoffset,
                            r.minZsail-r.Zsailappr-ZSoffset))]
         
         for name, values in cdata:
@@ -293,11 +293,11 @@ class AnalysisFrame(wx.Frame):
             f.write(dlm)
             f.write('%.2f' % r.maxValues[i])
             f.write(dlm)
-            f.write('%.2f' % r.maxTimes[i])
+            f.write('%.2f' % r.ntime[r.maxIndices[i]])
             f.write(dlm)
             f.write('%.2f' % r.minValues[i])
             f.write(dlm)
-            f.write('%.2f' % r.minTimes[i])
+            f.write('%.2f' % r.ntime[r.minIndices[i]])
             f.write(dlm)
             f.write('%.2f' % (r.maxValues[i]-r.appr_values[i]))
             f.write(dlm)
@@ -357,7 +357,7 @@ class AnalysisFrame(wx.Frame):
         
     def EvtExtraTimeChg(self, evt):
         """
-            Get new start and stop time and recompute the Turn stats
+            Get new start and stop time and recompute all of the maneuver stats
         """
         starttime = self.runObj.exectime + float(self.extrastartTime.GetValue())
         startrec = int(starttime/self.runObj.dt)
@@ -404,9 +404,9 @@ class AnalysisFrame(wx.Frame):
         #Average Run Values (Upw [8], Roll [9], Pitch [10], Yaw [11], Str1 [12], Bow [13], Rud [14], Str2 [15])
         for i in range(8):
             if i == 0:
-                self.extracalc.append('%.2f' % ((sum(rundata[:, datachans[i]])/npts)))
+                self.extracalc.append('%.2f' % (rundata.mean()[datachans[i]]))
             else:
-                self.extracalc.append('%.2f' % ((sum(rundata[:, datachans[i]])/npts) - self.runObj.appr_values[datachans[i]]))
+                self.extracalc.append('%.2f' % ((rundata.mean()[datachans[i]])- self.runObj.appr_values[datachans[i]]))
         
         #Extremes (RollStbd [16], RollPort [17], PitchUp [18], PitchDn [19], YawStbd [20], YawPort [21], ZCGMax [22], ZCGMin [23]) 
         datachans = [7,8,9,22]
@@ -415,8 +415,8 @@ class AnalysisFrame(wx.Frame):
             self.extracalc.append('%.2f' % (self.runObj.minValues[datachans[i]] - self.runObj.appr_values[datachans[i]]))
         
         #Nose and Sail Calcs (ZNose [24], ZSail [25], MaxRise [26])
-        ZNoffset = STDFile.GeoTable[self.runObj.boat][0]
-        ZSoffset = 2 * STDFile.GeoTable[self.runObj.boat][0] + STDFile.GeoTable[self.runObj.boat][3]
+        ZNoffset = self.runObj.GeoTable[self.runObj.boat][0]
+        ZSoffset = 2 * self.runObj.GeoTable[self.runObj.boat][0] + self.runObj.GeoTable[self.runObj.boat][3]
         self.extracalc.append('%.2f' % (self.runObj.minZnose - self.runObj.Znoseappr - ZNoffset))
         self.extracalc.append('%.2f' % (self.runObj.minZsail - self.runObj.Zsailappr - ZSoffset))
         MaxRise = min(self.runObj.minValues[22] - self.runObj.appr_values[22],
@@ -426,65 +426,29 @@ class AnalysisFrame(wx.Frame):
         
         #Turning (YawRate [27], StdRud [28], TDiam [29])
         yawrate = 0
-        yawdata = rundata[:,9].tolist()
+        yawdata = rundata[rundata.columns[9]].tolist()
         for i in range(npts):
             if i != 0:
                 yawrate = yawrate + (abs(abs(yawdata[i]) - abs(yawdata[i-1]))/self.runObj.dt)
         yawrate = yawrate/(npts-1)
         self.extracalc.append('%.3f' % yawrate)
-        self.extracalc.append('%.2f' % ((sum(rundata[:,15])/npts)))
-        vel = (sum(rundata[:,6])/npts) * 1.6878
+        self.extracalc.append('%.2f' % (rundata.mean()[15]))
+        vel = rundata.mean()[6] * 1.6878
         tdiam = vel * 2 / (math.radians(yawrate)*self.runObj.length)
         self.extracalc.append('%.3f' % tdiam)
         
         #Vertical Overshoots (EPA [30], EPATime [31], EPADepth [32], OSPitch [33], OSDepth [34])
-        epa = self.runObj.appr_values[8] + float(self.parameter.GetValue())
-        epaRec = 0
-        if float(self.parameter.GetValue()) > 0:
-            while epa >= rundata[epaRec + 1,8] and (endrec - startrec - 2) > epaRec:
-                epaRec = epaRec + 1
-            osPitch = self.runObj.maxValues[8] - epa
-            osDepth = self.runObj.minValues[22] - rundata[epaRec,22]
-        if float(self.parameter.GetValue()) < 0:
-            while epa <= rundata[epaRec + 1,8] and (endrec - startrec - 2) > epaRec:
-                epaRec = epaRec + 1
-            osPitch = self.runObj.minValues[8] - epa
-            osDepth = self.runObj.maxValues[22] - rundata[epaRec,22]
-        epaTime = (epaRec)*self.runObj.dt + float(self.extrastartTime.GetValue())
-        epaDepth = rundata[epaRec,22] - self.runObj.appr_values[22]
-        if epaRec == 0 or epaRec >= (endrec - startrec - 2):
-            for i in range(5):
+        #
+        # *** Removed for now ***
+        for i in range(5):
                 self.extracalc.append('--')
-        else:
-            self.extracalc.append('%.2f' % epa)
-            self.extracalc.append('%.2f' % epaTime)
-            self.extracalc.append('%.2f' % epaDepth)
-            self.extracalc.append('%.2f' % osPitch)
-            self.extracalc.append('%.2f' % osDepth)
         
         #Horizontal Overshoots (EYA [35], EYATime [36], OSYaw [37]
-        #Tricky Becasue yaw goes from +/- 180 degrees
-        eya = self.runObj.appr_values[9] + float(self.parameter.GetValue())
-        eyaRec = 0
-        if abs(eya) >= 180:
-            eya = -(eya/abs(eya))*(360 - abs(eya))
-        if float(self.parameter.GetValue()) > 0 and (rundata[eyaRec+40,9] - rundata[eyaRec,9]) > 0:
-            while (eya <= rundata[eyaRec,9] or eya >= rundata[eyaRec + 1,9]) and (endrec - startrec - 2) > eyaRec:
-                eyaRec = eyaRec + 1
-            osYaw = self.runObj.maxValues[9] - eya
-        if float(self.parameter.GetValue()) < 0 and (rundata[eyaRec+40,9] - rundata[eyaRec,9]) < 0:
-            while (eya >= rundata[eyaRec,9] or eya <= rundata[eyaRec + 1,9]) and (endrec - startrec - 2) > eyaRec:
-                eyaRec = eyaRec + 1
-            osYaw = self.runObj.minValues[9] - eya
-        eyaTime = (eyaRec)*self.runObj.dt + float(self.extrastartTime.GetValue())
-        if eyaRec == 0 or eyaRec >= (endrec - startrec - 2):
-            for i in range(3):
-                self.extracalc.append('--')
-        else:
-            self.extracalc.append('%.2f' % eya)
-            self.extracalc.append('%.2f' % eyaTime)
-            self.extracalc.append('%.2f' % osYaw)
-        
+        #
+        # *** Removed for now ***
+        for i in range(3):
+            self.extracalc.append('--')
+       
         #Speed vs Time(x) (TimeTo0 [38], Uat30 [39], Uat60 [40], Uat90 [41], Uat120 [42])
         if self.runObj.minValues[6] < 0.5:
             self.extracalc.append('%.2f' % self.runObj.minTimes[6])
@@ -494,7 +458,8 @@ class AnalysisFrame(wx.Frame):
         for i in range(4):
             AccRec = startrec + int(acctime[i]/self.runObj.dt)
             if AccRec < (endrec - startrec - 2):
-                self.extracalc.append('%.2f' % rundata[AccRec, 6])
+#                self.extracalc.append('%.2f' % rundata[AccRec, 6])
+                self.extracalc.append('--')
             else:
                 self.extracalc.append('--')
         
@@ -526,9 +491,9 @@ class AnalysisFrame(wx.Frame):
             self.extrastartTime.ChangeValue('')
             self.extraendTime.ChangeValue('')
             self.parameter.ChangeValue('')
-            for i in range (14):
+            for i in range(14):
                 self.extraData[i].SetLabel(' ')
-            for i in range (15):
+            for i in range(15):
                 self.extraList[i].SetLabel(' ')
         else:
             self.extrastartTime.ChangeValue(self.startTime.GetValue())
@@ -569,7 +534,7 @@ class AnalysisFrame(wx.Frame):
                 data[6].SetLabel("%.2f/%.2f" % ((self.runObj.minValues[data[1]] - apprValue),self.runObj.ntime[self.runObj.minIndices[data[1]]]))
             elif data[1] == -1:
                 apprValue = self.runObj.Znoseappr
-                ZNoffset = STDFile.GeoTable[self.runObj.boat][0]
+                ZNoffset = self.runObj.GeoTable[self.runObj.boat][0]
                 data[2].SetLabel("%.2f" % apprValue)
                 data[3].SetLabel("%.2f/%.2f" % (self.runObj.maxZnose,self.runObj.ntime[self.runObj.maxZnoseIndex]))
                 data[4].SetLabel("%.2f/%.2f" % (self.runObj.minZnose,self.runObj.ntime[self.runObj.minZnoseIndex]))
@@ -577,7 +542,7 @@ class AnalysisFrame(wx.Frame):
                 data[6].SetLabel("%.2f/%.2f" % ((self.runObj.minZnose - apprValue - ZNoffset),self.runObj.ntime[self.runObj.minZnoseIndex]))
             elif data[1] == -2:
                 apprValue = self.runObj.Zsailappr
-                ZSoffset = 2 * STDFile.GeoTable[self.runObj.boat][0] + STDFile.GeoTable[self.runObj.boat][3]
+                ZSoffset = 2 * self.runObj.GeoTable[self.runObj.boat][0] + self.runObj.GeoTable[self.runObj.boat][3]
                 data[2].SetLabel("%.2f" % apprValue)
                 data[3].SetLabel("%.2f/%.2f" % (self.runObj.maxZsail,self.runObj.ntime[self.runObj.maxZsailIndex]))
                 data[4].SetLabel("%.2f/%.2f" % (self.runObj.minZsail,self.runObj.ntime[self.runObj.minZsailIndex]))

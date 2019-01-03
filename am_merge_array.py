@@ -717,6 +717,7 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
                               (dataSTD['rawStatus'] <= 1)  ].copy(deep=True)
     # Drop the rawStatus Column
     dataSTDrun.drop('rawStatus', 1, inplace=True)
+       
     # Now write out the data
     dataSTDrun.to_csv(stdfile, index=False, header=False, sep=' ', float_format='%12.7e')
     
@@ -972,8 +973,8 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
 
 if __name__ == "__main__":
     # Test for merge
-    os.chdir('C:\\Users\\CubbageSJ\\Documents\\rcmdata\\Test_Data\\SSN23\\20170821')
-    MergeRun('C:\\Users\\CubbageSJ\\Documents\\rcmdata\\Test_Data\\SSN23\\20170821\\run_1632.tdms',
-             1632,
-             'C:\\Users\\CubbageSJ\\Documents\\rcmdata\\STD_Data\\SSN23\\s23de-dg-eav-1708',
-             'C:\\Users\\CubbageSJ\\Documents\\rcmdata\\Merge_Files\\CB12\\CB12-S23_MIP.INP')
+    os.chdir('C:\\Users\\CubbageSJ\\Documents\\Test_Data\\VIRGINIA\\VPM_Hatch-2018\\12112018')
+    MergeRun('C:\\Users\\CubbageSJ\\Documents\\Test_Data\\VIRGINIA\\VPM_Hatch-2018\\12112018\\run-13657.obc',
+             1657,
+             'C:\\Users\\CubbageSJ\\Documents\\Test_Data\\STD_Data\\NSSN_VA',
+             'C:\\Users\\CubbageSJ\\Documents\\Test_Data\\Merge_Files\\CB10\\MERGE_VPM-SDI-ConcDynos-Submerged-Column-10694_on.txt')

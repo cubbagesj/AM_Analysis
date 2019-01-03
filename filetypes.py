@@ -143,7 +143,8 @@ class STDFile:
                 self.data = pd.read_table(fullname, sep='\s+', skiprows=5, names=channames)
                 self.chan_names = self.data.columns
 
-                # Time is found in column 26
+                # Time is found in column 26 - subtract initial point to zero
+                self.data.iloc[:,26] -= self.data.iloc[0,26]
                 self.time = self.data.iloc[:,26]
                 
                 # get the geometry info from the table based on boat length
@@ -1364,7 +1365,7 @@ class TDMSFile:
 
 if __name__ == "__main__":
 
-#    test = OBCFile('13617')
+#    test = OBCFile('13657')
 #    test = TDMSFile('1632')
     test = STDFile('10-13657.std', 'known')
 #    test.info()
