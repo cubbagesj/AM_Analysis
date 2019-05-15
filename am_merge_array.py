@@ -531,13 +531,13 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
         elif mrg_chans[i] == 880:                                   #Equiv Stern
             EUdata = (runObj.getEUData(mrg_chans[32]) +
                       runObj.getEUData(mrg_chans[33]) +
-                      runObj.getEUdata(mrg_chans[34]) +
-                      runObj.getEUdata(mrg_chans[35])) / 4.0
+                      runObj.getEUData(mrg_chans[34]) +
+                      runObj.getEUData(mrg_chans[35])) / 4.0
         elif mrg_chans[i] == 881:                                   #Equiv Rudder
-            EUdata = (-runObj.getEUdata(mrg_chans[32]) +
-                      runObj.getEUdata(mrg_chans[33]) -
-                      runObj.getEUdata(mrg_chans[34]) +
-                      runObj.getEUdata(mrg_chans[35]))/4.0
+            EUdata = (-runObj.getEUData(mrg_chans[32]) +
+                      runObj.getEUData(mrg_chans[33]) -
+                      runObj.getEUData(mrg_chans[34]) +
+                      runObj.getEUData(mrg_chans[35]))/4.0
 
 ##                elif mrg_chans[i] == 890:                                   #Stbd RPM Flip
 ##                    EUdata[i] = (rawdata[stbd_rpm_chan]-cal.zeros[stbd_rpm_chan])*cal.gains[stbd_rpm_chan]
