@@ -1317,23 +1317,23 @@ class TDMSFile:
                     try:
                         self.sp_gauges[gauge].compute(self.dataEU.query('script_mode == 0x0F33'),
                                       bodyAngles, 
-                                      cb_id = 10,
+                                      cb_id = 12,
                                       doZeros = 0.0)
                     except:
                         self.sp_gauges[gauge].compute(self.dataEU.query('script_mode == 0x0F13'),
                                       bodyAngles, 
-                                      cb_id = 10,
+                                      cb_id = 12,
                                       doZeros = 0.0)
 
                 else:
                     self.sp_gauges[gauge].compute(self.dataEU.query('script_mode == 0x0F13'),
                                   bodyAngles, 
-                                  cb_id = 10,
+                                  cb_id = 12,
                                   doZeros = 0.0)
 
                 self.sp_gauges[gauge].compute(self.dataEU,
                               bodyAngles, 
-                              cb_id = 10,
+                              cb_id = 12,
                               doZeros = 1.0)
 
                 # Then append to the EU dataframe
