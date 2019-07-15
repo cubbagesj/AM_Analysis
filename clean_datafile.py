@@ -197,6 +197,9 @@ class CleanDataFrame(wx.Frame):
             except:
                 self.runObj.dataEU[channel] *= 0.0
                 cleanFile.write("%s " % channel)
+        
+        # Insert carriage return before adding data
+        cleanFile.write("\n")
 
         self.runObj.dataEU.to_csv(cleanFile, index=False, header=False, sep=' ', float_format='%12.7e')
         

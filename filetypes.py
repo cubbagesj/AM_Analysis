@@ -152,7 +152,7 @@ class STDFile:
                     self.boat = '688/751'
                 elif abs(self.length - 361) < 1:
                     self.boat = 'S21'
-                elif abs(self.length - 461.63) < .2:
+                elif abs(self.length - 461.63) < .1:
                     self.boat = 'S23'
                 elif abs(self.length - 377.33) < 1 :
                     self.boat = 'VA'
@@ -166,7 +166,7 @@ class STDFile:
                     self.boat = 'VPM97'
                 elif abs(self.length - 439.33) < 1:
                     self.boat = 'VPM62'
-                elif abs(self.length - 461.14) < .2:
+                elif abs(self.length - 461.5) < .1:
                     self.boat = 'VPM'
                 else:
                     self.boat = '688/751'
