@@ -614,7 +614,10 @@ class OBCFile:
         
             if cal.hasKistler3 == "TRUE":
                 self.sp_gauges['Kistler3'] = dynos.Kistler3(cal.kistler3)
-        
+
+            if cal.hasKistler3_2 == "TRUE":
+                self.sp_gauges['Kistler3_2'] = dynos.Kistler3(cal.kistler3_2)
+         
             if cal.hasDeck == "TRUE":
                 self.sp_gauges['Deck'] = dynos.Deck(cal.deck)
         

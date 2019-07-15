@@ -70,11 +70,21 @@ class CalFile:
         # hasKistler refers to the standard 4-guage kistler
         self.hasKistler = self.c.add_option('kistler').get().strip().upper()
         self.hasKistler3 = 'FALSE'
+
+        # Added Kistler 3 but not all old files have it so handle missing flag
         try:
             self.hasKistler3 = self.c.add_option('kistler3').get().strip().upper()
         except:
             # If key not found then set to false
             self.hasKistler3 = 'FALSE'
+
+        # For SSGN needed 2 3 button kistlers so add a new type, kistler3_2
+        #  but not all old files have it so handle missing flag
+        try:
+            self.hasKistler3_2 = self.c.add_option('kistler3_2').get().strip().upper()
+        except:
+            # If key not found then set to false
+            self.hasKistler3_2 = 'FALSE'
 
         # hasDeck refers to the dual Kistler deck setup 
         try:
@@ -279,6 +289,8 @@ class CalFile:
             self.kistler = self.ParseGauge('KISTLER', type='kistler')
         if self.hasKistler3 == "TRUE":
             self.kistler3 = self.ParseGauge('KISTLER3', type='kistler3')
+        if self.hasKistler3_2 == "TRUE":
+            self.kistler3_2 = self.ParseGauge('KISTLER3_2', type='kistler3')
         if self.hasSOF1 == "TRUE":
             self.SOF1 = self.ParseGauge('SOF1', type='6dof')
         if self.hasSOF2 == "TRUE":
