@@ -95,7 +95,7 @@ def get_run(run_list):
     
     return runobj
 
-def get_runs_overplot( run_list, title_list, obc_path='', std_path=''): #made a new 
+def get_runs_overplot( run_list, title_list, obc_path='', std_path='', fst_path=''): #made a new 
     """  Return a list of FileType objects for each run found
     
         Attempt to find each run in the run_list on either the
@@ -119,7 +119,15 @@ def get_runs_overplot( run_list, title_list, obc_path='', std_path=''): #made a 
     
     for runnum in run_list:
         if stdm.match(runnum.strip()):
-            runobj = STDFile(runnum, search_path=std_path)
+            # Could be rcm or fullscale
+            # Look for 790 at start to flag FST runs
+            print(runnum)
+            if runnum[0:3] != '790':
+                print("RCMdata")
+                runobj = STDFile(runnum, search_path=std_path)
+            else:
+                print("Fullscale")
+                runobj = STDFile(runnum, search_path=fst_path)
         else:
             runobj = OBCFile(runnum, search_path=obc_path)
     

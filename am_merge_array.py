@@ -704,29 +704,29 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
             EUdata *= .083333
 
         elif mrg_chans[i] == 980 and 'Kistler3_2' in runObj.sp_gauges:         # Computed Kistler Fx
-            EUdata = runObj.getEUData('Kistler3_CFx')
+            EUdata = runObj.getEUData('Kistler3_2_CFx')
             EUdata *= pow(c_lambda, mrg_scale[i])
             EUdata *= 1.0284
         elif mrg_chans[i] == 981 and 'Kistler3_2' in runObj.sp_gauges:         # Computed Kistler Fy
-            EUdata = runObj.getEUData('Kistler3_CFy')
+            EUdata = runObj.getEUData('Kistler3_2_CFy')
             EUdata *= pow(c_lambda, mrg_scale[i])
             EUdata *= 1.0284
         elif mrg_chans[i] == 982 and 'Kistler3_2' in runObj.sp_gauges:         # Computed Kistler Fz
-            EUdata = runObj.getEUData('Kistler3_CFz')
+            EUdata = runObj.getEUData('Kistler3_2_CFz')
             EUdata *= pow(c_lambda, mrg_scale[i])
             EUdata *= 1.0284
         elif mrg_chans[i] == 983 and 'Kistler3_2' in runObj.sp_gauges:         # Computed Kistler Mx
-            EUdata = runObj.getEUData('Kistler3_CMx')
+            EUdata = runObj.getEUData('Kistler3_2_CMx')
             EUdata *= pow(c_lambda, mrg_scale[i])
             EUdata *= 1.0284
             EUdata *= .083333
         elif mrg_chans[i] == 984 and 'Kistler3_2' in runObj.sp_gauges:         # Computed Kistler My
-            EUdata = runObj.getEUData('Kistler3_CMy')
+            EUdata = runObj.getEUData('Kistler3_2_CMy')
             EUdata *= pow(c_lambda, mrg_scale[i])
             EUdata *= 1.0284
             EUdata *= .083333
         elif mrg_chans[i] == 985 and 'Kistler3_2' in runObj.sp_gauges:         # Computed Kistler Mz
-            EUdata = runObj.getEUData('Kistler3_CMz')
+            EUdata = runObj.getEUData('Kistler3_2_CMz')
             EUdata *= pow(c_lambda, mrg_scale[i])
             EUdata *= 1.0284
             EUdata *= .083333

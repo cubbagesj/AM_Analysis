@@ -335,11 +335,15 @@ class STDFile:
         try:
             self.theta = self.dataEU["'pitch'"]
             self.phi = self.dataEU["'roll'"]
-            self.psi = self.dataEU["'yaw'"]
+            try:
+                self.psi = self.dataEU["'yaw'"]
+            except:
+                self.psi = self.dataEU["'heading'"]
 
             self.p = self.dataEU["'p'"]
             self.q = self.dataEU["'q'"]
             self.r = self.dataEU["'r'"]
+            
 
             # These are the pre-processed adcp data
             self.u_adcp = self.dataEU["'u_ft/s'"]
@@ -353,7 +357,8 @@ class STDFile:
 
             self.depth = self.dataEU["'zsensor'"]
         except:
-            raise
+            # FST runs use different names so just skip
+            pass
 
     def compStats(self, start=None, end=None):
         """ This routine will compute the max/min for each data channel

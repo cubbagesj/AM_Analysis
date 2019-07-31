@@ -184,7 +184,8 @@ class OverPlotFrame(wx.Frame):
                     
             runobjs,new_titles = get_runs_overplot(runlist,titles, 
                                                    obc_path = self.defaultPaths['obcOvrpltDir'],
-                                                   std_path = self.defaultPaths['stdDir'] )
+                                                   std_path = self.defaultPaths['stdDir'],
+                                                   fst_path = self.defaultPaths['fstDir'] )
             
             i = 0
             for title in titles:

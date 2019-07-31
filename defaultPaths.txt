@@ -3,10 +3,10 @@
 # These are the deafult search paths used by the program.
 # They can be changed from the menu in the program
 #
-obcDir c:/Users/CubbageSJ/Documents/Test_Data
-tdmsDir c:/Users/CubbageSJ/Documents/Test_Data
-stdDir c:/Users/CubbageSJ/Documents/Test_Data/STD_Data
-fstDir c:/Users/CubbageSJ/Documents/Test_Data
+obcDir z:/RCM/Autonomous_Model/Test_Data
+tdmsDir z:/RCM/Autonomous_Model/Test_Data
+stdDir Y:/rcmdata
+fstDir c:/Users/samc/Documents/updates
 #
 # This entry is for overplots of OBC files and is root of current test data tree
-obcOvrpltDir  c:/Users/CubbageSJ/Documents/test_data/VIRGINIA
+obcOvrpltDir  z:/RCM/Autonomous_Model/Test_Data/VIRGINIA/2019-04-VPM_Bottom_Drop
