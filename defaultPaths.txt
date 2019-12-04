@@ -3,8 +3,8 @@
 # These are the deafult search paths used by the program.
 # They can be changed from the menu in the program
 #
-obcDir z:/RCM/Autonomous_Model/Test_Data
-tdmsDir z:/RCM/Autonomous_Model/Test_Data
+obcDir Z:\Autonomous_Model\Test_Data\VIRGINIA\2019-04-VPM_Bottom_Drop
+tdmsDir Z:\Autonomous_Model\Test_Data\VIRGINIA\2019-04-VPM_Bottom_Drop
 stdDir Y:/rcmdata
 fstDir c:/Users/samc/Documents/updates
 #

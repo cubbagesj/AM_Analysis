@@ -375,11 +375,12 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
         elif mrg_chans[i] == 821:           # Alpha
             EUdata = np.degrees(np.arctan2(w_FS, u_FS))
         elif mrg_chans[i] == 822:           # Beta
-            np.seterr(divide='ignore', invalid='ignore')
+            #np.seterr(divide='ignore', invalid='ignore')
             EUdata = -np.degrees(np.arcsin(np.divide(v_FS, bigU_FS)))
         elif mrg_chans[i] == 823:           # Big U from ADCP
-            EUdata = runObj.bigU.copy()
-            EUdata *= pow(c_lambda, .5)
+            #EUdata = runObj.bigU.copy()
+            EUdata = np.sqrt(v_FS**2 + u_FS**2 + w_FS**2)
+            #EUdata *= pow(c_lambda, .5)
             # We need this later on for alpha/beta calcs so store it
             bigU_FS = EUdata.copy()
 
