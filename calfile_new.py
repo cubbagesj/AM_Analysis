@@ -101,12 +101,12 @@ class CalFile:
         # Setup the gauge item lists
         self.itemlist = {}
 
-        self.itemlist['prop'] = (('Fx', 'int'),
-                                 ('Fy', 'int'),
-                                 ('Fz', 'int'),
-                                 ('Mx', 'int'),
-                                 ('My', 'int'),
-                                 ('Mz', 'int'),
+        self.itemlist['prop'] = (('Fx', 'string'),
+                                 ('Fy', 'string'),
+                                 ('Fz', 'string'),
+                                 ('Mx', 'string'),
+                                 ('My', 'string'),
+                                 ('Mz', 'string'),
                                  ('weight', 'float'),
                                  ('arm', 'float'),
                                  ('armx', 'float'),
@@ -126,12 +126,12 @@ class CalFile:
                                  ('orient_row5', 'string'),
                                  ('orient_row6', 'string'),
                                  ('serial_num', 'string'))
-        self.itemlist['6dof'] = (('Fx', 'int'),
-                                 ('Fy', 'int'),
-                                 ('Fz', 'int'),
-                                 ('Mx', 'int'),
-                                 ('My', 'int'),
-                                 ('Mz', 'int'),
+        self.itemlist['6dof'] = (('Fx', 'string'),
+                                 ('Fy', 'string'),
+                                 ('Fz', 'string'),
+                                 ('Mx', 'string'),
+                                 ('My', 'string'),
+                                 ('Mz', 'string'),
                                  ('weight', 'float'),
                                  ('arm', 'float'),
                                  ('armx', 'float'),
@@ -408,7 +408,7 @@ class CalFile:
         return gauge    
 
 if __name__ == '__main__':
-    cfile = CalFile('cal.ini', '.')
+    cfile = CalFile('tdms_to_obc.cal', '.')
     cfile.ParseAll()
     print("Channels:", cfile.channels)
     print("Gains:", cfile.gains)

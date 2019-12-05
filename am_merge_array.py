@@ -823,7 +823,7 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
     # data.  It creates computed values of u, v, w from the motions data and appends
     # these columns to the STD file
     
-#    logfile.write('Computing data consistency\n' )
+    logfile.write('Computing data consistency\n' )
     rundata = STDFile(stdfilename, 'known')
     
     # Now we have the data so we begin the processing
@@ -1003,8 +1003,8 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
 
 if __name__ == "__main__":
     # Test for merge
-    os.chdir('C:\\Users\\CubbageSJ\\Documents\\Test_Data\\VIRGINIA\\VPM_Hatch-2018\\12112018')
-    MergeRun('C:\\Users\\CubbageSJ\\Documents\\Test_Data\\VIRGINIA\\VPM_Hatch-2018\\12112018\\run-13657.obc',
-             1657,
-             'C:\\Users\\CubbageSJ\\Documents\\Test_Data\\STD_Data\\NSSN_VA',
-             'C:\\Users\\CubbageSJ\\Documents\\Test_Data\\Merge_Files\\CB10\\MERGE_VPM-SDI-ConcDynos-Submerged-Column-10694_on.txt')
+    os.chdir('Z:\\RCM\\Autonomous_Model\\Test_Data\\SSN_23\\2019_12_03-SSN23_MIP_Sensitivity\\20191204')
+    MergeRun('Z:\\RCM\\Autonomous_Model\\Test_Data\\SSN_23\\2019_12_03-SSN23_MIP_Sensitivity\\20191204\\run_2371.tdms',
+             2371,
+             'Y:\\rcmdata\\SSN21_23\\s23de-dg-eav-1219',
+             'Z:\\RCM\\Autonomous_Model\\Test_Data\\SSN_23\\2019_12_03-SSN23_MIP_Sensitivity\\20191204\\tdms_to_obc_MERGE.INP')

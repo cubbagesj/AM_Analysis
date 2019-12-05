@@ -447,13 +447,25 @@ class Dyno6:
         psi = bodyAngles[2]
        
         # Set up raw forces
-        rawForces = np.array([rawdata[rawdata.columns[self.Fx_chan]],
-                           rawdata[rawdata.columns[self.Fy_chan]],
-                           rawdata[rawdata.columns[self.Fz_chan]],
-                           rawdata[rawdata.columns[self.Mx_chan]],
-                           rawdata[rawdata.columns[self.My_chan]],
-                           rawdata[rawdata.columns[self.Mz_chan]]], float).transpose()
-
+        # Special channels can be given as numbers or names
+        # Need to check for which we have so we can get values properly
+        # Assume that if first one is a num all are nums
+        
+        if self.Fx_chan.isdigit():
+            rawForces = np.array([rawdata[rawdata.columns[int(self.Fx_chan)]],
+                               rawdata[rawdata.columns[int(self.Fy_chan)]],
+                               rawdata[rawdata.columns[int(self.Fz_chan)]],
+                               rawdata[rawdata.columns[int(self.Mx_chan)]],
+                               rawdata[rawdata.columns[int(self.My_chan)]],
+                               rawdata[rawdata.columns[int(self.Mz_chan)]]], float).transpose()
+        else: 
+            rawForces = np.array([rawdata[self.Fx_chan],
+                               rawdata[self.Fy_chan],
+                               rawdata[self.Fz_chan],
+                               rawdata[self.Mx_chan],
+                               rawdata[self.My_chan],
+                               rawdata[self.Mz_chan]], float).transpose()
+  
         # Apply the Interaction Matrix
         def intMatrix ( a, b):
             return np.dot( a,b)
@@ -597,13 +609,26 @@ class Rot_Dyno6:
             
         sinR = np.sin(np.radians(rot_angle))
         cosR = np.cos(np.radians(rot_angle))
-
-        rawForces = np.array([rawdata[rawdata.columns[self.Fx_chan]],
-                           rawdata[rawdata.columns[self.Fy_chan]],
-                           rawdata[rawdata.columns[self.Fz_chan]],
-                           rawdata[rawdata.columns[self.Mx_chan]],
-                           rawdata[rawdata.columns[self.My_chan]],
-                           rawdata[rawdata.columns[self.Mz_chan]]], float).transpose()
+        
+        # Special channels can be given as numbers or names
+        # Need to check for which we have so we can get values properly
+        # Assume that if first one is a num all are nums
+        
+        if self.Fx_chan.isdigit():
+            rawForces = np.array([rawdata[rawdata.columns[int(self.Fx_chan)]],
+                               rawdata[rawdata.columns[int(self.Fy_chan)]],
+                               rawdata[rawdata.columns[int(self.Fz_chan)]],
+                               rawdata[rawdata.columns[int(self.Mx_chan)]],
+                               rawdata[rawdata.columns[int(self.My_chan)]],
+                               rawdata[rawdata.columns[int(self.Mz_chan)]]], float).transpose()
+        else: 
+            rawForces = np.array([rawdata[self.Fx_chan],
+                               rawdata[self.Fy_chan],
+                               rawdata[self.Fz_chan],
+                               rawdata[self.Mx_chan],
+                               rawdata[self.My_chan],
+                               rawdata[self.Mz_chan]], float).transpose()
+            
 
         # Apply the Interaction Matrix
         def intMatrix ( a, b):
