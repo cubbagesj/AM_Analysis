@@ -1373,9 +1373,9 @@ class TDMSFile:
 
 if __name__ == "__main__":
 
-#    test = OBCFile('13657')
-#    test = TDMSFile('1632')
-    test = STDFile('10-13657.std', 'known')
+#    test = OBCFile('13848')
+    test = TDMSFile('2371')
+#    test = STDFile('10-13848.std', 'known')
 #    test.info()
 #    test.run_stats()
 #    print(test.getEUData(12))
