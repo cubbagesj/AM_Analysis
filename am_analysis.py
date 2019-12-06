@@ -206,14 +206,14 @@ class BrowserFrame(wx.Frame):
 
 
         # Add a root node for OBC File
-        self.obcroot = self.tree.AppendItem(root, "OBC Files")
+        self.obcroot = self.tree.AppendItem(root, "Model Files")
         self.tree.SetItemImage(self.obcroot, self.fldridx, wx.TreeItemIcon_Normal)
         self.tree.SetItemImage(self.obcroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
 
         # Add a root node for TDMS File
-        self.tdmsroot = self.tree.AppendItem(root, "TDMS Files")
-        self.tree.SetItemImage(self.tdmsroot, self.fldridx, wx.TreeItemIcon_Normal)
-        self.tree.SetItemImage(self.tdmsroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
+#        self.tdmsroot = self.tree.AppendItem(root, "TDMS Files")
+#        self.tree.SetItemImage(self.tdmsroot, self.fldridx, wx.TreeItemIcon_Normal)
+#        self.tree.SetItemImage(self.tdmsroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
 
         # Add a root node for STD File
         self.stdroot = self.tree.AppendItem(root, "STD Files")
@@ -273,8 +273,8 @@ class BrowserFrame(wx.Frame):
             
         if os.path.exists(obcDir):
             self.TreeBuilder(obcDir, self.obcroot)
-        if os.path.exists(tdmsDir):
-            self.TreeBuilder(tdmsDir, self.tdmsroot)
+#        if os.path.exists(tdmsDir):
+#            self.TreeBuilder(tdmsDir, self.tdmsroot)
         if os.path.exists(stdDir):
             self.TreeBuilder(stdDir, self.stdroot)
         if os.path.exists(fstDir):
@@ -429,7 +429,7 @@ class BrowserFrame(wx.Frame):
         """
         self.statusbar.SetStatusText('Working...')
         self.tree.DeleteChildren(self.obcroot)
-        self.tree.DeleteChildren(self.tdmsroot)
+#        self.tree.DeleteChildren(self.tdmsroot)
         self.tree.DeleteChildren(self.stdroot)
         self.readFilePaths()
 
