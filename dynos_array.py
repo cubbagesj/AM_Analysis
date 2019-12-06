@@ -1,6 +1,6 @@
 # dynos.py
 #
-# Copyright (C) 2006-2007 - Samuel J. Cubbage
+# Copyright (C) 2006-2019 - Samuel J. Cubbage
 #
 #  This program is part of the Autonomous Model Software Tools Package
 #
@@ -13,6 +13,7 @@
     Kistler3 - Class for 3-guage kistler
     Dyno6 - 6 DOF dyno - stationary
     Rot_Dyno6 - Rotating 6 DOF dyno
+    Deck - Combined Kistler deck gauge - Not used anymore
 """
 
 import numpy as np
@@ -139,19 +140,39 @@ class Kistler6:
         theta = bodyAngles[1]
         psi = bodyAngles[2]
 
-        # Subtract zeros to get the relative forces
-        relForces = np.array([rawdata[rawdata.columns[self.Fx1_chan]],
-                           rawdata[rawdata.columns[self.Fy1_chan]],
-                           rawdata[rawdata.columns[self.Fz1_chan]],
-                           rawdata[rawdata.columns[self.Fx2_chan]],
-                           rawdata[rawdata.columns[self.Fy2_chan]],
-                           rawdata[rawdata.columns[self.Fz2_chan]],
-                           rawdata[rawdata.columns[self.Fx3_chan]],
-                           rawdata[rawdata.columns[self.Fy3_chan]],
-                           rawdata[rawdata.columns[self.Fz3_chan]],
-                           rawdata[rawdata.columns[self.Fx4_chan]],
-                           rawdata[rawdata.columns[self.Fy4_chan]],
-                           rawdata[rawdata.columns[self.Fz4_chan]]], float).transpose()
+        # Special channels can be given as numbers or names
+        # Need to check for which we have so we can get values properly
+        # Assume that if first one is a num all are nums
+        
+        if self.Fx1_chan.isdigit():
+            # Channels are given as channel number so need to use that to look up channel
+            relForces = np.array([rawdata[rawdata.columns[self.Fx1_chan]],
+                               rawdata[rawdata.columns[self.Fy1_chan]],
+                               rawdata[rawdata.columns[self.Fz1_chan]],
+                               rawdata[rawdata.columns[self.Fx2_chan]],
+                               rawdata[rawdata.columns[self.Fy2_chan]],
+                               rawdata[rawdata.columns[self.Fz2_chan]],
+                               rawdata[rawdata.columns[self.Fx3_chan]],
+                               rawdata[rawdata.columns[self.Fy3_chan]],
+                               rawdata[rawdata.columns[self.Fz3_chan]],
+                               rawdata[rawdata.columns[self.Fx4_chan]],
+                               rawdata[rawdata.columns[self.Fy4_chan]],
+                               rawdata[rawdata.columns[self.Fz4_chan]]], float).transpose()
+        else:
+            # Channels are given by name so use the name
+            relForces = np.array([rawdata[self.Fx1_chan],
+                               rawdata[self.Fy1_chan],
+                               rawdata[self.Fz1_chan],
+                               rawdata[self.Fx2_chan],
+                               rawdata[self.Fy2_chan],
+                               rawdata[self.Fz2_chan],
+                               rawdata[self.Fx3_chan],
+                               rawdata[self.Fy3_chan],
+                               rawdata[self.Fz3_chan],
+                               rawdata[self.Fx4_chan],
+                               rawdata[self.Fy4_chan],
+                               rawdata[self.Fz4_chan]], float).transpose()
+            
 
         # Now combine these individual gauge forces into total gauge forces
         combFx = relForces[:,0] + relForces[:,3] + relForces[:,6] + relForces[:,9]
@@ -292,16 +313,32 @@ class Kistler3:
         theta = bodyAngles[1]
         psi = bodyAngles[2]
 
-        # Subtract zeros to get the relative forces
-        relForces = np.array([rawdata[rawdata.columns[self.Fx1_chan]],
-                           rawdata[rawdata.columns[self.Fy1_chan]],
-                           rawdata[rawdata.columns[self.Fz1_chan]],
-                           rawdata[rawdata.columns[self.Fx2_chan]],
-                           rawdata[rawdata.columns[self.Fy2_chan]],
-                           rawdata[rawdata.columns[self.Fz2_chan]],
-                           rawdata[rawdata.columns[self.Fx3_chan]],
-                           rawdata[rawdata.columns[self.Fy3_chan]],
-                           rawdata[rawdata.columns[self.Fz3_chan]]], float).transpose()
+        # Special channels can be given as numbers or names
+        # Need to check for which we have so we can get values properly
+        # Assume that if first one is a num all are nums
+        
+        if self.Fx1_chan.isdigit():
+            # Channels are given as channel number so need to use that to look up channel
+            relForces = np.array([rawdata[rawdata.columns[self.Fx1_chan]],
+                               rawdata[rawdata.columns[self.Fy1_chan]],
+                               rawdata[rawdata.columns[self.Fz1_chan]],
+                               rawdata[rawdata.columns[self.Fx2_chan]],
+                               rawdata[rawdata.columns[self.Fy2_chan]],
+                               rawdata[rawdata.columns[self.Fz2_chan]],
+                               rawdata[rawdata.columns[self.Fx3_chan]],
+                               rawdata[rawdata.columns[self.Fy3_chan]],
+                               rawdata[rawdata.columns[self.Fz3_chan]]], float).transpose()
+        else:
+            # Channels are given by name so use the name
+            relForces = np.array([rawdata[self.Fx1_chan],
+                               rawdata[self.Fy1_chan],
+                               rawdata[self.Fz1_chan],
+                               rawdata[self.Fx2_chan],
+                               rawdata[self.Fy2_chan],
+                               rawdata[self.Fz2_chan],
+                               rawdata[self.Fx3_chan],
+                               rawdata[self.Fy3_chan],
+                               rawdata[self.Fz3_chan]], float).transpose()
 
         # Now combine these individual gauge forces into total gauge forces
         combFx = relForces[:,0] + relForces[:,3] + relForces[:,6]
@@ -688,6 +725,15 @@ class Deck:
         combining the forces and moments to get the overall gauge forces and
         moments.  To combine the forces, we need some geometry info on the
         gauge construction that is provided in the cal.ini file
+        
+    -------------------->>>>>> NOTE!!!!!  <<<<<-----------------------------
+      THIS TYPE OF GAUGE WAS ONLY USED ON THE INITIAL COLUMBIA MODEL AND
+      HAS BEEN REMOVED.  THIS IS ABANDONED CODE AND IS NO LONGER BEING
+      UPDATED AND WILL NOT WORK WITH THE CURRENT CODE
+      
+      IT HAS BEEN LEFT HERE JUST TO BE A RECORD OF HOW THIS GAUGE WAS 
+      USED AND PROCESSED
+    ------------------------------------------------------------------------
 
     These forces and moments are then passed through an interaction matrix
     and orientation matrix to get body forces and moments.  These 
