@@ -134,14 +134,14 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
     for line in chan_sec:
         values = line.split()
         mrg_names.append(values[0])
-        mrg_chans.append(int(values[1]))
+        mrg_chans.append(values[1])
         mrg_scale.append(float(values[2]))
         mrg_zero.append(int(values[3]))
     
     logfile.write('\nMerge Channels Processed - MERGE CHANNELS\n')
     logfile.write('Chan \t Name \t OBC Chan \t Scale \t Zero\n')
     for x in range(len(mrg_names)):
-        logfile.write('%d\t%s\t%d\t\t%f\t%d\n' % (x, mrg_names[x], mrg_chans[x], mrg_scale[x], mrg_zero[x]))
+        logfile.write('%d\t%s\t%s\t\t%f\t%d\n' % (x, mrg_names[x], mrg_chans[x], mrg_scale[x], mrg_zero[x]))
     logfile.write('Merge Configuration Completed\n')
 
     # Main Program Loop - Do this for each run in the input list
@@ -258,7 +258,8 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
 
     for i in range(len(mrg_names)):
 
-        if mrg_chans[i] < 800:              # Normal Channel
+        if not mrg_chans[i].isdigit():
+            # This is a named channel
             EUdata = runObj.getEUData(mrg_chans[i]).values
             EUdata -= runObj.avgEUzeros[mrg_chans[i]]*mrg_zero[i]
             EUdata *= pow(c_lambda, mrg_scale[i])
@@ -266,471 +267,484 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
             if mrg_scale[i] >= 3:
                 EUdata *= 1.0284
             if mrg_scale[i] == 4:       # in-lb to ft-lb conversion
-                EUdata *= 0.083333            
+                EUdata *= 0.083333
+        else:
+            # Numbered channel
+            mrg_chans[i] = int(mrg_chans[i])
+            
+            if mrg_chans[i] < 800:              # Normal Channel
+                EUdata = runObj.getEUData(mrg_chans[i]).values
+                EUdata -= runObj.avgEUzeros[mrg_chans[i]]*mrg_zero[i]
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                        
+                if mrg_scale[i] >= 3:
+                    EUdata *= 1.0284
+                if mrg_scale[i] == 4:       # in-lb to ft-lb conversion
+                    EUdata *= 0.083333
+                      
+            elif mrg_chans[i] == 800:            # Empty channel
+                EUdata = np.zeros(len(runObj.getEUData(0)))
+                # Need to add number to blank names to avoid duplcates
+                mrg_names[i] += str(i)
+            elif mrg_chans[i] == 801:          # Time Channel 
+                EUdata = (runObj.time * 100) * c_FSdt
                 
-        elif mrg_chans[i] == 800:            # Empty channel
-            EUdata = np.zeros(len(runObj.getEUData(0)))
-            # Need to add number to blank names to avoid duplcates
-            mrg_names[i] += str(i)
-        elif mrg_chans[i] == 801:          # Time Channel 
-            EUdata = (runObj.time * 100) * c_FSdt
-            
-        elif mrg_chans[i] == 802:     # ZCG
-            EUdata = (runObj.getEUData(mrg_chans[zsensor[3]])).copy()
-            EUdata *= pow(c_lambda, 1)
-            EUdata += (zsensor[0] * np.sin(theta)) - np.cos(theta)*(zsensor[1] * np.sin(phi) + zsensor[2] * np.cos(phi))
-
-        elif mrg_chans[i] == 804:           #Filtered and Corr. ADCP u
-            EUdata = runObj.u_adcp.copy()
-            for t in range(len(EUdata)):
-                if abs(EUdata[t]) > 70:
-                    EUdata[t] = Uprev
-                Uprev = EUdata[t]
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata -= ((q_FS/57.296)*ADCPLoc[2])
-            # We need this later on for alpha/beta calcs so store it
-            u_FS = EUdata.copy()
-            
-        elif mrg_chans[i] == 805:           #Filtered and Corr ADCP v
-            EUdata = runObj.v_adcp.copy()
-            for t in range(len(EUdata)):
-                if abs(EUdata[t]) > 15:
-                    EUdata[t] = Vprev
-                Vprev = EUdata[t]
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata += (((p_FS/57.296)*ADCPLoc[2])-((r_FS/57.296)*ADCPLoc[0]))
-            # We need this later on for alpha/beta calcs so store it
-            v_FS = EUdata.copy()
-            
-        elif mrg_chans[i] == 806:           #Filtered and Corr ADCP w
-            EUdata = runObj.w_adcp.copy()
-            for t in range(len(EUdata)):
-                if abs(EUdata[t]) > 15:
-                    EUdata[t] = Wprev
-                Wprev = EUdata[t]
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata += (((q_FS/57.296)*ADCPLoc[0])-((p_FS/57.296)*ADCPLoc[1]))
-            # We need this later on for alpha/beta calcs so store it
-            w_FS = EUdata.copy()
-
-        elif mrg_chans[i] == 807 and 'Rotor' in runObj.sp_gauges:         # Computed Rotor Fx
-            EUdata = runObj.getEUData('Rotor_CFx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 808 and 'Rotor' in runObj.sp_gauges:         # Computed Rotor Fy
-            EUdata = runObj.getEUData('Rotor_CFy') 
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 809 and 'Rotor' in runObj.sp_gauges:         # Computed Rotor Fz
-            EUdata = runObj.getEUData('Rotor_CFz') 
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 810 and 'Rotor' in runObj.sp_gauges:         # Computed Rotor Mx
-            EUdata = runObj.getEUData('Rotor_CMx') 
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 811 and 'Rotor' in runObj.sp_gauges:         # Computed Rotor My
-            EUdata = runObj.getEUData('Rotor_CMy') 
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 812 and 'Rotor' in runObj.sp_gauges:         # Computed Rotor Mz
-            EUdata = runObj.getEUData('Rotor_CMz') 
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-
-        elif mrg_chans[i] == 813 and 'Stator' in runObj.sp_gauges:         # Computed Stator Fx
-            EUdata = runObj.getEUData('Stator_CFx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 814 and 'Stator' in runObj.sp_gauges:         # Computed Stator Fy
-            EUdata = runObj.getEUData('Stator_CFy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 815 and 'Stator' in runObj.sp_gauges:         # Computed Stator Fz
-            EUdata = runObj.getEUData('Stator_CFz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 816 and 'Stator' in runObj.sp_gauges:         # Computed Stator Mx
-            EUdata = runObj.getEUData('Stator_CMx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 817 and 'Stator' in runObj.sp_gauges:         # Computed Stator My
-            EUdata = runObj.getEUData('Stator_CMy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 818 and 'Stator' in runObj.sp_gauges:         # Computed Stator Mz
-            EUdata = runObj.getEUData('Stator_CMz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-
-        elif mrg_chans[i] == 820:           # Status
-            EUdata = rawStatus.replace([0x0F33, 0x0F43, 4097, 19, 0x0F13,0x0F23, 1],
-                                       [2, 5,0,0,0,0,0]).values
-        elif mrg_chans[i] == 821:           # Alpha
-            EUdata = np.degrees(np.arctan2(w_FS, u_FS))
-        elif mrg_chans[i] == 822:           # Beta
-            #np.seterr(divide='ignore', invalid='ignore')
-            EUdata = -np.degrees(np.arcsin(np.divide(v_FS, bigU_FS)))
-        elif mrg_chans[i] == 823:           # Big U from ADCP
-            #EUdata = runObj.bigU.copy()
-            EUdata = np.sqrt(v_FS**2 + u_FS**2 + w_FS**2)
-            #EUdata *= pow(c_lambda, .5)
-            # We need this later on for alpha/beta calcs so store it
-            bigU_FS = EUdata.copy()
-
-        elif mrg_chans[i] == 824:           # Big U from ADCP in knots
-            EUdata = runObj.bigU.copy()
-            EUdata *= pow(c_lambda, .5)
-            EUdata /= 1.6878
-
-        elif mrg_chans[i] == 830 and 'SOF1' in runObj.sp_gauges:         # Computed SOF1 Fx
-            EUdata = runObj.getEUData('SOF1_CFx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 831 and 'SOF1' in runObj.sp_gauges:         # Computed SOF1 Fy
-            EUdata = runObj.getEUData('SOF1_CFy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 832 and 'SOF1' in runObj.sp_gauges:         # Computed SOF1 Fz
-            EUdata = runObj.getEUData('SOF1_CFz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 833 and 'SOF1' in runObj.sp_gauges:         # Computed SOF1 Mx
-            EUdata = runObj.getEUData('SOF1_CMx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 834 and 'SOF1' in runObj.sp_gauges:         # Computed SOF1 My
-            EUdata = runObj.getEUData('SOF1_CMy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 835 and 'SOF1' in runObj.sp_gauges:         # Computed SOF1 Mz
-            EUdata = runObj.getEUData('SOF1_CMz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-
-        elif mrg_chans[i] == 840 and 'SOF2' in runObj.sp_gauges:         # Computed SOF2 Fx
-            EUdata = runObj.getEUData('SOF2_CFx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 841 and 'SOF2' in runObj.sp_gauges:         # Computed SOF2 Fy
-            EUdata = runObj.getEUData('SOF2_CFy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 842 and 'SOF2' in runObj.sp_gauges:         # Computed SOF2 Fz
-            EUdata = runObj.getEUData('SOF2_CFz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 843 and 'SOF2' in runObj.sp_gauges:         # Computed SOF2 Mx
-            EUdata = runObj.getEUData('SOF2_CMx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 844 and 'SOF2' in runObj.sp_gauges:         # Computed SOF2 My
-            EUdata = runObj.getEUData('SOF2_CMy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 845 and 'SOF2' in runObj.sp_gauges:         # Computed SOF2 Mz
-            EUdata = runObj.getEUData('SOF2_CMz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-
-        elif mrg_chans[i] == 850 and 'Kistler' in runObj.sp_gauges:         # Computed Kistler Fx
-            EUdata = runObj.getEUData('Kistler_CFx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 851 and 'Kistler' in runObj.sp_gauges:         # Computed Kistler Fy
-            EUdata = runObj.getEUData('Kistler_CFy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 852 and 'Kistler' in runObj.sp_gauges:         # Computed Kistler Fz
-            EUdata = runObj.getEUData('Kistler_CFz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 853 and 'Kistler' in runObj.sp_gauges:         # Computed Kistler Mx
-            EUdata = runObj.getEUData('Kistler_CMx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 854 and 'Kistler' in runObj.sp_gauges:         # Computed Kistler My
-            EUdata = runObj.getEUData('Kistler_CMy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 855 and 'Kistler' in runObj.sp_gauges:         # Computed Kistler Mz
-            EUdata = runObj.getEUData('Kistler_CMz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-            
-        elif mrg_chans[i] == 860 and '6DOF1' in runObj.sp_gauges:         # Computed 6DOF1 Fx
-            EUdata = runObj.getEUData('6DOF1_CFx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 861 and '6DOF1' in runObj.sp_gauges:         # Computed 6DOF1 Fy
-            EUdata = runObj.getEUData('6DOF1_CFy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 862 and '6DOF1' in runObj.sp_gauges:         # Computed 6DOF1 Fz
-            EUdata = runObj.getEUData('6DOF1_CFz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 863 and '6DOF1' in runObj.sp_gauges:         # Computed 6DOF1 Mx
-            EUdata = runObj.getEUData('6DOF1_CMx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 864 and '6DOF1' in runObj.sp_gauges:         # Computed 6DOF1 My
-            EUdata = runObj.getEUData('6DOF1_CMy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 865 and '6DOF1' in runObj.sp_gauges:         # Computed 6DOF1 Mz
-            EUdata = runObj.getEUData('6DOF1_CMz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-
-        elif mrg_chans[i] == 870 and '6DOF2' in runObj.sp_gauges:         # Computed 6DOF1 Fx
-            EUdata = runObj.getEUData('6DOF2_CFx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 871 and '6DOF2' in runObj.sp_gauges:         # Computed 6DOF1 Fy
-            EUdata = runObj.getEUData('6DOF2_CFy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 872 and '6DOF2' in runObj.sp_gauges:         # Computed 6DOF1 Fz
-            EUdata = runObj.getEUData('6DOF2_CFz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 873 and '6DOF2' in runObj.sp_gauges:         # Computed 6DOF1 Mx
-            EUdata = runObj.getEUData('6DOF2_CMx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 874 and '6DOF2' in runObj.sp_gauges:         # Computed 6DOF1 My
-            EUdata = runObj.getEUData('6DOF2_CMy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 875 and '6DOF2' in runObj.sp_gauges:         # Computed 6DOF1 Mz
-            EUdata = runObj.getEUData('6DOF2_CMz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-
-        elif mrg_chans[i] == 880:                                   #Equiv Stern
-            EUdata = (runObj.getEUData(mrg_chans[32]) +
-                      runObj.getEUData(mrg_chans[33]) +
-                      runObj.getEUData(mrg_chans[34]) +
-                      runObj.getEUData(mrg_chans[35])) / 4.0
-        elif mrg_chans[i] == 881:                                   #Equiv Rudder
-            EUdata = (-runObj.getEUData(mrg_chans[32]) +
-                      runObj.getEUData(mrg_chans[33]) -
-                      runObj.getEUData(mrg_chans[34]) +
-                      runObj.getEUData(mrg_chans[35]))/4.0
-
-##                elif mrg_chans[i] == 890:                                   #Stbd RPM Flip
-##                    EUdata[i] = (rawdata[stbd_rpm_chan]-cal.zeros[stbd_rpm_chan])*cal.gains[stbd_rpm_chan]
-##                    if rawdata[stbd_rpm_com] < -50:
-##                        EUdata[i] *= -1
-##                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-##                elif mrg_chans[i] == 891:                                   #Port RPM Flip
-##                    EUdata[i] = (rawdata[port_rpm_chan]-cal.zeros[port_rpm_chan])*cal.gains[port_rpm_chan]
-##                    if rawdata[port_rpm_com] < -50:
-##                        EUdata[i] *= -1
-##                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-##              
-        elif mrg_chans[i] == 890 and '6DOF3' in runObj.sp_gauges:         # Computed 6DOF1 Fx
-            EUdata = runObj.getEUData('6DOF3_CFx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 891 and '6DOF3' in runObj.sp_gauges:         # Computed 6DOF1 Fy
-            EUdata = runObj.getEUData('6DOF3_CFy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 892 and '6DOF3' in runObj.sp_gauges:         # Computed 6DOF1 Fz
-            EUdata = runObj.getEUData('6DOF3_CFz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 893 and '6DOF3' in runObj.sp_gauges:         # Computed 6DOF1 Mx
-            EUdata = runObj.getEUData('6DOF3_CMx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 894 and '6DOF3' in runObj.sp_gauges:         # Computed 6DOF1 My
-            EUdata = runObj.getEUData('6DOF3_CMy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 895 and '6DOF3' in runObj.sp_gauges:         # Computed 6DOF1 Mz
-            EUdata = runObj.getEUData('6DOF3_CMz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-
-        elif mrg_chans[i] == 900 and '6DOF4' in runObj.sp_gauges:         # Computed 6DOF1 Fx
-            EUdata = runObj.getEUData('6DOF4_CFx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 901 and '6DOF4' in runObj.sp_gauges:         # Computed 6DOF1 Fy
-            EUdata = runObj.getEUData('6DOF4_CFy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 902 and '6DOF4' in runObj.sp_gauges:         # Computed 6DOF1 Fz
-            EUdata = runObj.getEUData('6DOF4_CFz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 903 and '6DOF4' in runObj.sp_gauges:         # Computed 6DOF1 Mx
-            EUdata = runObj.getEUData('6DOF4_CMx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 904 and '6DOF4' in runObj.sp_gauges:         # Computed 6DOF1 My
-            EUdata = runObj.getEUData('6DOF4_CMy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 905 and '6DOF4' in runObj.sp_gauges:         # Computed 6DOF1 Mz
-            EUdata = runObj.getEUData('6DOF4_CMz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-
-        elif mrg_chans[i] == 910 and '6DOF5' in runObj.sp_gauges:         # Computed 6DOF1 Fx
-            EUdata = runObj.getEUData('6DOF5_CFx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 911 and '6DOF5' in runObj.sp_gauges:         # Computed 6DOF1 Fy
-            EUdata = runObj.getEUData('6DOF5_CFy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 912 and '6DOF5' in runObj.sp_gauges:         # Computed 6DOF1 Fz
-            EUdata = runObj.getEUData('6DOF5_CFz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 913 and '6DOF5' in runObj.sp_gauges:         # Computed 6DOF1 Mx
-            EUdata = runObj.getEUData('6DOF5_CMx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 914 and '6DOF5' in runObj.sp_gauges:         # Computed 6DOF1 My
-            EUdata = runObj.getEUData('6DOF5_CMy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 915 and '6DOF5' in runObj.sp_gauges:         # Computed 6DOF1 Mz
-            EUdata = runObj.getEUData('6DOF5_CMz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-
-        elif mrg_chans[i] == 920 and '6DOF6' in runObj.sp_gauges:         # Computed 6DOF1 Fx
-            EUdata = runObj.getEUData('6DOF6_CFx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 921 and '6DOF6' in runObj.sp_gauges:         # Computed 6DOF1 Fy
-            EUdata = runObj.getEUData('6DOF6_CFy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 922 and '6DOF6' in runObj.sp_gauges:         # Computed 6DOF1 Fz
-            EUdata = runObj.getEUData('6DOF6_CFz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 923 and '6DOF6' in runObj.sp_gauges:         # Computed 6DOF1 Mx
-            EUdata = runObj.getEUData('6DOF6_CMx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 924 and '6DOF6' in runObj.sp_gauges:         # Computed 6DOF1 My
-            EUdata = runObj.getEUData('6DOF6_CMy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 925 and '6DOF6' in runObj.sp_gauges:         # Computed 6DOF1 Mz
-            EUdata = runObj.getEUData('6DOF6_CMz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
- 
-##                elif mrg_chans[i] == 960:                                   #gps Easting
-##                    EUdata[i] = easting
-##                    EUdata[i] *=pow(c_lambda, mrg_scale[i])
-##                    EUdata[i] *= 3.2808399
-##                elif mrg_chans[i] == 961:                                   #gps Northing
-##                    EUdata[i] = -northing
-##                    EUdata[i] *=pow(c_lambda, mrg_scale[i])
-##                    EUdata[i] *= 3.2808399
-##
-##                elif mrg_chans[i] == 965:                                   # Computed pitch from depth gages
-##                    # compute pitch using depth2 and depth3 - hardwired for now
-##                    EUdata[i] = degrees(arcsin((EUdata[zsensor[3]] - EUdata[zsensor2[3]])/(zsensor2[0] - zsensor[0])))
-##
-        elif mrg_chans[i] == 970 and 'Kistler3' in runObj.sp_gauges:         # Computed Kistler Fx
-            EUdata = runObj.getEUData('Kistler3_CFx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 971 and 'Kistler3' in runObj.sp_gauges:         # Computed Kistler Fy
-            EUdata = runObj.getEUData('Kistler3_CFy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 972 and 'Kistler3' in runObj.sp_gauges:         # Computed Kistler Fz
-            EUdata = runObj.getEUData('Kistler3_CFz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 973 and 'Kistler3' in runObj.sp_gauges:         # Computed Kistler Mx
-            EUdata = runObj.getEUData('Kistler3_CMx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 974 and 'Kistler3' in runObj.sp_gauges:         # Computed Kistler My
-            EUdata = runObj.getEUData('Kistler3_CMy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 975 and 'Kistler3' in runObj.sp_gauges:         # Computed Kistler Mz
-            EUdata = runObj.getEUData('Kistler3_CMz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-
-        elif mrg_chans[i] == 980 and 'Kistler3_2' in runObj.sp_gauges:         # Computed Kistler Fx
-            EUdata = runObj.getEUData('Kistler3_2_CFx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 981 and 'Kistler3_2' in runObj.sp_gauges:         # Computed Kistler Fy
-            EUdata = runObj.getEUData('Kistler3_2_CFy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 982 and 'Kistler3_2' in runObj.sp_gauges:         # Computed Kistler Fz
-            EUdata = runObj.getEUData('Kistler3_2_CFz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-        elif mrg_chans[i] == 983 and 'Kistler3_2' in runObj.sp_gauges:         # Computed Kistler Mx
-            EUdata = runObj.getEUData('Kistler3_2_CMx')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 984 and 'Kistler3_2' in runObj.sp_gauges:         # Computed Kistler My
-            EUdata = runObj.getEUData('Kistler3_2_CMy')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
-        elif mrg_chans[i] == 985 and 'Kistler3_2' in runObj.sp_gauges:         # Computed Kistler Mz
-            EUdata = runObj.getEUData('Kistler3_2_CMz')
-            EUdata *= pow(c_lambda, mrg_scale[i])
-            EUdata *= 1.0284
-            EUdata *= .083333
+            elif mrg_chans[i] == 802:     # ZCG
+                EUdata = (runObj.getEUData(int(mrg_chans[zsensor[3]]))).copy()
+                EUdata *= pow(c_lambda, 1)
+                EUdata += (zsensor[0] * np.sin(theta)) - np.cos(theta)*(zsensor[1] * np.sin(phi) + zsensor[2] * np.cos(phi))
+    
+            elif mrg_chans[i] == 804:           #Filtered and Corr. ADCP u
+                EUdata = runObj.u_adcp.copy()
+                for t in range(len(EUdata)):
+                    if abs(EUdata[t]) > 70:
+                        EUdata[t] = Uprev
+                    Uprev = EUdata[t]
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata -= ((q_FS/57.296)*ADCPLoc[2])
+                # We need this later on for alpha/beta calcs so store it
+                u_FS = EUdata.copy()
+                
+            elif mrg_chans[i] == 805:           #Filtered and Corr ADCP v
+                EUdata = runObj.v_adcp.copy()
+                for t in range(len(EUdata)):
+                    if abs(EUdata[t]) > 15:
+                        EUdata[t] = Vprev
+                    Vprev = EUdata[t]
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata += (((p_FS/57.296)*ADCPLoc[2])-((r_FS/57.296)*ADCPLoc[0]))
+                # We need this later on for alpha/beta calcs so store it
+                v_FS = EUdata.copy()
+                
+            elif mrg_chans[i] == 806:           #Filtered and Corr ADCP w
+                EUdata = runObj.w_adcp.copy()
+                for t in range(len(EUdata)):
+                    if abs(EUdata[t]) > 15:
+                        EUdata[t] = Wprev
+                    Wprev = EUdata[t]
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata += (((q_FS/57.296)*ADCPLoc[0])-((p_FS/57.296)*ADCPLoc[1]))
+                # We need this later on for alpha/beta calcs so store it
+                w_FS = EUdata.copy()
+    
+            elif mrg_chans[i] == 807 and 'Rotor' in runObj.sp_gauges:         # Computed Rotor Fx
+                EUdata = runObj.getEUData('Rotor_CFx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 808 and 'Rotor' in runObj.sp_gauges:         # Computed Rotor Fy
+                EUdata = runObj.getEUData('Rotor_CFy') 
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 809 and 'Rotor' in runObj.sp_gauges:         # Computed Rotor Fz
+                EUdata = runObj.getEUData('Rotor_CFz') 
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 810 and 'Rotor' in runObj.sp_gauges:         # Computed Rotor Mx
+                EUdata = runObj.getEUData('Rotor_CMx') 
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 811 and 'Rotor' in runObj.sp_gauges:         # Computed Rotor My
+                EUdata = runObj.getEUData('Rotor_CMy') 
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 812 and 'Rotor' in runObj.sp_gauges:         # Computed Rotor Mz
+                EUdata = runObj.getEUData('Rotor_CMz') 
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+    
+            elif mrg_chans[i] == 813 and 'Stator' in runObj.sp_gauges:         # Computed Stator Fx
+                EUdata = runObj.getEUData('Stator_CFx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 814 and 'Stator' in runObj.sp_gauges:         # Computed Stator Fy
+                EUdata = runObj.getEUData('Stator_CFy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 815 and 'Stator' in runObj.sp_gauges:         # Computed Stator Fz
+                EUdata = runObj.getEUData('Stator_CFz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 816 and 'Stator' in runObj.sp_gauges:         # Computed Stator Mx
+                EUdata = runObj.getEUData('Stator_CMx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 817 and 'Stator' in runObj.sp_gauges:         # Computed Stator My
+                EUdata = runObj.getEUData('Stator_CMy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 818 and 'Stator' in runObj.sp_gauges:         # Computed Stator Mz
+                EUdata = runObj.getEUData('Stator_CMz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+    
+            elif mrg_chans[i] == 820:           # Status
+                EUdata = rawStatus.replace([0x0F33, 0x0F43, 4097, 19, 0x0F13,0x0F23, 1],
+                                           [2, 5,0,0,0,0,0]).values
+            elif mrg_chans[i] == 821:           # Alpha
+                EUdata = np.degrees(np.arctan2(w_FS, u_FS))
+            elif mrg_chans[i] == 822:           # Beta
+                #np.seterr(divide='ignore', invalid='ignore')
+                EUdata = -np.degrees(np.arcsin(np.divide(v_FS, bigU_FS)))
+            elif mrg_chans[i] == 823:           # Big U from ADCP
+                #EUdata = runObj.bigU.copy()
+                EUdata = np.sqrt(v_FS**2 + u_FS**2 + w_FS**2)
+                #EUdata *= pow(c_lambda, .5)
+                # We need this later on for alpha/beta calcs so store it
+                bigU_FS = EUdata.copy()
+    
+            elif mrg_chans[i] == 824:           # Big U from ADCP in knots
+                EUdata = runObj.bigU.copy()
+                EUdata *= pow(c_lambda, .5)
+                EUdata /= 1.6878
+    
+            elif mrg_chans[i] == 830 and 'SOF1' in runObj.sp_gauges:         # Computed SOF1 Fx
+                EUdata = runObj.getEUData('SOF1_CFx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 831 and 'SOF1' in runObj.sp_gauges:         # Computed SOF1 Fy
+                EUdata = runObj.getEUData('SOF1_CFy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 832 and 'SOF1' in runObj.sp_gauges:         # Computed SOF1 Fz
+                EUdata = runObj.getEUData('SOF1_CFz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 833 and 'SOF1' in runObj.sp_gauges:         # Computed SOF1 Mx
+                EUdata = runObj.getEUData('SOF1_CMx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 834 and 'SOF1' in runObj.sp_gauges:         # Computed SOF1 My
+                EUdata = runObj.getEUData('SOF1_CMy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 835 and 'SOF1' in runObj.sp_gauges:         # Computed SOF1 Mz
+                EUdata = runObj.getEUData('SOF1_CMz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+    
+            elif mrg_chans[i] == 840 and 'SOF2' in runObj.sp_gauges:         # Computed SOF2 Fx
+                EUdata = runObj.getEUData('SOF2_CFx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 841 and 'SOF2' in runObj.sp_gauges:         # Computed SOF2 Fy
+                EUdata = runObj.getEUData('SOF2_CFy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 842 and 'SOF2' in runObj.sp_gauges:         # Computed SOF2 Fz
+                EUdata = runObj.getEUData('SOF2_CFz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 843 and 'SOF2' in runObj.sp_gauges:         # Computed SOF2 Mx
+                EUdata = runObj.getEUData('SOF2_CMx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 844 and 'SOF2' in runObj.sp_gauges:         # Computed SOF2 My
+                EUdata = runObj.getEUData('SOF2_CMy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 845 and 'SOF2' in runObj.sp_gauges:         # Computed SOF2 Mz
+                EUdata = runObj.getEUData('SOF2_CMz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+    
+            elif mrg_chans[i] == 850 and 'Kistler' in runObj.sp_gauges:         # Computed Kistler Fx
+                EUdata = runObj.getEUData('Kistler_CFx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 851 and 'Kistler' in runObj.sp_gauges:         # Computed Kistler Fy
+                EUdata = runObj.getEUData('Kistler_CFy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 852 and 'Kistler' in runObj.sp_gauges:         # Computed Kistler Fz
+                EUdata = runObj.getEUData('Kistler_CFz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 853 and 'Kistler' in runObj.sp_gauges:         # Computed Kistler Mx
+                EUdata = runObj.getEUData('Kistler_CMx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 854 and 'Kistler' in runObj.sp_gauges:         # Computed Kistler My
+                EUdata = runObj.getEUData('Kistler_CMy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 855 and 'Kistler' in runObj.sp_gauges:         # Computed Kistler Mz
+                EUdata = runObj.getEUData('Kistler_CMz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+                
+            elif mrg_chans[i] == 860 and '6DOF1' in runObj.sp_gauges:         # Computed 6DOF1 Fx
+                EUdata = runObj.getEUData('6DOF1_CFx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 861 and '6DOF1' in runObj.sp_gauges:         # Computed 6DOF1 Fy
+                EUdata = runObj.getEUData('6DOF1_CFy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 862 and '6DOF1' in runObj.sp_gauges:         # Computed 6DOF1 Fz
+                EUdata = runObj.getEUData('6DOF1_CFz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 863 and '6DOF1' in runObj.sp_gauges:         # Computed 6DOF1 Mx
+                EUdata = runObj.getEUData('6DOF1_CMx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 864 and '6DOF1' in runObj.sp_gauges:         # Computed 6DOF1 My
+                EUdata = runObj.getEUData('6DOF1_CMy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 865 and '6DOF1' in runObj.sp_gauges:         # Computed 6DOF1 Mz
+                EUdata = runObj.getEUData('6DOF1_CMz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+    
+            elif mrg_chans[i] == 870 and '6DOF2' in runObj.sp_gauges:         # Computed 6DOF1 Fx
+                EUdata = runObj.getEUData('6DOF2_CFx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 871 and '6DOF2' in runObj.sp_gauges:         # Computed 6DOF1 Fy
+                EUdata = runObj.getEUData('6DOF2_CFy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 872 and '6DOF2' in runObj.sp_gauges:         # Computed 6DOF1 Fz
+                EUdata = runObj.getEUData('6DOF2_CFz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 873 and '6DOF2' in runObj.sp_gauges:         # Computed 6DOF1 Mx
+                EUdata = runObj.getEUData('6DOF2_CMx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 874 and '6DOF2' in runObj.sp_gauges:         # Computed 6DOF1 My
+                EUdata = runObj.getEUData('6DOF2_CMy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 875 and '6DOF2' in runObj.sp_gauges:         # Computed 6DOF1 Mz
+                EUdata = runObj.getEUData('6DOF2_CMz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+    
+            elif mrg_chans[i] == 880:                                   #Equiv Stern
+                EUdata = (runObj.getEUData(mrg_chans[32]) +
+                          runObj.getEUData(mrg_chans[33]) +
+                          runObj.getEUData(mrg_chans[34]) +
+                          runObj.getEUData(mrg_chans[35])) / 4.0
+            elif mrg_chans[i] == 881:                                   #Equiv Rudder
+                EUdata = (-runObj.getEUData(mrg_chans[32]) +
+                          runObj.getEUData(mrg_chans[33]) -
+                          runObj.getEUData(mrg_chans[34]) +
+                          runObj.getEUData(mrg_chans[35]))/4.0
+    
+    ##                elif mrg_chans[i] == 890:                                   #Stbd RPM Flip
+    ##                    EUdata[i] = (rawdata[stbd_rpm_chan]-cal.zeros[stbd_rpm_chan])*cal.gains[stbd_rpm_chan]
+    ##                    if rawdata[stbd_rpm_com] < -50:
+    ##                        EUdata[i] *= -1
+    ##                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+    ##                elif mrg_chans[i] == 891:                                   #Port RPM Flip
+    ##                    EUdata[i] = (rawdata[port_rpm_chan]-cal.zeros[port_rpm_chan])*cal.gains[port_rpm_chan]
+    ##                    if rawdata[port_rpm_com] < -50:
+    ##                        EUdata[i] *= -1
+    ##                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
+    ##              
+            elif mrg_chans[i] == 890 and '6DOF3' in runObj.sp_gauges:         # Computed 6DOF1 Fx
+                EUdata = runObj.getEUData('6DOF3_CFx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 891 and '6DOF3' in runObj.sp_gauges:         # Computed 6DOF1 Fy
+                EUdata = runObj.getEUData('6DOF3_CFy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 892 and '6DOF3' in runObj.sp_gauges:         # Computed 6DOF1 Fz
+                EUdata = runObj.getEUData('6DOF3_CFz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 893 and '6DOF3' in runObj.sp_gauges:         # Computed 6DOF1 Mx
+                EUdata = runObj.getEUData('6DOF3_CMx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 894 and '6DOF3' in runObj.sp_gauges:         # Computed 6DOF1 My
+                EUdata = runObj.getEUData('6DOF3_CMy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 895 and '6DOF3' in runObj.sp_gauges:         # Computed 6DOF1 Mz
+                EUdata = runObj.getEUData('6DOF3_CMz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+    
+            elif mrg_chans[i] == 900 and '6DOF4' in runObj.sp_gauges:         # Computed 6DOF1 Fx
+                EUdata = runObj.getEUData('6DOF4_CFx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 901 and '6DOF4' in runObj.sp_gauges:         # Computed 6DOF1 Fy
+                EUdata = runObj.getEUData('6DOF4_CFy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 902 and '6DOF4' in runObj.sp_gauges:         # Computed 6DOF1 Fz
+                EUdata = runObj.getEUData('6DOF4_CFz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 903 and '6DOF4' in runObj.sp_gauges:         # Computed 6DOF1 Mx
+                EUdata = runObj.getEUData('6DOF4_CMx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 904 and '6DOF4' in runObj.sp_gauges:         # Computed 6DOF1 My
+                EUdata = runObj.getEUData('6DOF4_CMy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 905 and '6DOF4' in runObj.sp_gauges:         # Computed 6DOF1 Mz
+                EUdata = runObj.getEUData('6DOF4_CMz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+    
+            elif mrg_chans[i] == 910 and '6DOF5' in runObj.sp_gauges:         # Computed 6DOF1 Fx
+                EUdata = runObj.getEUData('6DOF5_CFx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 911 and '6DOF5' in runObj.sp_gauges:         # Computed 6DOF1 Fy
+                EUdata = runObj.getEUData('6DOF5_CFy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 912 and '6DOF5' in runObj.sp_gauges:         # Computed 6DOF1 Fz
+                EUdata = runObj.getEUData('6DOF5_CFz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 913 and '6DOF5' in runObj.sp_gauges:         # Computed 6DOF1 Mx
+                EUdata = runObj.getEUData('6DOF5_CMx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 914 and '6DOF5' in runObj.sp_gauges:         # Computed 6DOF1 My
+                EUdata = runObj.getEUData('6DOF5_CMy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 915 and '6DOF5' in runObj.sp_gauges:         # Computed 6DOF1 Mz
+                EUdata = runObj.getEUData('6DOF5_CMz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+    
+            elif mrg_chans[i] == 920 and '6DOF6' in runObj.sp_gauges:         # Computed 6DOF1 Fx
+                EUdata = runObj.getEUData('6DOF6_CFx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 921 and '6DOF6' in runObj.sp_gauges:         # Computed 6DOF1 Fy
+                EUdata = runObj.getEUData('6DOF6_CFy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 922 and '6DOF6' in runObj.sp_gauges:         # Computed 6DOF1 Fz
+                EUdata = runObj.getEUData('6DOF6_CFz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 923 and '6DOF6' in runObj.sp_gauges:         # Computed 6DOF1 Mx
+                EUdata = runObj.getEUData('6DOF6_CMx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 924 and '6DOF6' in runObj.sp_gauges:         # Computed 6DOF1 My
+                EUdata = runObj.getEUData('6DOF6_CMy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 925 and '6DOF6' in runObj.sp_gauges:         # Computed 6DOF1 Mz
+                EUdata = runObj.getEUData('6DOF6_CMz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+     
+    ##                elif mrg_chans[i] == 960:                                   #gps Easting
+    ##                    EUdata[i] = easting
+    ##                    EUdata[i] *=pow(c_lambda, mrg_scale[i])
+    ##                    EUdata[i] *= 3.2808399
+    ##                elif mrg_chans[i] == 961:                                   #gps Northing
+    ##                    EUdata[i] = -northing
+    ##                    EUdata[i] *=pow(c_lambda, mrg_scale[i])
+    ##                    EUdata[i] *= 3.2808399
+    ##
+    ##                elif mrg_chans[i] == 965:                                   # Computed pitch from depth gages
+    ##                    # compute pitch using depth2 and depth3 - hardwired for now
+    ##                    EUdata[i] = degrees(arcsin((EUdata[zsensor[3]] - EUdata[zsensor2[3]])/(zsensor2[0] - zsensor[0])))
+    ##
+            elif mrg_chans[i] == 970 and 'Kistler3' in runObj.sp_gauges:         # Computed Kistler Fx
+                EUdata = runObj.getEUData('Kistler3_CFx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 971 and 'Kistler3' in runObj.sp_gauges:         # Computed Kistler Fy
+                EUdata = runObj.getEUData('Kistler3_CFy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 972 and 'Kistler3' in runObj.sp_gauges:         # Computed Kistler Fz
+                EUdata = runObj.getEUData('Kistler3_CFz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 973 and 'Kistler3' in runObj.sp_gauges:         # Computed Kistler Mx
+                EUdata = runObj.getEUData('Kistler3_CMx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 974 and 'Kistler3' in runObj.sp_gauges:         # Computed Kistler My
+                EUdata = runObj.getEUData('Kistler3_CMy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 975 and 'Kistler3' in runObj.sp_gauges:         # Computed Kistler Mz
+                EUdata = runObj.getEUData('Kistler3_CMz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+    
+            elif mrg_chans[i] == 980 and 'Kistler3_2' in runObj.sp_gauges:         # Computed Kistler Fx
+                EUdata = runObj.getEUData('Kistler3_2_CFx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 981 and 'Kistler3_2' in runObj.sp_gauges:         # Computed Kistler Fy
+                EUdata = runObj.getEUData('Kistler3_2_CFy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 982 and 'Kistler3_2' in runObj.sp_gauges:         # Computed Kistler Fz
+                EUdata = runObj.getEUData('Kistler3_2_CFz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+            elif mrg_chans[i] == 983 and 'Kistler3_2' in runObj.sp_gauges:         # Computed Kistler Mx
+                EUdata = runObj.getEUData('Kistler3_2_CMx')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 984 and 'Kistler3_2' in runObj.sp_gauges:         # Computed Kistler My
+                EUdata = runObj.getEUData('Kistler3_2_CMy')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
+            elif mrg_chans[i] == 985 and 'Kistler3_2' in runObj.sp_gauges:         # Computed Kistler Mz
+                EUdata = runObj.getEUData('Kistler3_2_CMz')
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= 1.0284
+                EUdata *= .083333
 
 
         if i == 0:  # First time through
@@ -1003,8 +1017,8 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
 
 if __name__ == "__main__":
     # Test for merge
-    os.chdir('Z:\\RCM\\Autonomous_Model\\Test_Data\\SSN_23\\2019_12_03-SSN23_MIP_Sensitivity\\20191204')
-    MergeRun('Z:\\RCM\\Autonomous_Model\\Test_Data\\SSN_23\\2019_12_03-SSN23_MIP_Sensitivity\\20191204\\run_2371.tdms',
-             2371,
+    os.chdir('Z:\\RCM\\Autonomous_Model\\Test_Data\\SSN_23\\2019_12_03-SSN23_MIP_Sensitivity\\20191205')
+    MergeRun('Z:\\RCM\\Autonomous_Model\\Test_Data\\SSN_23\\2019_12_03-SSN23_MIP_Sensitivity\\20191205\\run_2387.tdms',
+             2387,
              'Y:\\rcmdata\\SSN21_23\\s23de-dg-eav-1219',
-             'Z:\\RCM\\Autonomous_Model\\Test_Data\\SSN_23\\2019_12_03-SSN23_MIP_Sensitivity\\20191204\\tdms_to_obc_MERGE.INP')
+             'Z:\\RCM\\Autonomous_Model\\Test_Data\\Merge_Files\\CB12\\CB12-S23_MIP-2019.INP')
