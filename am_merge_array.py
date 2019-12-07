@@ -1017,8 +1017,8 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
 
 if __name__ == "__main__":
     # Test for merge
-    os.chdir('Z:\\RCM\\Autonomous_Model\\Test_Data\\SSN_23\\2019_12_03-SSN23_MIP_Sensitivity\\20191205')
-    MergeRun('Z:\\RCM\\Autonomous_Model\\Test_Data\\SSN_23\\2019_12_03-SSN23_MIP_Sensitivity\\20191205\\run_2387.tdms',
-             2387,
+    os.chdir('Z:\\RCM\\Autonomous_Model\\Test_Data\\SSN_23\\2019_12_03-SSN23_MIP_Sensitivity\\20191204')
+    MergeRun('Z:\\RCM\\Autonomous_Model\\Test_Data\\SSN_23\\2019_12_03-SSN23_MIP_Sensitivity\\20191204\\run_2371.tdms',
+             2371,
              'Y:\\rcmdata\\SSN21_23\\s23de-dg-eav-1219',
-             'Z:\\RCM\\Autonomous_Model\\Test_Data\\Merge_Files\\CB12\\CB12-S23_MIP-2019.INP')
+             'Z:\\RCM\\Autonomous_Model\\Test_Data\\SSN_23\\2019_12_03-SSN23_MIP_Sensitivity\\20191204\\tdms_to_obc_MERGE.INP')
