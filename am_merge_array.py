@@ -234,7 +234,6 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
 
     stdfile.write("\n")
 
-    logfile.close()
     EUdata = []
     # Now we start the process of converting to fullscale values
 
@@ -830,6 +829,8 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
         os.rename(stdfilename+'new', stdfilename)
     except:
         logfile.write('Error in rotating track data!\n')
+        stdfile.close()
+        newfile.close()
         
         
     # Data Consistency Check
