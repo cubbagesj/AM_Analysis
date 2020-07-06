@@ -755,9 +755,15 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
     dataSTD['rawStatus'] = rawStatus
     
     # Only want approach through run
-    dataSTDrun = dataSTD.loc[((dataSTD['rawStatus'] >= 0x0F23) & 
-                              (dataSTD['rawStatus']  <= 0x0f43)) | 
-                              (dataSTD['rawStatus'] <= 1)  ].copy(deep=True)
+
+    if runObj.filetype == 'AM-tdms':
+        # For TDMS skip mode = 1 parts
+        dataSTDrun = dataSTD.loc[((dataSTD['rawStatus'] >= 0x0F23) & 
+                                (dataSTD['rawStatus']  <= 0x0f43)) ].copy(deep=True)
+    else:
+        dataSTDrun = dataSTD.loc[((dataSTD['rawStatus'] >= 0x0F23) & 
+                                (dataSTD['rawStatus']  <= 0x0f43)) | 
+                                (dataSTD['rawStatus'] <= 1)  ].copy(deep=True)
     # Drop the rawStatus Column
     dataSTDrun.drop('rawStatus', 1, inplace=True)
        
@@ -817,9 +823,12 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
         rot_y = (-stdrun.dataEU[stdrun.dataEU.columns[20]] * np.sin(stdruntrack) + 
                  stdrun.dataEU[stdrun.dataEU.columns[21]] * np.cos(stdruntrack))
 
-        stdrun.dataEU[stdrun.dataEU.columns[20]] = (rot_x - stdrunxposzero)
-        stdrun.dataEU[stdrun.dataEU.columns[21]] = (rot_y - stdrunyposzero)
-    
+        # stdrun.dataEU[stdrun.dataEU.columns[20]] = (rot_x - stdrunxposzero)
+        # stdrun.dataEU[stdrun.dataEU.columns[21]] = (rot_y - stdrunyposzero)
+        # -----  Removed zero shift for animation
+        stdrun.dataEU[stdrun.dataEU.columns[20]] = (rot_x)
+        stdrun.dataEU[stdrun.dataEU.columns[21]] = (rot_y)
+     
         stdrun.dataEU.to_csv(newfile, index=False, header=False, sep=' ', float_format='%12.7e')
     
 

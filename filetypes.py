@@ -850,53 +850,55 @@ class OBCFile:
 
         bodyAngles = [phi, theta, psi]
 
-        
-        for gauge in self.sp_gauges.keys():
-            # Compute the special gauges - The Deck is not used and has not been updates
-            if (gauge != 'Deck'):
-                
-                # Before computing the data, need to compute the zeros
-                # This is done by passing in a subset of the data (usually the zeros section mode=0x0F13)
-                # and having this data processed and averaged
-                
-                # But for the rotor we want the running zero during the approach (mode=0x0F33)
-                # This can cause an error though if there was no standby (i.e. and aborted run)
-                # so we wrap this in a try clause and default back to the zeros portion if necessary
-                
-                if (gauge == 'Rotor'):
-                    try:
-                        self.sp_gauges[gauge].compute(self.dataEU.query('mode325 == 0x0F33'),
-                                      bodyAngles, 
-                                      cb_id = 10,
-                                      doZeros = 0.0)
-                    except:
+        try:
+            for gauge in self.sp_gauges.keys():
+                # Compute the special gauges - The Deck is not used and has not been updates
+                if (gauge != 'Deck'):
+                    
+                    # Before computing the data, need to compute the zeros
+                    # This is done by passing in a subset of the data (usually the zeros section mode=0x0F13)
+                    # and having this data processed and averaged
+                    
+                    # But for the rotor we want the running zero during the approach (mode=0x0F33)
+                    # This can cause an error though if there was no standby (i.e. and aborted run)
+                    # so we wrap this in a try clause and default back to the zeros portion if necessary
+                    
+                    if (gauge == 'Rotor'):
+                        try:
+                            self.sp_gauges[gauge].compute(self.dataEU.query('mode325 == 0x0F33'),
+                                        bodyAngles, 
+                                        cb_id = 10,
+                                        doZeros = 0.0)
+                        except:
+                            self.sp_gauges[gauge].compute(self.dataEU.query('mode325 == 0x0F13'),
+                                        bodyAngles, 
+                                        cb_id = 10,
+                                        doZeros = 0.0)
+
+                    else:
                         self.sp_gauges[gauge].compute(self.dataEU.query('mode325 == 0x0F13'),
-                                      bodyAngles, 
-                                      cb_id = 10,
-                                      doZeros = 0.0)
+                                    bodyAngles, 
+                                    cb_id = 10,
+                                    doZeros = 0.0)
 
-                else:
-                    self.sp_gauges[gauge].compute(self.dataEU.query('mode325 == 0x0F13'),
-                                  bodyAngles, 
-                                  cb_id = 10,
-                                  doZeros = 0.0)
+                    self.sp_gauges[gauge].compute(self.dataEU,
+                                bodyAngles, 
+                                cb_id = 10,
+                                doZeros = 1.0)
 
-                self.sp_gauges[gauge].compute(self.dataEU,
-                              bodyAngles, 
-                              cb_id = 10,
-                              doZeros = 1.0)
-
-                # Then append to the EU dataframe
-                self.dataEU[gauge+'_CFx'] = self.sp_gauges[gauge].CFx
-                self.dataEU[gauge+'_CFy'] = self.sp_gauges[gauge].CFy
-                self.dataEU[gauge+'_CFz'] = self.sp_gauges[gauge].CFz
-                self.dataEU[gauge+'_CMx'] = self.sp_gauges[gauge].CMx
-                self.dataEU[gauge+'_CMy'] = self.sp_gauges[gauge].CMy
-                self.dataEU[gauge+'_CMz'] = self.sp_gauges[gauge].CMz
-                # Update the channel names and number
-                self.chan_names = self.dataEU.columns.values.tolist()
-                self.nchans = len(self.chan_names)
-    
+                    # Then append to the EU dataframe
+                    self.dataEU[gauge+'_CFx'] = self.sp_gauges[gauge].CFx
+                    self.dataEU[gauge+'_CFy'] = self.sp_gauges[gauge].CFy
+                    self.dataEU[gauge+'_CFz'] = self.sp_gauges[gauge].CFz
+                    self.dataEU[gauge+'_CMx'] = self.sp_gauges[gauge].CMx
+                    self.dataEU[gauge+'_CMy'] = self.sp_gauges[gauge].CMy
+                    self.dataEU[gauge+'_CMz'] = self.sp_gauges[gauge].CMz
+                    # Update the channel names and number
+                    self.chan_names = self.dataEU.columns.values.tolist()
+                    self.nchans = len(self.chan_names)
+        except:
+            pass
+        
     def readBMS(self):
         """
             This routine reads the BMS packet (if present) and adds the
@@ -1146,7 +1148,28 @@ class TDMSFile:
             if cal.has6DOF == "TRUE":
                 for i in range(1,cal.num_6DOF+1):
                     self.sp_gauges['6DOF%d' %i] = dynos.Dyno6(cal.sixDOF[i-1])
-                 
+
+            # Look for updates to the tdms file calibrations
+            # in the tdms_cal_updates.txt file
+            #
+            # First we read in the patches
+            patches = []
+            for line in open(os.path.join(dirname,'tdms_cal_updates.txt'), 'r'):
+                if (line.strip() != '' and line.strip().startswith('#') == False):
+                    patches.append(line.strip().split(','))
+            print(patches)
+            
+            # Then we apply the patches
+            for patch in patches:
+                try:
+                    [section, gain, zero] = patch
+                    self.cals[section] = (lambda x, m=float(gain), b=float(zero) : m*x+b)
+                except:
+                    # Skip if error
+                    print('Cal patch NOT applied')
+                    pass
+
+                    
             #read in all the data from the tmds file    
             data = self.tdms_file_obj.channel_data('DATA', self.chan_names[0])
             dataEU = self.cals[self.chan_names[0]](self.tdms_file_obj.channel_data('DATA', self.chan_names[0]))
@@ -1157,20 +1180,8 @@ class TDMSFile:
             self.data = pd.DataFrame(data, columns=self.chan_names)
             self.dataEU = pd.DataFrame(dataEU, columns=self.chan_names)
             
-            # It is hard to update TDMS file cals so check if there are
-            # any updates that are needed in the tdms_cal_updates.txt file
-            
-            try:
-                f = open('tdms_cal_updates.txt', 'r')
-                calupdates = f.read().splitlines()
-                print('Processing TDMS cal updates...')
-                for line in calupdates:
-                    update = line.split(',')
-                    self.dataEU[update[0]] = self.dataEU[update[0]] * float(update[1])
-                f.close()
-            except:
-                print('No TDMS updates to process')
-            
+           
+         
             # Compute the run stats
             self.run_stats()
             
@@ -1374,7 +1385,7 @@ class TDMSFile:
 if __name__ == "__main__":
 
 #    test = OBCFile('13848')
-    test = TDMSFile('2371')
+    test = TDMSFile('2999')
 #    test = STDFile('10-13848.std', 'known')
 #    test.info()
 #    test.run_stats()

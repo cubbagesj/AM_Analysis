@@ -3,9 +3,9 @@
 # These are the deafult search paths used by the program.
 # They can be changed from the menu in the program
 #
-obcDir C:\Users\CubbageSJ\Documents\Test_Data\OBC_Data
-tdmsDir C:\Users\CubbageSJ\Documents\Test_Data
-stdDir C:\Users\CubbageSJ\Documents\Test_Data\STD_Data
+obcDir x:\OBC_Data
+tdmsDir x:\OBC_Data
+stdDir x:\STD_Data
 fstDir C:\Users\CubbageSJ\Documents\Test_Data\STD_Data
 #
 # This entry is for overplots of OBC files and is root of current test data tree

@@ -601,6 +601,9 @@ class Rot_Dyno6:
             self.armz = 0.0
 
         # Prop position zero
+        #
+        # NOTE - This is no longer used to set prop position. The position
+        #        must be set in the position channel zero in the cal file
         try:
             self.PropPosZero = calfile['position']
         except:
