@@ -146,18 +146,18 @@ class Kistler6:
         
         if self.Fx1_chan.isdigit():
             # Channels are given as channel number so need to use that to look up channel
-            relForces = np.array([rawdata[rawdata.columns[self.Fx1_chan]],
-                               rawdata[rawdata.columns[self.Fy1_chan]],
-                               rawdata[rawdata.columns[self.Fz1_chan]],
-                               rawdata[rawdata.columns[self.Fx2_chan]],
-                               rawdata[rawdata.columns[self.Fy2_chan]],
-                               rawdata[rawdata.columns[self.Fz2_chan]],
-                               rawdata[rawdata.columns[self.Fx3_chan]],
-                               rawdata[rawdata.columns[self.Fy3_chan]],
-                               rawdata[rawdata.columns[self.Fz3_chan]],
-                               rawdata[rawdata.columns[self.Fx4_chan]],
-                               rawdata[rawdata.columns[self.Fy4_chan]],
-                               rawdata[rawdata.columns[self.Fz4_chan]]], float).transpose()
+            relForces = np.array([rawdata[rawdata.columns[int(self.Fx1_chan)]],
+                               rawdata[rawdata.columns[int(self.Fy1_chan)]],
+                               rawdata[rawdata.columns[int(self.Fz1_chan)]],
+                               rawdata[rawdata.columns[int(self.Fx2_chan)]],
+                               rawdata[rawdata.columns[int(self.Fy2_chan)]],
+                               rawdata[rawdata.columns[int(self.Fz2_chan)]],
+                               rawdata[rawdata.columns[int(self.Fx3_chan)]],
+                               rawdata[rawdata.columns[int(self.Fy3_chan)]],
+                               rawdata[rawdata.columns[int(self.Fz3_chan)]],
+                               rawdata[rawdata.columns[int(self.Fx4_chan)]],
+                               rawdata[rawdata.columns[int(self.Fy4_chan)]],
+                               rawdata[rawdata.columns[int(self.Fz4_chan)]]], float).transpose()
         else:
             # Channels are given by name so use the name
             relForces = np.array([rawdata[self.Fx1_chan],
@@ -284,6 +284,7 @@ class Kistler3:
         # This is the weight and the moment arms of this weight
 
         self.weight = calfile['weight']
+        print('Kistler weight: %f'% self.weight)
 
         self.armx = calfile['armx']
         if self.armx == None:
@@ -319,15 +320,15 @@ class Kistler3:
         
         if self.Fx1_chan.isdigit():
             # Channels are given as channel number so need to use that to look up channel
-            relForces = np.array([rawdata[rawdata.columns[self.Fx1_chan]],
-                               rawdata[rawdata.columns[self.Fy1_chan]],
-                               rawdata[rawdata.columns[self.Fz1_chan]],
-                               rawdata[rawdata.columns[self.Fx2_chan]],
-                               rawdata[rawdata.columns[self.Fy2_chan]],
-                               rawdata[rawdata.columns[self.Fz2_chan]],
-                               rawdata[rawdata.columns[self.Fx3_chan]],
-                               rawdata[rawdata.columns[self.Fy3_chan]],
-                               rawdata[rawdata.columns[self.Fz3_chan]]], float).transpose()
+            relForces = np.array([rawdata[rawdata.columns[int(self.Fx1_chan)]],
+                               rawdata[rawdata.columns[int(self.Fy1_chan)]],
+                               rawdata[rawdata.columns[int(self.Fz1_chan)]],
+                               rawdata[rawdata.columns[int(self.Fx2_chan)]],
+                               rawdata[rawdata.columns[int(self.Fy2_chan)]],
+                               rawdata[rawdata.columns[int(self.Fz2_chan)]],
+                               rawdata[rawdata.columns[int(self.Fx3_chan)]],
+                               rawdata[rawdata.columns[int(self.Fy3_chan)]],
+                               rawdata[rawdata.columns[int(self.Fz3_chan)]]], float).transpose()
         else:
             # Channels are given by name so use the name
             relForces = np.array([rawdata[self.Fx1_chan],
@@ -375,6 +376,8 @@ class Kistler3:
                                     theta,
                                     psi) 
  
+
+        
         # And then take out the self weight using the body angles
 
         self.CFx = compForces[:,0] - Wx 
@@ -383,6 +386,8 @@ class Kistler3:
         self.CMx = compForces[:,3] - (Wz*self.army - Wy*self.armz)
         self.CMy = compForces[:,4] - (-Wz*self.armx - Wx*self.armz)
         self.CMz = compForces[:,5] - (Wy*self.armx - Wx*self.army)
+        
+
 
         if doZeros == 1.0:                      #Subtract zeros
             self.CFx = self.CFx - self.CFx_z

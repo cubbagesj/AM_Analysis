@@ -289,7 +289,7 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
                 EUdata = (runObj.time * 100) * c_FSdt
                 
             elif mrg_chans[i] == 802:     # ZCG
-                EUdata = (runObj.getEUData(mrg_chans[zsensor[3]])).copy()
+                EUdata = (runObj.getEUData(int(mrg_chans[zsensor[3]]))).copy()
                 EUdata *= pow(c_lambda, 1)
                 EUdata += (zsensor[0] * np.sin(theta)) - np.cos(theta)*(zsensor[1] * np.sin(phi) + zsensor[2] * np.cos(phi))
     

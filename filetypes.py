@@ -715,7 +715,10 @@ class OBCFile:
             self.mapNavInfo()
             
             # Compute the 6DOF dynos
-            self.computeSpecials()
+            try:
+                self.computeSpecials()
+            except:
+                raise
             
             # Read the BMS packet
             self.readBMS()
@@ -852,6 +855,8 @@ class OBCFile:
 
         try:
             for gauge in self.sp_gauges.keys():
+                
+                print('Computing %s' % gauge)
                 # Compute the special gauges - The Deck is not used and has not been updates
                 if (gauge != 'Deck'):
                     
@@ -1189,7 +1194,10 @@ class TDMSFile:
             self.mapNavInfo()
             
             # Compute the 6DOF dynos
-            self.computeSpecials()
+            try:
+                self.computeSpecials()
+            except:
+                pass
 
 
     def info(self):
@@ -1384,8 +1392,8 @@ class TDMSFile:
 
 if __name__ == "__main__":
 
-#    test = OBCFile('13848')
-    test = TDMSFile('2999')
+    test = OBCFile('14838')
+#    test = TDMSFile('2976')
 #    test = STDFile('10-13848.std', 'known')
 #    test.info()
 #    test.run_stats()
