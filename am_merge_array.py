@@ -823,11 +823,11 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
         rot_y = (-stdrun.dataEU[stdrun.dataEU.columns[20]] * np.sin(stdruntrack) + 
                  stdrun.dataEU[stdrun.dataEU.columns[21]] * np.cos(stdruntrack))
 
-        # stdrun.dataEU[stdrun.dataEU.columns[20]] = (rot_x - stdrunxposzero)
-        # stdrun.dataEU[stdrun.dataEU.columns[21]] = (rot_y - stdrunyposzero)
+        stdrun.dataEU[stdrun.dataEU.columns[20]] = (rot_x - stdrunxposzero)
+        stdrun.dataEU[stdrun.dataEU.columns[21]] = (rot_y - stdrunyposzero)
         # -----  Removed zero shift for animation
-        stdrun.dataEU[stdrun.dataEU.columns[20]] = (rot_x)
-        stdrun.dataEU[stdrun.dataEU.columns[21]] = (rot_y)
+        # stdrun.dataEU[stdrun.dataEU.columns[20]] = (rot_x)
+        # stdrun.dataEU[stdrun.dataEU.columns[21]] = (rot_y)
      
         stdrun.dataEU.to_csv(newfile, index=False, header=False, sep=' ', float_format='%12.7e')
     
