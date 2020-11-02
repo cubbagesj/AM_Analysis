@@ -127,11 +127,11 @@ class STDFile:
                 
                 # Need to clean up names before reading in
                 rawnames = f.readline().strip()
-                cleannames = rawnames.lower().replace("' '", "''").replace(" ","_").replace("''","' '").split()
+                cleannames = rawnames.lower().replace("'  '", "' '").replace("' '", "''").replace(" ","_").replace("''","' '").split()
                 channames = []
                 idx = 0
                 for chan in cleannames:
-                    if chan[1] == '-':
+                    if chan[1] == '-' or chan[2] == '-':
                         channames.append("'empty_%d'" % idx)
                         idx += 1
                     else:
@@ -1392,9 +1392,9 @@ class TDMSFile:
 
 if __name__ == "__main__":
 
-    test = OBCFile('14838')
+#    test = OBCFile('14838')
 #    test = TDMSFile('2976')
-#    test = STDFile('10-13848.std', 'known')
+    test = STDFile('5-12670.std', 'known')
 #    test.info()
 #    test.run_stats()
 #    print(test.getEUData(12))

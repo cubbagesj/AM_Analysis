@@ -152,7 +152,7 @@ class BrowserFrame(wx.Frame):
 
         chanSizer = wx.BoxSizer(wx.HORIZONTAL)
         chanSizer.Add(self.chanList, 0, wx.LEFT|wx.RIGHT)
-        chanSizer.Add(xchanList, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
+        chanSizer.Add(xchanList, 0, wx.ALIGN_CENTER_VERTICAL)
         chanSizer.Add(self.xchanList, 0, wx.LEFT|wx.RIGHT)
         infoSizer.Add(chanSizer)
 

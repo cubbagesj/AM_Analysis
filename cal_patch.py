@@ -5,6 +5,7 @@
     
     06/28/2010 - sjc
     03/12/2013 - sjc - updated to generalize
+    10/21/2020 - sjc - small tweaks for easier use in single mode
 """
 
 import glob, sys, cfgparse
@@ -23,7 +24,7 @@ def CalPatcher(patches, filelist):
     
     for calfile in filelist:       
         
-        print "Processing file: %s " % calfile 
+        print("Processing file: %s " % calfile) 
         
         # create a parser object
         c = cfgparse.ConfigParser()
@@ -63,12 +64,13 @@ if __name__ == "__main__":
         # We are in batch mode
         
         # First get the file list
-        filelist = file(options.filelist).read().split()
+        #filelist = file(options.filelist).read().split()
+        filelist = glob.glob(options.filelist)
         
         # Then the patches
         # patch file format is: section entry value
         patches = []
-        for line in file(options.patchfile):
+        for line in open(options.patchfile):
             if (line.strip() != '' and line.strip().startswith('#') == False):
                 patches.append(line.strip().split(','))
         
@@ -79,8 +81,10 @@ if __name__ == "__main__":
         filename = args[0]
         patch = args[1:]
         
-        # Apply patch
-        CalPatcher([patch], [filename])
+        for name in glob.glob(filename):
+            
+            # Apply patch
+            CalPatcher([patch], [name])
         
     
 
