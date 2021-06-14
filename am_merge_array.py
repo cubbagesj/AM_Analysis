@@ -289,7 +289,10 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
                 EUdata = (runObj.time * 100) * c_FSdt
                 
             elif mrg_chans[i] == 802:     # ZCG
-                EUdata = (runObj.getEUData(int(mrg_chans[zsensor[3]]))).copy()
+                try:
+                    EUdata = (runObj.getEUData(int(mrg_chans[zsensor[3]]))).copy()
+                except:
+                    EUdata = (runObj.getEUData(mrg_chans[zsensor[3]])).copy()
                 EUdata *= pow(c_lambda, 1)
                 EUdata += (zsensor[0] * np.sin(theta)) - np.cos(theta)*(zsensor[1] * np.sin(phi) + zsensor[2] * np.cos(phi))
     
@@ -763,7 +766,7 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
     else:
         dataSTDrun = dataSTD.loc[((dataSTD['rawStatus'] >= 0x0F23) & 
                                 (dataSTD['rawStatus']  <= 0x0f43)) | 
-                                (dataSTD['rawStatus'] <= 1)  ].copy(deep=True)
+                                (dataSTD['rawStatus'] < 1)  ].copy(deep=True)
     # Drop the rawStatus Column
     dataSTDrun.drop('rawStatus', 1, inplace=True)
        
@@ -811,7 +814,7 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
         # Got needed info, now process
     
         stdfile = open(stdfilename, 'r')
-        newfile = open(stdfilename+'new','w')
+        newfile = open(stdfilename+'new','w',newline='\n')
         
         # Copy over the header information
         for x in range(5):
@@ -1011,7 +1014,7 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
       
     # Rewrite STD file
         
-    with open(stdfilename, mode='w') as file:
+    with open(stdfilename, mode='w',newline='\n') as file:
         file.write("'DELIMTXT'\n")
         file.write(rundata.title + "\n")
         file.write(rundata.timestamp + "\n")
