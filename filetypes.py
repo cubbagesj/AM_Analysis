@@ -816,6 +816,10 @@ class OBCFile:
             self.phi = self.dataEU.ln200_roll.values
             self.psi = self.dataEU.ln200_heading.values
 
+            self.thetachan = 'ln200_pitch'
+            self.phichan = 'ln200_roll'
+            self.psichan = 'ln200_heading'
+
             self.p = self.dataEU.ln200_x_ang_rate.values
             self.q = self.dataEU.ln200_y_ang_rate.values
             self.r = self.dataEU.ln200_z_ang_rate.values
@@ -833,6 +837,7 @@ class OBCFile:
                                 self.dataEU.adcp_z_vel_btm.values ** 2)
 
             self.depth = self.dataEU.obs_depth2.values
+            self.rpmchan = 'prop_rpm'
         except:
             pass
     
@@ -851,7 +856,9 @@ class OBCFile:
         # Yaw
         psi = np.radians(self.psi)
 
-        bodyAngles = [phi, theta, psi]
+        bodyAngles = [phi, theta, psi,
+                    self.phichan, self.thetachan, self.psichan,
+                    self.rpmchan]
 
         try:
             for gauge in self.sp_gauges.keys():
@@ -870,7 +877,7 @@ class OBCFile:
                     
                     if (gauge == 'Rotor'):
                         try:
-                            self.sp_gauges[gauge].compute(self.dataEU.query('mode325 == 0x0F33'),
+                            self.sp_gauges[gauge].compute(self.dataEU.query('mode325 == 0x0F13'),
                                         bodyAngles, 
                                         cb_id = 10,
                                         doZeros = 0.0)
@@ -902,7 +909,7 @@ class OBCFile:
                     self.chan_names = self.dataEU.columns.values.tolist()
                     self.nchans = len(self.chan_names)
         except:
-            pass
+            raise
         
     def readBMS(self):
         """

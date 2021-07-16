@@ -624,8 +624,19 @@ class Rot_Dyno6:
         self.lastpos = 0
         self.rotating = 0
 
+        # For the prop running averages we need to create some ring buffers
+        self.runavg = []
+        for i in range(4):
+            self.runavg.append(RingBuffer(100))
+            
         # Finally we set the channel zeros to zero
         self.zeros = np.array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), float)
+        self.CFx_z = 0.0
+        self.CFy_z = 0.0
+        self.CFz_z = 0.0
+        self.CMx_z = 0.0
+        self.CMy_z = 0.0
+        self.CMz_z = 0.0        
 
     def compute(self, rawdata, bodyAngles, cb_id=10, doZeros=1.0):
         """ Compute the corrected forces for the current timestep using
@@ -635,9 +646,13 @@ class Rot_Dyno6:
         weight
         """
         # The bodyAngles are in radians
-        phi = bodyAngles[0]
-        theta = bodyAngles[1]
-        psi = bodyAngles[2]
+        # phi = bodyAngles[0]
+        # theta = bodyAngles[1]
+        # psi = bodyAngles[2]
+ 
+        theta = np.radians(rawdata[bodyAngles[4]].values)
+        phi = np.radians(rawdata[bodyAngles[3]].values)
+        psi = np.radians(rawdata[bodyAngles[5]].values)
              
         # Prop position depends on which centerbody it is
         try:
@@ -648,7 +663,7 @@ class Rot_Dyno6:
         if cb_id < 12:
             prop_pos = prop_pos.map(lambda x: x+20000 if (x < 0) else x)
             prop_pos = prop_pos.map(lambda x: x-20000 if (x > 20000) else x)
-            rot_angle = (prop_pos * .01800)
+            rot_angle = (prop_pos * .01800) 
         else:
             rot_angle = prop_pos
             
@@ -658,23 +673,22 @@ class Rot_Dyno6:
         # Special channels can be given as numbers or names
         # Need to check for which we have so we can get values properly
         # Assume that if first one is a num all are nums
-        
+  
         if self.Fx_chan.isdigit():
             rawForces = np.array([rawdata[rawdata.columns[int(self.Fx_chan)]],
-                               rawdata[rawdata.columns[int(self.Fy_chan)]],
-                               rawdata[rawdata.columns[int(self.Fz_chan)]],
-                               rawdata[rawdata.columns[int(self.Mx_chan)]],
-                               rawdata[rawdata.columns[int(self.My_chan)]],
-                               rawdata[rawdata.columns[int(self.Mz_chan)]]], float).transpose()
+                            rawdata[rawdata.columns[int(self.Fy_chan)]],
+                            rawdata[rawdata.columns[int(self.Fz_chan)]],
+                            rawdata[rawdata.columns[int(self.Mx_chan)]],
+                            rawdata[rawdata.columns[int(self.My_chan)]],
+                            rawdata[rawdata.columns[int(self.Mz_chan)]]], float).transpose()
         else: 
             rawForces = np.array([rawdata[self.Fx_chan],
-                               rawdata[self.Fy_chan],
-                               rawdata[self.Fz_chan],
-                               rawdata[self.Mx_chan],
-                               rawdata[self.My_chan],
-                               rawdata[self.Mz_chan]], float).transpose()
-            
-
+                            rawdata[self.Fy_chan],
+                            rawdata[self.Fz_chan],
+                            rawdata[self.Mx_chan],
+                            rawdata[self.My_chan],
+                            rawdata[self.Mz_chan]], float).transpose()
+           
         # Apply the Interaction Matrix
         def intMatrix ( a, b):
             return np.dot( a,b)
@@ -685,26 +699,50 @@ class Rot_Dyno6:
             return np.dot( a,b)
         compForces = np.apply_along_axis(orientMatrix, 1, intForces, self.Orient_Mat)
 
-        if doZeros == 0.0:                      #Subtract zeros
-            self.CFx_z = compForces[:,0].mean()
-            self.CFy_z = compForces[:,1].mean()
-            self.CFz_z = compForces[:,2].mean()
-            self.CMx_z = compForces[:,3].mean()
-            self.CMy_z = compForces[:,4].mean()
-            self.CMz_z = compForces[:,5].mean()        
+        # In order to account for a DC shift in the dyno once the prop starts rotating
+        # we want to subtract off the oscillation mean for the y,z forces and moments
+        # To do this we need the compForces as a pandas dataframe
 
-        rawbodyFx = compForces[:,0] - self.CFx_z
-        rawbodyFy = compForces[:,1] - self.CFy_z
-        rawbodyFz = compForces[:,2] - self.CFz_z
-        rawbodyMx = compForces[:,3] - self.CMx_z
-        rawbodyMy = compForces[:,4] - self.CMy_z
-        rawbodyMz = compForces[:,5] - self.CMz_z
+        compForcesFrame = pd.DataFrame(compForces,
+                                    columns=['compFx','compFy','compFz','compMx','compMy','compMz'])
+
+        if doZeros == 1:
+            rawbodyFx = compForces[:,0]
+
+            meanFy = compForcesFrame.compFy.rolling(window=100).mean()
+            meanFy = meanFy.mask(rawdata[bodyAngles[6]]== 0, 0)
+            rawbodyFy = compForcesFrame.compFy.to_numpy() - meanFy
+            rawbodyFy = rawbodyFy.values
+            
+            meanFz = compForcesFrame.compFz.rolling(window=100).mean()
+            meanFz = meanFz.mask(rawdata[bodyAngles[6]]== 0, 0)
+            rawbodyFz = compForcesFrame.compFz.to_numpy() - meanFz
+            rawbodyFz = rawbodyFz.values
+            
+            rawbodyMx = compForces[:,3]
+            
+            meanMy = compForcesFrame.compMy.rolling(window=100).mean()
+            meanMy = meanMy.mask(rawdata[bodyAngles[6]]== 0, 0)
+            rawbodyMy = compForcesFrame.compMy.to_numpy() - meanMy
+            rawbodyMy = rawbodyMy.values
+            
+            meanMz = compForcesFrame.compMz.rolling(window=100).mean()
+            meanMz = meanMz.mask(rawdata[bodyAngles[6]]== 0, 0)
+            rawbodyMz = compForcesFrame.compMz.to_numpy() - meanMz
+            rawbodyMz = rawbodyMz.values
+        else:
+            rawbodyFx = compForces[:,0]
+            rawbodyFy = compForces[:,1]
+            rawbodyFz = compForces[:,2]
+            rawbodyMx = compForces[:,3]
+            rawbodyMy = compForces[:,4]
+            rawbodyMz = compForces[:,5]
 
         # Now we need to rotate to the body coordinates
-        bodyFx = compForces[:,0]
+        bodyFx = rawbodyFx
         bodyFy = cosR * rawbodyFy - sinR * rawbodyFz
         bodyFz = sinR * rawbodyFy + cosR * rawbodyFz
-        bodyMx = compForces[:,3]
+        bodyMx = rawbodyMx
         bodyMy = cosR * rawbodyMy - sinR * rawbodyMz
         bodyMz = sinR * rawbodyMy + cosR * rawbodyMz
 
@@ -715,7 +753,8 @@ class Rot_Dyno6:
                                     phi,
                                     theta,
                                     psi) 
-    
+
+      
         # And then take out the self weight using the body angles
         self.CFx = bodyFx - Wx 
         self.CFy = bodyFy - Wy
@@ -723,6 +762,22 @@ class Rot_Dyno6:
         self.CMx = bodyMx - (Wz*self.army - Wy*self.armz)
         self.CMy = bodyMy - (-Wz*self.armx - Wx*self.armz)
         self.CMz = bodyMz - (Wy*self.armx - Wx*self.army)
+
+        if doZeros == 0.0:                      #Compute zeros
+            self.CFx_z = self.CFx.mean()
+            self.CFy_z = self.CFy.mean()
+            self.CFz_z = self.CFz.mean()
+            self.CMx_z = self.CMx.mean()
+            self.CMy_z = self.CMy.mean()
+            self.CMz_z = self.CMz.mean()
+        else:
+            self.CFx = self.CFx - self.CFx_z
+            self.CFy = self.CFy - self.CFy_z
+            self.CFz = self.CFz - self.CFz_z
+            self.CMx = self.CMx - self.CMx_z
+            self.CMy = self.CMy - self.CMy_z
+            self.CMz = self.CMz - self.CMz_z  
+
 
 
 
