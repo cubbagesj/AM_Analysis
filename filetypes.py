@@ -131,11 +131,12 @@ class STDFile:
                 channames = []
                 idx = 0
                 for chan in cleannames:
-                    if chan[1] == '-' or chan[2] == '-':
-                        channames.append("'empty_%d'" % idx)
+                    if channames.count(chan) == 0:
+                        channames.append(chan)
                         idx += 1
                     else:
-                        channames.append(chan)
+                        channames.append(chan+str(idx))
+                        idx += 1
 
                 f.close()
 
@@ -1297,6 +1298,10 @@ class TDMSFile:
             self.phi = self.dataEU.Roll.values
             self.psi = self.dataEU.Yaw.values
 
+            self.thetachan = 'Pitch'
+            self.phichan = 'Roll'
+            self.psichan = 'Yaw'
+
             self.p = self.dataEU.X_Ang_Rate.values
             self.q = self.dataEU.Y_Ang_Rate.values
             self.r = self.dataEU.Z_Ang_Rate.values
@@ -1314,6 +1319,7 @@ class TDMSFile:
                                 self.dataEU.BTIR_Zvel.values ** 2)
 
             self.depth = self.dataEU.Depth2.values
+            self.rpmchan = 'Prop_RPM'
         except:
             pass
         
@@ -1332,7 +1338,9 @@ class TDMSFile:
         # Yaw
         psi = np.radians(self.psi)
 
-        bodyAngles = [phi, theta, psi]
+        bodyAngles = [phi, theta, psi,
+                    self.phichan, self.thetachan, self.psichan,
+                    self.rpmchan]
 
         
         for gauge in self.sp_gauges.keys():
@@ -1349,7 +1357,7 @@ class TDMSFile:
                 
                 if (gauge == 'Rotor'):
                     try:
-                        self.sp_gauges[gauge].compute(self.dataEU.query('script_mode == 0x0F33'),
+                        self.sp_gauges[gauge].compute(self.dataEU.query('script_mode == 0x0F13'),
                                       bodyAngles, 
                                       cb_id = 12,
                                       doZeros = 0.0)

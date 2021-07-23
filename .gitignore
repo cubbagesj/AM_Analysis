@@ -1,3 +1,11 @@
 *.pyc
 *.*~
 *.bak
+build
+dist
+*.cal
+*.obc
+*.run
+*.gps
+*.std
+*.swp
