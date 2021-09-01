@@ -135,7 +135,7 @@ class STDFile:
                         channames.append(chan)
                         idx += 1
                     else:
-                        channames.append(chan+str(idx))
+                        channames.append(chan[:-1]+str(idx)+"'")
                         idx += 1
 
                 f.close()
@@ -1294,17 +1294,17 @@ class TDMSFile:
         Change this section to define source of nav data that is used
         """
         try:
-            self.theta = self.dataEU.Pitch.values
-            self.phi = self.dataEU.Roll.values
-            self.psi = self.dataEU.Yaw.values
+            self.theta = self.dataEU['Phins Pitch'].values
+            self.phi = self.dataEU['Phins Roll'].values
+            self.psi = self.dataEU['Phins Heading'].values
 
-            self.thetachan = 'Pitch'
-            self.phichan = 'Roll'
-            self.psichan = 'Yaw'
+            self.thetachan = 'Phins Pitch'
+            self.phichan = 'Phins Roll'
+            self.psichan = 'Phins Heading'
 
-            self.p = self.dataEU.X_Ang_Rate.values
-            self.q = self.dataEU.Y_Ang_Rate.values
-            self.r = self.dataEU.Z_Ang_Rate.values
+            self.p = self.dataEU['Phins Rotation Rate XV1'].values
+            self.q = self.dataEU['Phins Rotation Rate XV2'].values
+            self.r = self.dataEU['Phins Rotation Rate XV3'].values
 
             self.u_adcp = self.dataEU.BTIR_Xvel.values
             self.v_adcp = self.dataEU.BTIR_Yvel.values
@@ -1407,9 +1407,9 @@ class TDMSFile:
 
 if __name__ == "__main__":
 
-    test = OBCFile('17911')
+#    test = OBCFile('1')
 #    test = TDMSFile('2976')
-#    test = STDFile('5-12670.std', 'known')
+    test = STDFile('10-19161.std', 'known')
 #    test.info()
 #    test.run_stats()
 #    print(test.getEUData(12))
