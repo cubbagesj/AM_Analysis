@@ -27,6 +27,7 @@ import struct
 # Imports - Local Packages
 from search_file import search_file_walk
 from calfile_new import CalFile
+from tdms_calfile import TdmsCalFile
 import dynos_array as dynos
 
 
@@ -985,6 +986,14 @@ class TDMSFile:
         TDMS is a National Instruments binary format, nptdms imported above
         provides functions used in this class for unpacking the binary TDMS files
         and returning the data
+
+        9/2021 - Updated to the latest version of the npTdms library
+        The latest version changed the API quite a bit so the code had to be 
+        modified for the new API
+
+        One of the bigest changes is that the data read from the file is pre-scaled
+        using the scaling method stored in the file.  This means that the part
+        loading the cals is no longer required
         
         Public Methods are:
             __init__    : Intializes objetc, finds run and loads data
@@ -1035,20 +1044,92 @@ class TDMSFile:
             self.nchans = 0
             self.dt = 0.01
 
-            self.tdms_file_obj = TdmsFile(fullname)  #open the tdms file using nptdms package
+            self.tdms_file_obj = TdmsFile.read(fullname)  #open the tdms file using nptdms package
             #Get the length of the data by looking at one of the channels
-            self.tdm_length = len(self.tdms_file_obj.channel_data('DATA', self.tdms_file_obj.group_channels('DATA')[0].path.split("'")[3]))
+            self.tdm_length = len(self.tdms_file_obj['DATA'][self.tdms_file_obj['DATA'].channels()[0].path.split("'")[3]][:])
             
             # Get the channel mapping for the special gauges from the tdms_to_obc.cal file
+            # 9/2021 - Woody has updated CB12 code to embed the 6DOF gauge info into the tdms file as 
+            # properties.  Need to have a way to get them out if present but use a file if not
+            #
+            # Assume that if a tdms_to_obc.cal is present in the directory then it 
+            # should be used instead of the embedded info.  This will allow the ability
+            # to overwrite what is in the file.
+
             calfilename = os.path.join(dirname, 'tdms_to_obc.cal')
-            cal = CalFile(calfilename)
+            if os.path.isfile(calfilename):
+                # cal file exists so use it instead of embedded 
+                cal = CalFile(calfilename)
             
-            # Now parse the calfile
-            cal.ParseAll()
+                # Now parse the calfile
+                cal.ParseAll()
+                # Set up the special gauges
+                self.sp_gauges = {}
+                # Rotor 
+                if cal.hasRotor == 'TRUE':
+                    self.sp_gauges['Rotor'] = dynos.Rot_Dyno6(cal.rotor)
+        
+                # Stator
+                if cal.hasStator == 'TRUE':
+                    self.sp_gauges['Stator'] = dynos.Dyno6(cal.stator)
+        
+                # SOF1
+                if cal.hasSOF1 == 'TRUE':
+                   self.sp_gauges['SOF1'] = dynos.Dyno6(cal.SOF1)
+        
+                # SOF2
+                if cal.hasSOF2 == 'TRUE':
+                    self.sp_gauges['SOF2'] = dynos.Dyno6(cal.SOF2)
+        
+                # Kistler 
+                if cal.hasKistler == 'TRUE':
+                    self.sp_gauges['Kistler'] = dynos.Kistler6(cal.kistler)
+        
+                if cal.hasKistler3 == "TRUE":
+                    self.sp_gauges['Kistler3'] = dynos.Kistler3(cal.kistler3)
+        
+                if cal.hasDeck == "TRUE":
+                    self.sp_gauges['Deck'] = dynos.Deck(cal.deck)
+        
+                # And finally the 6DOF appendage gauges
+                if cal.has6DOF == "TRUE":
+                    for i in range(1,cal.num_6DOF+1):
+                        self.sp_gauges['6DOF%d' %i] = dynos.Dyno6(cal.sixDOF[i-1])
+            else:
+                # Read the 6dof data out of the TDMS file properties
+                # Only need to return the 6DOF dictionaries and flags
+
+                cal = TdmsCalFile(self.tdms_file_obj)
+                cal.ParseAll()
+
+                self.sp_gauges = {}
+                # Rotor 
+                if cal.hasRotor == 'TRUE':
+                    self.sp_gauges['Rotor'] = dynos.Rot_Dyno6(cal.rotor)
+        
+                # Stator
+                if cal.hasStator == 'TRUE':
+                    self.sp_gauges['Stator'] = dynos.Dyno6(cal.stator)
+        
+                # SOF1
+                if cal.hasSOF1 == 'TRUE':
+                   self.sp_gauges['SOF1'] = dynos.Dyno6(cal.SOF1)
+        
+                # SOF2
+                if cal.hasSOF2 == 'TRUE':
+                    self.sp_gauges['SOF2'] = dynos.Dyno6(cal.SOF2)
+        
+                # Kistler 
+                if cal.hasKistler == 'TRUE':
+                    self.sp_gauges['Kistler'] = dynos.Kistler6(cal.kistler)
+        
+                if cal.hasKistler3 == "TRUE":
+                    self.sp_gauges['Kistler3'] = dynos.Kistler3(cal.kistler3)
+        
             
             #import or create the time channel
             try:
-                self.time = self.tdms_file_obj.channel_data('DATA', 'sys_time') #import absolute time channel
+                self.time = self.tdms_file_obj['DATA']['sys_time'][:] #import absolute time channel
                 self.time = self.time - self.time[0] # make the time channel relative to the start of the file
             except:
                 # There is no time channel, so make one
@@ -1057,19 +1138,18 @@ class TDMSFile:
             
             # Get the run type out of the tdms file properties
             try:
-                fileobj = self.tdms_file_obj.object()
-                self.title = fileobj.properties['script_run_type']
+                self.title = self.tdms_file_obj.properties['script_run_type']
             except:
                 self.title = 'No Run Type Property Defined' 
                 
             # Cals and channel names are all stored in the tdms_file_obj channel objects   
             try:
                 #  Set up some variables to hold the values
-                self.nchans = len(self.tdms_file_obj.group_channels('DATA'))
+                self.nchans = len(self.tdms_file_obj['DATA'].channels())
                 self.cals = {}  #Dictionary to hold calibration info for each channel
                 self.alt_names = []
                 for i in range(self.nchans):
-                    self.alt_names.append(str(self.tdms_file_obj.group_channels('DATA')[i].path.split("'")[3]))
+                    self.alt_names.append(str(self.tdms_file_obj['DATA'].channels()[i].path.split("'")[3]))
                 self.chan_names = sorted(self.alt_names, key=str.lower)
                 self.data_pkt_locs = []
                 self.eng_units = []
@@ -1082,8 +1162,13 @@ class TDMSFile:
                     return prescaledVal
                             
                 # Then read the tdms file for the channel cals
+                # The new tdms library applies the scaling automatically so technically this is
+                # no longer needed.  But it is useful to be able to apply corrections
+                #
+                # For now, try a hybrid approach where I just set the initial gains all to 1 so that
+                # it essentially does nothing but allows for the use of the patches
                 for channel in self.chan_names:
-                    chan_obj = self.tdms_file_obj.object('DATA', channel)
+                    chan_obj = self.tdms_file_obj['DATA'][channel]
                     try:
                         self.eng_units.append(chan_obj.properties['eng_units'])
                     except:
@@ -1092,7 +1177,9 @@ class TDMSFile:
                         scaletype = str(chan_obj.properties['NI_Scale[0]_Scale_Type'])
                         #Linear calibration scaling, dictionary will hold a lambda function to apply the linear cal to a given prescaled value
                         if scaletype == 'Linear': 
-                            self.cals[channel] = (lambda x, m=chan_obj.properties['NI_Scale[0]_Linear_Slope'], b=chan_obj.properties['NI_Scale[0]_Linear_Y_Intercept'] : m*x+b)
+                    #       self.cals[channel] = (lambda x, m=chan_obj.properties['NI_Scale[0]_Linear_Slope'], b=chan_obj.properties['NI_Scale[0]_Linear_Y_Intercept'] : m*x+b)
+                    # The following sets the scaling to 1.0
+                            self.cals[channel] = (lambda x, m=1.0, b=0.0 : m*x+b)
                         #Linear interpolation scaling between point in Table, dictionary will hold a scipy interpolation function 
                         elif scaletype == 'Table':
                             #import scaled values from the tdms file properties
@@ -1129,39 +1216,6 @@ class TDMSFile:
                 print('we got an error')
                 raise
 
-            # Set up the special gauges
-            self.sp_gauges = {}
-            # Rotor 
-            if cal.hasRotor == 'TRUE':
-                self.sp_gauges['Rotor'] = dynos.Rot_Dyno6(cal.rotor)
-        
-            # Stator
-            if cal.hasStator == 'TRUE':
-                self.sp_gauges['Stator'] = dynos.Dyno6(cal.stator)
-        
-            # SOF1
-            if cal.hasSOF1 == 'TRUE':
-                self.sp_gauges['SOF1'] = dynos.Dyno6(cal.SOF1)
-        
-            # SOF2
-            if cal.hasSOF2 == 'TRUE':
-                self.sp_gauges['SOF2'] = dynos.Dyno6(cal.SOF2)
-        
-            # Kistler 
-            if cal.hasKistler == 'TRUE':
-                self.sp_gauges['Kistler'] = dynos.Kistler6(cal.kistler)
-        
-            if cal.hasKistler3 == "TRUE":
-                self.sp_gauges['Kistler3'] = dynos.Kistler3(cal.kistler3)
-        
-            if cal.hasDeck == "TRUE":
-                self.sp_gauges['Deck'] = dynos.Deck(cal.deck)
-        
-            # And finally the 6DOF appendage gauges
-            if cal.has6DOF == "TRUE":
-                for i in range(1,cal.num_6DOF+1):
-                    self.sp_gauges['6DOF%d' %i] = dynos.Dyno6(cal.sixDOF[i-1])
-
             # Look for updates to the tdms file calibrations
             # in the tdms_cal_updates.txt file
             #
@@ -1178,17 +1232,23 @@ class TDMSFile:
                     [section, gain, zero] = patch
                     self.cals[section] = (lambda x, m=float(gain), b=float(zero) : m*x+b)
                 except:
+                    # try with out the zero
+                    try:
+                        [section, gain] = patch
+                        self.cals[section] = (lambda x, m=float(gain), b=0.0 : m*x+b)
+                    except:
                     # Skip if error
-                    print('Cal patch NOT applied')
+                        print('Cal patch NOT applied')
+                        pass
                     pass
 
                     
             #read in all the data from the tmds file    
-            data = self.tdms_file_obj.channel_data('DATA', self.chan_names[0])
-            dataEU = self.cals[self.chan_names[0]](self.tdms_file_obj.channel_data('DATA', self.chan_names[0]))
+            data = self.tdms_file_obj['DATA'][self.chan_names[0]][:]
+            dataEU = self.cals[self.chan_names[0]](self.tdms_file_obj['DATA'][self.chan_names[0]][:])
             for i in range(1, self.nchans):
-                data = np.column_stack((data, self.tdms_file_obj.channel_data('DATA', self.chan_names[i])))
-                dataEU = np.column_stack((dataEU, self.cals[self.chan_names[i]](self.tdms_file_obj.channel_data('DATA', self.chan_names[i]))))
+                data = np.column_stack((data, self.tdms_file_obj['DATA'][self.chan_names[i]][:]))
+                dataEU = np.column_stack((dataEU, self.cals[self.chan_names[i]](self.tdms_file_obj['DATA'][self.chan_names[i]][:])))
             
             self.data = pd.DataFrame(data, columns=self.chan_names)
             self.dataEU = pd.DataFrame(dataEU, columns=self.chan_names)
@@ -1265,7 +1325,7 @@ class TDMSFile:
         """
         try: 
             # First we need to extract the mode channel
-            status = self.tdms_file_obj.channel_data('DATA', 'script_mode')
+            status = self.tdms_file_obj['DATA']['script_mode'][:]
             self.stdbyrec = np.where(status == 0x0F33)[0][0]
             self.stdbytime = self.time[self.stdbyrec]
             self.execrec = np.where(status == 0x0F43)[0][0]
@@ -1408,8 +1468,8 @@ class TDMSFile:
 if __name__ == "__main__":
 
 #    test = OBCFile('1')
-#    test = TDMSFile('2976')
-    test = STDFile('10-19161.std', 'known')
+    test = TDMSFile('2767')
+#   test = STDFile('10-19161.std', 'known')
 #    test.info()
 #    test.run_stats()
 #    print(test.getEUData(12))

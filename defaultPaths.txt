@@ -3,7 +3,7 @@
 # These are the deafult search paths used by the program.
 # They can be changed from the menu in the program
 #
-obcDir X:\OBC_Data
+obcDir /home/pi/Documents/OBC_Data
 tdmsDir X:\OBC_Data
 stdDir X:\STD_Data
 fstDir X:\STD_Data
