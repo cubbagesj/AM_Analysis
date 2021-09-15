@@ -148,6 +148,7 @@ class STDFile:
                 # Time is found in column 26 - subtract initial point to zero
                 self.data.iloc[:,26] -= self.data.iloc[0,26]
                 self.time = self.data.iloc[:,26]
+
                 
                 # get the geometry info from the table based on boat length
                 if abs(self.length - 362) < 0.8 :

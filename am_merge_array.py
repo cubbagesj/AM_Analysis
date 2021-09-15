@@ -47,6 +47,8 @@ import pandas as pd
 import numpy as np
 from filetypes import STDFile
 import datatools as dt
+import re
+
 
 def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):  
 
@@ -117,7 +119,10 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
     for line in input_sec:
         line = line.upper()
         entry = line.split()
-        mrg_input[entry[0]] = float(entry[1])
+        try:
+            mrg_input[entry[0]] = float(entry[1])
+        except:
+            mrg_input[entry[0]] = entry[1]
 
     logfile.write('\nInputs section converted - INPUTS:\n')
     logfile.write('Key\t\tValue\n')
@@ -132,7 +137,7 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
     mrg_zero = []
 
     for line in chan_sec:
-        values = line.split()
+        values = re.split('  +', line)
         mrg_names.append(values[0])
         mrg_chans.append(values[1])
         mrg_scale.append(float(values[2]))
@@ -178,7 +183,12 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
     c_FSdt = c_dt * c_sqrtlambda
     c_length = mrg_input['LENGTH']
     
-    mode_chan = int(mrg_input['MODE'])
+    try:
+        mode_chan = int(mrg_input['MODE'])
+    except:
+        # For CB12 mode chan name 
+        mode_chan = 'script_mode'
+
     u_chan = int(mrg_input['U_CHAN'])
     v_chan = int(mrg_input['V_CHAN'])
     w_chan = int(mrg_input['W_CHAN'])

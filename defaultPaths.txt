@@ -4,9 +4,9 @@
 # They can be changed from the menu in the program
 #
 obcDir /home/pi/Documents/OBC_Data
-tdmsDir X:\OBC_Data
-stdDir X:\STD_Data
-fstDir X:\STD_Data
+tdmsDir /home/pi/Documents/OBC_Data
+stdDir /home/pi/Documents/STD_Data
+fstDir /home/pi/Documents/STD_Data
 #
 # This entry is for overplots of OBC files and is root of current test data tree
 obcOvrpltDir  x:\OBC_Data\VIRGINIA\2020_07_VPM_SSW
