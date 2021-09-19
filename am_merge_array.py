@@ -306,7 +306,7 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
                 EUdata *= pow(c_lambda, 1)
                 EUdata += (zsensor[0] * np.sin(theta)) - np.cos(theta)*(zsensor[1] * np.sin(phi) + zsensor[2] * np.cos(phi))
     
-            elif mrg_chans[i] == 804:           #Filtered and Corr. ADCP u
+            elif mrg_chans[i] == 804:           #Filtered ADCP u (ft/s) from ADCP (ft/s)
                 EUdata = runObj.u_adcp.copy()
                 for t in range(len(EUdata)):
                     if abs(EUdata[t]) > 70:
@@ -317,7 +317,7 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
                 # We need this later on for alpha/beta calcs so store it
                 u_FS = EUdata.copy()
                 
-            elif mrg_chans[i] == 805:           #Filtered and Corr ADCP v
+            elif mrg_chans[i] == 805:           #Filtered ADCP v (ft/s) from ADCP (ft/s)
                 EUdata = runObj.v_adcp.copy()
                 for t in range(len(EUdata)):
                     if abs(EUdata[t]) > 15:
@@ -328,8 +328,41 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
                 # We need this later on for alpha/beta calcs so store it
                 v_FS = EUdata.copy()
                 
-            elif mrg_chans[i] == 806:           #Filtered and Corr ADCP w
+            elif mrg_chans[i] == 806:           #Filtered ADCP w (ft/s) from ADCP (ft/s)
                 EUdata = runObj.w_adcp.copy()
+                for t in range(len(EUdata)):
+                    if abs(EUdata[t]) > 15:
+                        EUdata[t] = Wprev
+                    Wprev = EUdata[t]
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata += (((q_FS/57.296)*ADCPLoc[0])-((p_FS/57.296)*ADCPLoc[1]))
+                # We need this later on for alpha/beta calcs so store it
+                w_FS = EUdata.copy()
+    
+            elif mrg_chans[i] == 884:           #Filtered ADCP u (ft/s) from ADCP (kts)
+                EUdata = runObj.u_adcp.copy() * 1.6878
+                for t in range(len(EUdata)):
+                    if abs(EUdata[t]) > 70:
+                        EUdata[t] = Uprev
+                    Uprev = EUdata[t]
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata -= ((q_FS/57.296)*ADCPLoc[2])
+                # We need this later on for alpha/beta calcs so store it
+                u_FS = EUdata.copy()
+                
+            elif mrg_chans[i] == 885:           #Filtered ADCP v (ft/s) from ADCP (kts)
+                EUdata = runObj.v_adcp.copy() * 1.6878
+                for t in range(len(EUdata)):
+                    if abs(EUdata[t]) > 15:
+                        EUdata[t] = Vprev
+                    Vprev = EUdata[t]
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata += (((p_FS/57.296)*ADCPLoc[2])-((r_FS/57.296)*ADCPLoc[0]))
+                # We need this later on for alpha/beta calcs so store it
+                v_FS = EUdata.copy()
+                
+            elif mrg_chans[i] == 886:           #Filtered ADCP w (ft/s) from ADCP (kts)
+                EUdata = runObj.w_adcp.copy() * 1.6878
                 for t in range(len(EUdata)):
                     if abs(EUdata[t]) > 15:
                         EUdata[t] = Wprev
@@ -403,17 +436,31 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
             elif mrg_chans[i] == 822:           # Beta
                 #np.seterr(divide='ignore', invalid='ignore')
                 EUdata = -np.degrees(np.arcsin(np.divide(v_FS, bigU_FS)))
-            elif mrg_chans[i] == 823:           # Big U from ADCP
-                #EUdata = runObj.bigU.copy()
+
+            elif mrg_chans[i] == 823:           # Big U (ft/s) from ADCP (ft/s)
                 EUdata = np.sqrt(v_FS**2 + u_FS**2 + w_FS**2)
-                #EUdata *= pow(c_lambda, .5)
                 # We need this later on for alpha/beta calcs so store it
                 bigU_FS = EUdata.copy()
     
-            elif mrg_chans[i] == 824:           # Big U from ADCP in knots
+            elif mrg_chans[i] == 824:           # Big U (kts) from ADCP (ft/s)
                 EUdata = runObj.bigU.copy()
                 EUdata *= pow(c_lambda, .5)
                 EUdata /= 1.6878
+
+            # elif mrg_chans[i] == 825:           # Signed RPM
+            #     EUdata = runObj.getEUData('Prop_RPM').values
+            #     EUdata *= pow(c_lambda, mrg_scale[i])
+            #     EUdata *= np.sign(runObj.getEUData('rpm echo'))
+
+            elif mrg_chans[i] == 827:           # Big U (kts) from ADCP (kts)
+                EUdata = np.sqrt(v_FS**2 + u_FS**2 + w_FS**2)
+    
+            elif mrg_chans[i] == 826:           # Big U (ft/s) from ADCP (kts)
+                EUdata = runObj.bigU.copy()
+                EUdata *= pow(c_lambda, .5)
+                EUdata *= 1.6878
+                # We need this later on for alpha/beta calcs so store it
+                bigU_FS = EUdata.copy()
     
             elif mrg_chans[i] == 830 and 'SOF1' in runObj.sp_gauges:         # Computed SOF1 Fx
                 EUdata = runObj.getEUData('SOF1_CFx')
@@ -579,18 +626,6 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
                                runObj.getEUData(int(mrg_chans[34])) +
                                runObj.getEUData(int(mrg_chans[35])))/4.0
 
-    
-    ##                elif mrg_chans[i] == 890:                                   #Stbd RPM Flip
-    ##                    EUdata[i] = (rawdata[stbd_rpm_chan]-cal.zeros[stbd_rpm_chan])*cal.gains[stbd_rpm_chan]
-    ##                    if rawdata[stbd_rpm_com] < -50:
-    ##                        EUdata[i] *= -1
-    ##                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-    ##                elif mrg_chans[i] == 891:                                   #Port RPM Flip
-    ##                    EUdata[i] = (rawdata[port_rpm_chan]-cal.zeros[port_rpm_chan])*cal.gains[port_rpm_chan]
-    ##                    if rawdata[port_rpm_com] < -50:
-    ##                        EUdata[i] *= -1
-    ##                    EUdata[i] *= pow(c_lambda, mrg_scale[i])
-    ##              
             elif mrg_chans[i] == 890 and '6DOF3' in runObj.sp_gauges:         # Computed 6DOF1 Fx
                 EUdata = runObj.getEUData('6DOF3_CFx')
                 EUdata *= pow(c_lambda, mrg_scale[i])

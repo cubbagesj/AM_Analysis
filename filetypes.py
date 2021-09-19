@@ -1222,10 +1222,13 @@ class TDMSFile:
             #
             # First we read in the patches
             patches = []
-            for line in open(os.path.join(dirname,'tdms_cal_updates.txt'), 'r'):
-                if (line.strip() != '' and line.strip().startswith('#') == False):
-                    patches.append(line.strip().split(','))
-            print(patches)
+            try:
+                for line in open(os.path.join(dirname,'tdms_cal_updates.txt'), 'r'):
+                    if (line.strip() != '' and line.strip().startswith('#') == False):
+                        patches.append(line.strip().split(','))
+                print(patches)
+            except:
+                print('No cal patches found')
             
             # Then we apply the patches
             for patch in patches:
