@@ -447,18 +447,18 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
                 EUdata *= pow(c_lambda, .5)
                 EUdata /= 1.6878
 
-            # elif mrg_chans[i] == 825:           # Signed RPM
-            #     EUdata = runObj.getEUData('Prop_RPM').values
-            #     EUdata *= pow(c_lambda, mrg_scale[i])
-            #     EUdata *= np.sign(runObj.getEUData('rpm echo'))
+            elif mrg_chans[i] == 825:           # Signed RPM
+                EUdata = runObj.getEUData('Prop_RPM').copy()
+                EUdata *= pow(c_lambda, mrg_scale[i])
+                EUdata *= np.sign(runObj.getEUData('rpm echo'))
 
             elif mrg_chans[i] == 827:           # Big U (kts) from ADCP (kts)
                 EUdata = np.sqrt(v_FS**2 + u_FS**2 + w_FS**2)
+                EUdata /= 1.6878
     
             elif mrg_chans[i] == 826:           # Big U (ft/s) from ADCP (kts)
-                EUdata = runObj.bigU.copy()
-                EUdata *= pow(c_lambda, .5)
-                EUdata *= 1.6878
+                EUdata = np.sqrt(v_FS**2 + u_FS**2 + w_FS**2)
+                
                 # We need this later on for alpha/beta calcs so store it
                 bigU_FS = EUdata.copy()
     
