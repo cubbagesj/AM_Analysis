@@ -447,10 +447,13 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
                 EUdata *= pow(c_lambda, .5)
                 EUdata /= 1.6878
 
-            elif mrg_chans[i] == 825:           # Signed RPM
-                EUdata = runObj.getEUData('Prop_RPM').copy()
+            elif mrg_chans[i] == 825:           # Signed RPM - modified for SSN 21 CB12 2022 test
+                EUdata = runObj.getEUData('Prop_RPM_signed').copy()
+                EUdata *=.5                     # Original data is off by factor of 2
+                EUdata = EUdata.map(lambda x: x + 6000 if (x < -2000) else x)   # Original data has spikes due to angle roll over
+                EUdata = EUdata.map(lmabda x: x - 6000 if (x > 2000) else x)
                 EUdata *= pow(c_lambda, mrg_scale[i])
-                EUdata *= np.sign(runObj.getEUData('rpm echo'))
+                
 
             elif mrg_chans[i] == 827:           # Big U (kts) from ADCP (kts)
                 EUdata = np.sqrt(v_FS**2 + u_FS**2 + w_FS**2)
