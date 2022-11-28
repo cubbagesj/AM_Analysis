@@ -451,7 +451,7 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
                 EUdata = runObj.getEUData('Prop_RPM_signed').copy()
                 EUdata *=.5                     # Original data is off by factor of 2
                 EUdata = EUdata.map(lambda x: x + 6000 if (x < -2000) else x)   # Original data has spikes due to angle roll over
-                EUdata = EUdata.map(lmabda x: x - 6000 if (x > 2000) else x)
+                EUdata = EUdata.map(lambda x: x - 6000 if (x > 2000) else x)
                 EUdata *= pow(c_lambda, mrg_scale[i])
                 
 
