@@ -117,12 +117,12 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
     # Convert the inputs section into a dictionary for later use
     mrg_input = {}
     for line in input_sec:
-        line = line.upper()
+     #   line = line.upper()
         entry = line.split()
         try:
-            mrg_input[entry[0]] = float(entry[1])
+            mrg_input[entry[0].upper()] = float(entry[1])
         except:
-            mrg_input[entry[0]] = entry[1]
+            mrg_input[entry[0].upper()] = entry[1]
 
     logfile.write('\nInputs section converted - INPUTS:\n')
     logfile.write('Key\t\tValue\n')
@@ -810,6 +810,78 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
                 EUdata *= 1.0284
                 EUdata *= .083333
 
+            # These are for flap rotated lift & drag
+            elif mrg_chans[i] == 990:
+                NFData = dataSTD[mrg_input['PLANE_1_NF']].copy()
+                TFData = dataSTD[mrg_input['PLANE_1_TF']].copy()
+                AngData = dataSTD[mrg_input['PLANE_1_ANGLE']].copy()
+                EUdata = (NFData * np.cos(np.radians(AngData)) + TFData * np.sin(np.radians(AngData)))
+                
+            elif mrg_chans[i] == 991:
+                NFData = dataSTD[mrg_input['PLANE_1_NF']].copy()
+                TFData = dataSTD[mrg_input['PLANE_1_TF']].copy()
+                AngData = dataSTD[mrg_input['PLANE_1_ANGLE']].copy()
+                EUdata = (TFData * np.cos(np.radians(AngData)) - NFData * np.sin(np.radians(AngData)))
+        
+            elif mrg_chans[i] == 992:
+                NFData = dataSTD[mrg_input['PLANE_2_NF']].copy()
+                TFData = dataSTD[mrg_input['PLANE_2_TF']].copy()
+                AngData = dataSTD[mrg_input['PLANE_2_ANGLE']].copy()
+                EUdata = (NFData * np.cos(np.radians(AngData)) + TFData * np.sin(np.radians(AngData)))
+                
+            elif mrg_chans[i] == 993:
+                NFData = dataSTD[mrg_input['PLANE_2_NF']].copy()
+                TFData = dataSTD[mrg_input['PLANE_2_TF']].copy()
+                AngData = dataSTD[mrg_input['PLANE_2_ANGLE']].copy()
+                EUdata = (TFData * np.cos(np.radians(AngData)) - NFData * np.sin(np.radians(AngData)))
+        
+            elif mrg_chans[i] == 994:
+                NFData = dataSTD[mrg_input['PLANE_3_NF']].copy()
+                TFData = dataSTD[mrg_input['PLANE_3_TF']].copy()
+                AngData = dataSTD[mrg_input['PLANE_3_ANGLE']].copy()
+                EUdata = (NFData * np.cos(np.radians(AngData)) + TFData * np.sin(np.radians(AngData)))
+                
+            elif mrg_chans[i] == 995:
+                NFData = dataSTD[mrg_input['PLANE_3_NF']].copy()
+                TFData = dataSTD[mrg_input['PLANE_3_TF']].copy()
+                AngData = dataSTD[mrg_input['PLANE_3_ANGLE']].copy()
+                EUdata = (TFData * np.cos(np.radians(AngData)) - NFData * np.sin(np.radians(AngData)))
+
+            elif mrg_chans[i] == 996:
+                NFData = dataSTD[mrg_input['PLANE_4_NF']].copy()
+                TFData = dataSTD[mrg_input['PLANE_4_TF']].copy()
+                AngData = dataSTD[mrg_input['PLANE_4_ANGLE']].copy()
+                EUdata = (NFData * np.cos(np.radians(AngData)) + TFData * np.sin(np.radians(AngData)))
+                
+            elif mrg_chans[i] == 997:
+                NFData = dataSTD[mrg_input['PLANE_4_NF']].copy()
+                TFData = dataSTD[mrg_input['PLANE_4_TF']].copy()
+                AngData = dataSTD[mrg_input['PLANE_4_ANGLE']].copy()
+                EUdata = (TFData * np.cos(np.radians(AngData)) - NFData * np.sin(np.radians(AngData)))
+
+            elif mrg_chans[i] == 998:
+                NFData = dataSTD[mrg_input['PLANE_5_NF']].copy()
+                TFData = dataSTD[mrg_input['PLANE_5_TF']].copy()
+                AngData = dataSTD[mrg_input['PLANE_5_ANGLE']].copy()
+                EUdata = (NFData * np.cos(np.radians(AngData)) + TFData * np.sin(np.radians(AngData)))
+                
+            elif mrg_chans[i] == 999:
+                NFData = dataSTD[mrg_input['PLANE_5_NF']].copy()
+                TFData = dataSTD[mrg_input['PLANE_5_TF']].copy()
+                AngData = dataSTD[mrg_input['PLANE_5_ANGLE']].copy()
+                EUdata = (TFData * np.cos(np.radians(AngData)) - NFData * np.sin(np.radians(AngData)))
+
+            elif mrg_chans[i] == 1000:
+                NFData = dataSTD[mrg_input['PLANE_6_NF']].copy()
+                TFData = dataSTD[mrg_input['PLANE_6_TF']].copy()
+                AngData = dataSTD[mrg_input['PLANE_6_ANGLE']].copy()
+                EUdata = (NFData * np.cos(np.radians(AngData)) + TFData * np.sin(np.radians(AngData)))
+                
+            elif mrg_chans[i] == 1001:
+                NFData = dataSTD[mrg_input['PLANE_6_NF']].copy()
+                TFData = dataSTD[mrg_input['PLANE_6_TF']].copy()
+                AngData = dataSTD[mrg_input['PLANE_6_ANGLE']].copy()
+                EUdata = (TFData * np.cos(np.radians(AngData)) - NFData * np.sin(np.radians(AngData)))
 
         if i == 0:  # First time through
             dataSTD = pd.DataFrame(EUdata, columns=[mrg_names[i]], dtype=float)

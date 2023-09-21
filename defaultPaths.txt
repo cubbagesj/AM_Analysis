@@ -3,7 +3,7 @@
 # These are the deafult search paths used by the program.
 # They can be changed from the menu in the program
 #
-obcDir c:\Users\cubba\Documents\Sam_Files
+obcDir C:\Users\cubba\Documents\Sam_Files
 tdmsDir x:\OBC_Data
 stdDir x:\STD_Data
 fstDir x:\STD_Data
