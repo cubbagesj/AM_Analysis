@@ -815,73 +815,73 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
                 NFData = dataSTD[mrg_input['PLANE_1_NF']].copy()
                 TFData = dataSTD[mrg_input['PLANE_1_TF']].copy()
                 AngData = dataSTD[mrg_input['PLANE_1_ANGLE']].copy()
-                EUdata = (NFData * np.cos(np.radians(AngData)) + TFData * np.sin(np.radians(AngData)))
+                EUdata = (NFData * np.cos(np.radians(AngData)) - TFData * np.sin(np.radians(AngData)))
                 
             elif mrg_chans[i] == 991:
                 NFData = dataSTD[mrg_input['PLANE_1_NF']].copy()
                 TFData = dataSTD[mrg_input['PLANE_1_TF']].copy()
                 AngData = dataSTD[mrg_input['PLANE_1_ANGLE']].copy()
-                EUdata = (TFData * np.cos(np.radians(AngData)) - NFData * np.sin(np.radians(AngData)))
+                EUdata = (TFData * np.cos(np.radians(AngData)) + NFData * np.sin(np.radians(AngData)))
         
             elif mrg_chans[i] == 992:
                 NFData = dataSTD[mrg_input['PLANE_2_NF']].copy()
                 TFData = dataSTD[mrg_input['PLANE_2_TF']].copy()
                 AngData = dataSTD[mrg_input['PLANE_2_ANGLE']].copy()
-                EUdata = (NFData * np.cos(np.radians(AngData)) + TFData * np.sin(np.radians(AngData)))
+                EUdata = (NFData * np.cos(np.radians(AngData)) - TFData * np.sin(np.radians(AngData)))
                 
             elif mrg_chans[i] == 993:
                 NFData = dataSTD[mrg_input['PLANE_2_NF']].copy()
                 TFData = dataSTD[mrg_input['PLANE_2_TF']].copy()
                 AngData = dataSTD[mrg_input['PLANE_2_ANGLE']].copy()
-                EUdata = (TFData * np.cos(np.radians(AngData)) - NFData * np.sin(np.radians(AngData)))
+                EUdata = (TFData * np.cos(np.radians(AngData)) + NFData * np.sin(np.radians(AngData)))
         
             elif mrg_chans[i] == 994:
                 NFData = dataSTD[mrg_input['PLANE_3_NF']].copy()
                 TFData = dataSTD[mrg_input['PLANE_3_TF']].copy()
                 AngData = dataSTD[mrg_input['PLANE_3_ANGLE']].copy()
-                EUdata = (NFData * np.cos(np.radians(AngData)) + TFData * np.sin(np.radians(AngData)))
+                EUdata = (NFData * np.cos(np.radians(AngData)) - TFData * np.sin(np.radians(AngData)))
                 
             elif mrg_chans[i] == 995:
                 NFData = dataSTD[mrg_input['PLANE_3_NF']].copy()
                 TFData = dataSTD[mrg_input['PLANE_3_TF']].copy()
                 AngData = dataSTD[mrg_input['PLANE_3_ANGLE']].copy()
-                EUdata = (TFData * np.cos(np.radians(AngData)) - NFData * np.sin(np.radians(AngData)))
+                EUdata = (TFData * np.cos(np.radians(AngData)) + NFData * np.sin(np.radians(AngData)))
 
             elif mrg_chans[i] == 996:
                 NFData = dataSTD[mrg_input['PLANE_4_NF']].copy()
                 TFData = dataSTD[mrg_input['PLANE_4_TF']].copy()
                 AngData = dataSTD[mrg_input['PLANE_4_ANGLE']].copy()
-                EUdata = (NFData * np.cos(np.radians(AngData)) + TFData * np.sin(np.radians(AngData)))
+                EUdata = (NFData * np.cos(np.radians(AngData)) - TFData * np.sin(np.radians(AngData)))
                 
             elif mrg_chans[i] == 997:
                 NFData = dataSTD[mrg_input['PLANE_4_NF']].copy()
                 TFData = dataSTD[mrg_input['PLANE_4_TF']].copy()
                 AngData = dataSTD[mrg_input['PLANE_4_ANGLE']].copy()
-                EUdata = (TFData * np.cos(np.radians(AngData)) - NFData * np.sin(np.radians(AngData)))
+                EUdata = (TFData * np.cos(np.radians(AngData)) + NFData * np.sin(np.radians(AngData)))
 
             elif mrg_chans[i] == 998:
                 NFData = dataSTD[mrg_input['PLANE_5_NF']].copy()
                 TFData = dataSTD[mrg_input['PLANE_5_TF']].copy()
                 AngData = dataSTD[mrg_input['PLANE_5_ANGLE']].copy()
-                EUdata = (NFData * np.cos(np.radians(AngData)) + TFData * np.sin(np.radians(AngData)))
+                EUdata = (NFData * np.cos(np.radians(AngData)) - TFData * np.sin(np.radians(AngData)))
                 
             elif mrg_chans[i] == 999:
                 NFData = dataSTD[mrg_input['PLANE_5_NF']].copy()
                 TFData = dataSTD[mrg_input['PLANE_5_TF']].copy()
                 AngData = dataSTD[mrg_input['PLANE_5_ANGLE']].copy()
-                EUdata = (TFData * np.cos(np.radians(AngData)) - NFData * np.sin(np.radians(AngData)))
+                EUdata = (TFData * np.cos(np.radians(AngData)) + NFData * np.sin(np.radians(AngData)))
 
             elif mrg_chans[i] == 1000:
                 NFData = dataSTD[mrg_input['PLANE_6_NF']].copy()
                 TFData = dataSTD[mrg_input['PLANE_6_TF']].copy()
                 AngData = dataSTD[mrg_input['PLANE_6_ANGLE']].copy()
-                EUdata = (NFData * np.cos(np.radians(AngData)) + TFData * np.sin(np.radians(AngData)))
+                EUdata = (NFData * np.cos(np.radians(AngData)) - TFData * np.sin(np.radians(AngData)))
                 
             elif mrg_chans[i] == 1001:
                 NFData = dataSTD[mrg_input['PLANE_6_NF']].copy()
                 TFData = dataSTD[mrg_input['PLANE_6_TF']].copy()
                 AngData = dataSTD[mrg_input['PLANE_6_ANGLE']].copy()
-                EUdata = (TFData * np.cos(np.radians(AngData)) - NFData * np.sin(np.radians(AngData)))
+                EUdata = (TFData * np.cos(np.radians(AngData)) + NFData * np.sin(np.radians(AngData)))
 
         if i == 0:  # First time through
             dataSTD = pd.DataFrame(EUdata, columns=[mrg_names[i]], dtype=float)
@@ -902,7 +902,7 @@ def MergeRun(fullname, runnumber, std_dir, merge_file='MERGE.INP'):
                                 (dataSTD['rawStatus']  <= 0x0f43)) | 
                                 (dataSTD['rawStatus'] < 1)  ].copy(deep=True)
     # Drop the rawStatus Column
-    dataSTDrun.drop('rawStatus', 1, inplace=True)
+    dataSTDrun.drop(labels='rawStatus', axis =1, inplace=True)
        
     # Now write out the data
     dataSTDrun.to_csv(stdfile, index=False, header=False, sep=' ', float_format='%12.7e')
