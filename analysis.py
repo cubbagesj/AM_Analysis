@@ -438,17 +438,50 @@ class AnalysisFrame(wx.Frame):
         self.extracalc.append('%.3f' % tdiam)
         
         #Vertical Overshoots (EPA [30], EPATime [31], EPADepth [32], OSPitch [33], OSDepth [34])
-        #
-        # *** Removed for now ***
-        for i in range(5):
+        epa = self.runObj.appr_values[8] + float(self.parameter.GetValue())
+        epaRec = 0
+        if float(self.parameter.GetValue()) > 0:
+            epaRec = rundata[rundata[rundata.columns[8]].gt(epa)].index[0] - startrec
+            osPitch = self.runObj.maxValues[8] - epa
+            osDepth = self.runObj.minValues[22] - rundata[rundata.columns[22]].iloc[epaRec]
+        if float(self.parameter.GetValue()) < 0:
+            epaRec = rundata[rundata[rundata.columns[8]].lt(epa)].index[0] - startrec
+            osPitch = self.runObj.minValues[8] - epa
+            osDepth = self.runObj.maxValues[22] - rundata[rundata.columns[22]].iloc[epaRec]
+        epaTime = (epaRec)*self.runObj.dt + float(self.extrastartTime.GetValue())
+        epaDepth = rundata[rundata.columns[22]].iloc[epaRec] - self.runObj.appr_values[22]
+
+        if epaRec == 0 or epaRec >= (endrec - startrec - 2):
+            for i in range(5):
                 self.extracalc.append('--')
-        
+        else:
+            self.extracalc.append('%.2f' % epa)
+            self.extracalc.append('%.2f' % epaTime)
+            self.extracalc.append('%.2f' % epaDepth)
+            self.extracalc.append('%.2f' % osPitch)
+            self.extracalc.append('%.2f' % osDepth)
+      
         #Horizontal Overshoots (EYA [35], EYATime [36], OSYaw [37]
-        #
-        # *** Removed for now ***
-        for i in range(3):
-            self.extracalc.append('--')
-       
+        #Tricky Becasue yaw goes from +/- 180 degrees
+        eya = self.runObj.appr_values[9] + float(self.parameter.GetValue())
+        eyaRec = 0
+        # if abs(eya) >= 180:
+        #     eya = -(eya/abs(eya))*(360 - abs(eya))
+        # if float(self.parameter.GetValue()) > 0:
+        #     eyaRec = rundata[rundata[rundata.columns[9]].gt(eya)].index[0] - startrec
+        #     osYaw = self.runObj.maxValues[9] - eya
+        # if float(self.parameter.GetValue()) < 0:
+        #     eyaRec = rundata[rundata[rundata.columns[9]].lt(eya)].index[0] - startrec
+        #     osYaw = self.runObj.minValues[9] - eya
+        eyaTime = (eyaRec)*self.runObj.dt + float(self.extrastartTime.GetValue())
+        if eyaRec == 0 or eyaRec >= (endrec - startrec - 2):
+            for i in range(3):
+                self.extracalc.append('--')
+        else:
+            self.extracalc.append('%.2f' % eya)
+            self.extracalc.append('%.2f' % eyaTime)
+            self.extracalc.append('%.2f' % osYaw)
+           
         #Speed vs Time(x) (TimeTo0 [38], Uat30 [39], Uat60 [40], Uat90 [41], Uat120 [42])
         if self.runObj.minValues[6] < 0.5:
             self.extracalc.append('%.2f' % self.runObj.minTimes[6])
