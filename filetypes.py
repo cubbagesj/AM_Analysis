@@ -19,6 +19,7 @@
 # Imports - Standard Libraries
 import numpy as np
 import pandas as pd
+import warnings
 from nptdms import TdmsFile  #package for importing tdms file data into python using numpy arrays
 import os.path, time
 from scipy.interpolate import interp1d
@@ -30,6 +31,7 @@ from calfile_new import CalFile
 from tdms_calfile import TdmsCalFile
 import dynos_array as dynos
 
+warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 
 class STDFile:
     """ Run file class for manipulation of standard merge data:

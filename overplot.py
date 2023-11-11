@@ -93,11 +93,11 @@ class OverPlotFrame(wx.Frame):
         mainSizer.Add(wx.StaticLine(self), 0, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
 
         paramSizer = wx.BoxSizer(wx.HORIZONTAL)
-        paramSizer.Add(wx.StaticText(self, -1, "X min"), 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
+        paramSizer.Add(wx.StaticText(self, -1, "X min"), 0, wx.ALIGN_CENTER_VERTICAL)
         paramSizer.Add(self.xMin, 0, wx.ALL, 10)
-        paramSizer.Add(wx.StaticText(self, -1, "X max"), 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
+        paramSizer.Add(wx.StaticText(self, -1, "X max"), 0, wx.ALIGN_CENTER_VERTICAL)
         paramSizer.Add(self.xMax, 0, wx.ALL, 10)
-        paramSizer.Add(wx.StaticText(self, -1, "Plots Per Page"), 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
+        paramSizer.Add(wx.StaticText(self, -1, "Plots Per Page"), 0, wx.ALIGN_CENTER_VERTICAL)
         paramSizer.Add(self.perPage, 0, wx.ALL, 10)
 
         mainSizer.Add(paramSizer, 0, wx.EXPAND|wx.ALL, 10)
